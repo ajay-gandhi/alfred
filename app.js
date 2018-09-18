@@ -10,6 +10,10 @@ const URLS = {
 const TIME = "10:00 PM";
 const RESTAURANT = "Bamboo".toLowerCase();
 const DISH = "Shioyaki".toLowerCase();
+const ORDERS = {
+  "Shioyaki": [],
+  "soda": ["sprite"],
+};
 const NAME = ["Johan", "Augustine"];
 
 (async () => {
@@ -19,7 +23,6 @@ const NAME = ["Johan", "Augustine"];
   const page = await browser.newPage();
   try {
     await page.goto(URLS.login);
-    await page.screenshot({ path: "./seamless.png" });
 
     await page.click("input#username");
     await page.keyboard.type(creds.username);
@@ -54,19 +57,30 @@ const NAME = ["Johan", "Augustine"];
     // Add to order
 
     /* Choose items */
-    // Click menu item
-    const item_links  = await page.$$("a[name=\"product\"]");
-    let our_item;
-    for (const anchor of item_links) {
-      const text = await page.evaluate(e => e.innerText.toLowerCase(), anchor);
-      if (text.includes(DISH)) our_item = anchor;
-    }
-    await our_item.click();
-    await page.waitFor(1000);
+    const orders = Object.entries(ORDERS);
+    for (const [item, options] of orders) {
+      // Click menu item
+      const item_links = await page.$$("a[name=\"product\"]");
+      let our_item;
+      for (const anchor of item_links) {
+        const text = await page.evaluate(e => e.innerText.toLowerCase(), anchor);
+        if (text.includes(item.toLowerCase())) our_item = anchor;
+      }
+      await our_item.click();
+      await page.waitFor(1000);
 
-    // Click add to order
-    await page.click("a#a1");
-    await page.waitFor(2000);
+      // Select options
+      const option_links = await page.$$("li label");
+      for (const input of option_links) {
+        const text = await page.evaluate(e => e.innerText.toLowerCase(), input);
+        const is_selected = options.reduce((memo, o) => memo || text.includes(o.toLowerCase()), false);
+        if (is_selected) await input.click();
+      }
+
+      // Click add to order
+      await page.click("a#a1");
+      await page.waitFor(2000);
+    }
 
     await page.click("a.findfoodbutton");
     await page.waitForNavigation();
