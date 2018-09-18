@@ -8,7 +8,7 @@ const URLS = {
   choose_rest: "https://www.seamless.com/MealsVendorSelection.m",
 };
 
-const OUTPUT_FILE = process.argv[2] || "data.json";
+const OUTPUT_FILE = process.argv[2] || "menu_data.json";
 
 const TIME = "7:00 PM";
 const FLOAT_REGEX = /[+-]?\d+(\.\d+)?/g;
