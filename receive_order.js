@@ -34,32 +34,32 @@ module.exports.add_order = (rest_input, items, name) => {
 
 module.exports.remove_order = (name) => {
   const restaurants_with_orders = Object.keys(all_orders);
-  let modified_restaurant;
-  for (let i = 0; i < restaurants_with_orders.length; i++) {
-    if (all_orders[restaurants_with_orders[i]][name]) {
+  let modified_rest;
+  for (const rest of restaurants_with_orders) {
+    if (all_orders[rest][name]) {
       // RIP immutability
-      modified_restaurant = restaurants_with_orders[i];
-      delete all_orders[restaurants_with_orders[i]][name];
+      modified_rest = rest;
+      delete all_orders[rest][name];
     }
   }
 
-  if (!modified_restaurant) {
+  if (!modified_rest) {
     return [`${name} does not currently have any orders`];
   }
-  if (Object.keys(all_orders[modified_restaurant]).length === 0) {
-    delete all_orders[modified_restaurant];
+  if (Object.keys(all_orders[modified_rest]).length === 0) {
+    delete all_orders[modified_rest];
     fs.writeFileSync("orders.json", JSON.stringify(all_orders));
-    return [`No remaining orders for ${modified_restaurant}`];
+    return [`No remaining orders for ${modified_rest}`];
   } else {
     fs.writeFileSync("orders.json", JSON.stringify(all_orders));
   }
 
   // Compute total value of current order for this restaurant
-  const { is_ambiguous, value } = calculate_order_value(modified_restaurant);
+  const { is_ambiguous, value } = calculate_order_value(modified_rest);
 
   // Return messages based on delivery minimum, etc
-  const messages = [`Current order total for ${modified_restaurant}: $${value}`];
-  const restaurant = find_restaurant_by_name(modified_restaurant);
+  const messages = [`Current order total for ${modified_rest}: $${value}`];
+  const restaurant = find_restaurant_by_name(modified_rest);
   if (value < restaurant.delivery_min) {
     messages.push(`Current order ${is_ambiguous ? "may" : "does"} not meet delivery minimum ($${restaurant.delivery_min})`);
   }
@@ -78,8 +78,8 @@ const calculate_order_value = (restaurant) => {
   let is_ambiguous = false;
   const current_order_value = Object.values(all_orders[restaurant]).reduce((memo, items) => {
     let current_value = 0;
-    for (let i = 0; i < items.length; i++) {
-      const item_price = find_item_by_name(restaurant, items[i][0]).price;
+    for (const item of items) {
+      const item_price = find_item_by_name(restaurant, item[0]).price;
       if (!item_price && item_price !== 0) is_ambiguous = true;
       current_value += item_price;
     }
