@@ -8,15 +8,15 @@ const URLS = {
   choose_rest: "https://www.seamless.com/MealsVendorSelection.m",
 };
 
-const output_file = "data.json";
+const OUTPUT_FILE = process.argv[2] || "data.json";
 
 const TIME = "7:00 PM";
 const FLOAT_REGEX = /[+-]?\d+(\.\d+)?/g;
-const DRY_RUN = false;
+const TESTING = false;
 
 (async () => {
   const browser = await puppeteer.launch({
-    headless: !DRY_RUN,
+    headless: !TESTING,
     defaultViewport: {
       width: 1200,
       height: 900,
@@ -38,17 +38,17 @@ const DRY_RUN = false;
     const num_restaurants = await page.$eval("div#options a.OtherLink", e => parseInt(e.innerText));
     console.log(`${num_restaurants} restaurants open`);
     for (let i = 0; i < num_restaurants; i++) {
-      const data = await order_from_restaurant(page, i);
+      const data = await scrape_menu(page, i);
       if (data) {
         console.log(`  Scraped "${data.name}"`);
         menu_data[data.name] = data;
       }
     }
 
-    console.log(`Writing to ${output_file}`);
+    console.log(`Writing to ${OUTPUT_FILE}`);
     fs.writeFileSync(output_file, JSON.stringify(menu_data), "utf8");
 
-    if (!DRY_RUN) {
+    if (!TESTING) {
       await browser.close();
     }
   } catch (err) {
@@ -73,10 +73,10 @@ const login_to_seamless = async (page, creds) => {
 };
 
 /**
- * Given a page with a logged-in status, this function will submit an order
- * at the given restaurant with the given items for the given names.
+ * Given a page with a logged-in status, this function will scrape the menu
+ * items for the restaurant at the given index.
  */
-const order_from_restaurant = async (page, index) => {
+const scrape_menu = async (page, index) => {
   const data = {};
 
   await page.goto(URLS.choose_rest);
@@ -102,70 +102,8 @@ const order_from_restaurant = async (page, index) => {
   for (const tr of menu_trs) {
     const new_item = {};
     new_item.name = await page.evaluate(e => e.querySelector("div.MenuItemName").innerText, tr);
-    new_item.price = await page.evaluate(e => parseInt(e.querySelector("td.price").innerText.substring(1)), tr);
+    new_item.price = await page.evaluate(e => parseFloat(e.querySelector("td.price").innerText), tr);
     data.menu.push(new_item);
   }
   return data;
-};
-
-/**
- * Given a page at the order stage, this function will add the given orders to
- * the cart.
- *
- * The orders parameter should be an object of this form:
- *   {
- *     "dish":  ["option 1", "option 2"],
- *     "dish2": [], // No options
- *   }
- */
-const fill_orders = async (page, orders) => {
-  const orders_as_arrays = Object.entries(orders);
-  for (const [item, options] of orders_as_arrays) {
-    // Click menu item
-    const item_links = await page.$$("a[name=\"product\"]");
-    let our_item;
-    for (const anchor of item_links) {
-      const text = await page.evaluate(e => e.innerText.toLowerCase(), anchor);
-      if (text.includes(item.toLowerCase())) our_item = anchor;
-    }
-    await our_item.click();
-    await page.waitFor(1000);
-
-    // Select options
-    const option_links = await page.$$("li label");
-    for (const input of option_links) {
-      const text = await page.evaluate(e => e.innerText.toLowerCase(), input);
-      const is_selected = options.reduce((memo, o) => memo || text.includes(o.toLowerCase()), false);
-      if (is_selected) await input.click();
-    }
-
-    // Click add to order
-    await page.click("a#a1");
-    await page.waitFor(2000);
-  }
-
-  await page.click("a.findfoodbutton");
-  await page.waitForNavigation();
-};
-
-/**
- * Given a page at the checkout stage, this function will enter the given names.
- * The names parameter should be an array of tuples, where each tuple contains
- * the first and last names of all those involved in the order.
- */
-const fill_names = async (page, names) => {
-  for (const name of names) {
-    await page.click("p#RecentAllocations a");
-    await page.click("input#FirstName");
-    await page.keyboard.type(name[0]);
-
-    await page.click("input#LastName");
-    await page.keyboard.type(name[1]);
-
-    await page.click("tr#AddUser h4.PrimaryLink a");
-    await page.waitForNavigation();
-  }
-
-  await page.click("td.delete a");
-  await page.waitForNavigation();
 };
