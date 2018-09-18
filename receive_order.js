@@ -1,0 +1,93 @@
+
+const fs = require("fs");
+
+const { find_restaurant_by_name, find_item_by_name } = require("./data_util");
+
+const all_orders = fs.existsSync("orders.json") ? JSON.parse(fs.readFileSync("orders.json")) : {};
+
+module.exports.add_order = (rest_input, items, name) => {
+  // Convert restaurant to official name
+  const restaurant = find_restaurant_by_name(rest_input);
+  const rest_name = restaurant.name;
+
+  if (!all_orders[rest_name]) all_orders[rest_name] = {};
+
+  // Add items to order while completing names
+  const menu_items = restaurant.menu;
+  all_orders[rest_name][name] = items.map(([ item_name, options ]) => {
+    const item = find_item_by_name(rest_name, item_name);
+    return [item.name, options];
+  });
+  fs.writeFileSync("orders.json", JSON.stringify(all_orders));
+
+  // Compute total value of current order for this restaurant
+  const { is_ambiguous, value } = calculate_order_value(rest_name);
+
+  // Return messages based on delivery minimum, etc
+  const messages = [`Current order total for ${rest_name}: $${value}`];
+  if (value < restaurant.delivery_min) {
+    messages.push(`Current order ${is_ambiguous ? "may" : "does"} not meet delivery minimum ($${restaurant.delivery_min})`);
+  }
+
+  return messages;
+};
+
+module.exports.remove_order = (name) => {
+  const restaurants_with_orders = Object.keys(all_orders);
+  let modified_restaurant;
+  for (let i = 0; i < restaurants_with_orders.length; i++) {
+    if (all_orders[restaurants_with_orders[i]][name]) {
+      // RIP immutability
+      modified_restaurant = restaurants_with_orders[i];
+      delete all_orders[restaurants_with_orders[i]][name];
+    }
+  }
+
+  if (!modified_restaurant) {
+    return [`${name} does not currently have any orders`];
+  }
+  if (Object.keys(all_orders[modified_restaurant]).length === 0) {
+    delete all_orders[modified_restaurant];
+    fs.writeFileSync("orders.json", JSON.stringify(all_orders));
+    return [`No remaining orders for ${modified_restaurant}`];
+  } else {
+    fs.writeFileSync("orders.json", JSON.stringify(all_orders));
+  }
+
+  // Compute total value of current order for this restaurant
+  const { is_ambiguous, value } = calculate_order_value(modified_restaurant);
+
+  // Return messages based on delivery minimum, etc
+  const messages = [`Current order total for ${modified_restaurant}: $${value}`];
+  const restaurant = find_restaurant_by_name(modified_restaurant);
+  if (value < restaurant.delivery_min) {
+    messages.push(`Current order ${is_ambiguous ? "may" : "does"} not meet delivery minimum ($${restaurant.delivery_min})`);
+  }
+
+  return messages;
+};
+
+/**
+ * Returns the dollar value of the order for the given restaurant, as well as
+ * whether this value is ambiguous. Ambiguity is caused by hard-to-parse prices
+ * on Seamless, which result in null price values.
+ *
+ * Assumes restaurant is proper, i.e. returned from find_restaurant_by_name
+ */
+const calculate_order_value = (restaurant) => {
+  let is_ambiguous = false;
+  const current_order_value = Object.values(all_orders[restaurant]).reduce((memo, items) => {
+    let current_value = 0;
+    for (let i = 0; i < items.length; i++) {
+      const item_price = find_item_by_name(restaurant, items[i][0]).price;
+      if (!item_price && item_price !== 0) is_ambiguous = true;
+      current_value += item_price;
+    }
+    return memo + current_value;
+  }, 0);
+
+  return {
+    value: current_order_value,
+    is_ambiguous,
+  };
+};

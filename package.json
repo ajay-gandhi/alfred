@@ -1,0 +1,32 @@
+{
+  "name": "alfred4",
+  "version": "0.0.1",
+  "description": "X",
+  "main": "server.js",
+  "dependencies": {
+    "puppeteer": "^1.8.0"
+  },
+  "devDependencies": {
+    "jest": "^23.6.0"
+  },
+  "scripts": {
+    "test": "jest"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ajay-gandhi/alfred4.0.git"
+  },
+  "keywords": [
+    "alfred",
+    "slack",
+    "seamless",
+    "integration",
+    "app"
+  ],
+  "author": "Ajay Gandhi",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/ajay-gandhi/alfred4.0/issues"
+  },
+  "homepage": "https://github.com/ajay-gandhi/alfred4.0#readme"
+}
