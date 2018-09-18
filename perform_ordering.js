@@ -9,15 +9,10 @@ const URLS = {
 
 const TIME = "10:00 PM";
 const RESTAURANT = "Bamboo".toLowerCase();
-const ORDERS = {
-  "Shioyaki": {
-    quantity: 2,
-  },
-  "soda": {
-    quantity: 1,
-    options: ["sprite"],
-  },
-};
+const ORDERS = [
+  [ "Shioyaki", [] ],
+  [ "soda",     ["sprite"] ],
+];
 const NAMES = [["Johan", "Augustine"], ["James", "Wei"]];
 
 const DRY_RUN = true;
@@ -98,22 +93,20 @@ const order_from_restaurant = async (page, restaurant, orders, names) => {
  * Given a page at the order stage, this function will add the given orders to
  * the cart.
  *
- * The orders parameter should be an object of this form:
- *   {
- *     "dish":  {
- *       "quantity": 1,
- *       "options":  ["option 1", "option 2"],
- *     },
- *     "dish2": {
- *       "quantity": 3,
- *     },
- *   }
+ * The orders parameter should be an array of this form:
+ *   [
+ *     [
+ *       "dish",
+ *       ["option 1", "option 2"],
+ *     ],
+ *     [
+ *       "dish2",
+ *       [],
+ *     ],
+ *   ]
  */
 const fill_orders = async (page, orders) => {
-  const orders_as_arrays = Object.entries(orders);
-  for (const [item, config] of orders_as_arrays) {
-    const options = config.options || [];
-
+  for (const [item, options] of orders) {
     // Click menu item
     const item_links = await page.$$("a[name=\"product\"]");
     let our_item;
@@ -123,11 +116,6 @@ const fill_orders = async (page, orders) => {
     }
     await our_item.click();
     await page.waitFor(1000);
-
-    // Input quantity
-    if (config.quantity && config.quantity !== 1) {
-      await page.keyboard.type(config.quantity.toString());
-    }
 
     // Select options
     const option_links = await page.$$("li label");
