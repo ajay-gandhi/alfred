@@ -10,8 +10,13 @@ const URLS = {
 const TIME = "10:00 PM";
 const RESTAURANT = "Bamboo".toLowerCase();
 const ORDERS = {
-  "Shioyaki": [],
-  "soda": ["sprite"],
+  "Shioyaki": {
+    quantity: 2,
+  },
+  "soda": {
+    quantity: 1,
+    options: ["sprite"],
+  },
 };
 const NAMES = [["Johan", "Augustine"], ["James", "Wei"]];
 
@@ -95,13 +100,20 @@ const order_from_restaurant = async (page, restaurant, orders, names) => {
  *
  * The orders parameter should be an object of this form:
  *   {
- *     "dish":  ["option 1", "option 2"],
- *     "dish2": [], // No options
+ *     "dish":  {
+ *       "quantity": 1,
+ *       "options":  ["option 1", "option 2"],
+ *     },
+ *     "dish2": {
+ *       "quantity": 3,
+ *     },
  *   }
  */
 const fill_orders = async (page, orders) => {
   const orders_as_arrays = Object.entries(orders);
-  for (const [item, options] of orders_as_arrays) {
+  for (const [item, config] of orders_as_arrays) {
+    const options = config.options || [];
+
     // Click menu item
     const item_links = await page.$$("a[name=\"product\"]");
     let our_item;
@@ -111,6 +123,11 @@ const fill_orders = async (page, orders) => {
     }
     await our_item.click();
     await page.waitFor(1000);
+
+    // Input quantity
+    if (config.quantity && config.quantity !== 1) {
+      await page.keyboard.type(config.quantity.toString());
+    }
 
     // Select options
     const option_links = await page.$$("li label");
