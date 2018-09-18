@@ -14,7 +14,7 @@ const ORDERS = {
   "Shioyaki": [],
   "soda": ["sprite"],
 };
-const NAME = ["Johan", "Augustine"];
+const NAMES = [["Johan", "Augustine"], ["James", "Wei"]];
 
 (async () => {
   const browser = await puppeteer.launch({
@@ -87,16 +87,19 @@ const NAME = ["Johan", "Augustine"];
     /* End */
 
     /* Add user */
+    for (const name of NAMES) {
+      await page.click("p#RecentAllocations a");
+      await page.click("input#FirstName");
+      await page.keyboard.type(name[0]);
+
+      await page.click("input#LastName");
+      await page.keyboard.type(name[1]);
+
+      await page.click("tr#AddUser h4.PrimaryLink a");
+      await page.waitForNavigation();
+    }
+
     await page.click("td.delete a");
-    await page.waitForNavigation();
-
-    await page.click("input#FirstName");
-    await page.keyboard.type(NAME[0]);
-
-    await page.click("input#LastName");
-    await page.keyboard.type(NAME[1]);
-
-    await page.click("tr#AddUser h4.PrimaryLink a");
     await page.waitForNavigation();
     /* End */
 
