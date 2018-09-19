@@ -122,7 +122,7 @@ const fill_orders = async (page, orders) => {
       if (text.includes(item.toLowerCase())) our_item = anchor;
     }
     await our_item.click();
-    await page.waitFor(1000);
+    await page.waitFor(1500);
 
     // Select options
     const option_links = await page.$$("li label");

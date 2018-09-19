@@ -1,6 +1,5 @@
 
 const fs = require("fs");
-
 const { find_restaurant_by_name, find_item_by_name } = require("./data_util");
 
 const all_orders = fs.existsSync("orders.json") ? JSON.parse(fs.readFileSync("orders.json")) : {};
