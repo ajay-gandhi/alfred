@@ -10,7 +10,7 @@ const URLS = {
 
 const OUTPUT_FILE = process.argv[2] || "menu_data.json";
 
-const TIME = "7:00 PM";
+const TIME = "8:00 PM";
 const FLOAT_REGEX = /[+-]?\d+(\.\d+)?/g;
 const TESTING = false;
 
@@ -46,7 +46,7 @@ const TESTING = false;
     }
 
     console.log(`Writing to ${OUTPUT_FILE}`);
-    fs.writeFileSync(output_file, JSON.stringify(menu_data), "utf8");
+    fs.writeFileSync(OUTPUT_FILE, JSON.stringify(menu_data), "utf8");
 
     if (!TESTING) {
       await browser.close();
