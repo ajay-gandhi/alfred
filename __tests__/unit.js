@@ -1,6 +1,6 @@
-// Tests for receive_order.js
+// Tests for record_orders.js
 
-const { add_order, remove_order } = require("./receive_order");
+const { add_order, remove_order } = require("../record_orders");
 
 // Try adding orders
 const test_inputs = [
@@ -28,14 +28,14 @@ const test_inputs = [
 
 const test_outputs = [
   [
-    "Current order total for Bamboo: $7",
+    "Current order total for Bamboo: $7.95",
     "Current order may not meet delivery minimum ($17)"
   ],
   [
-    "Current order total for Bamboo: $23",
+    "Current order total for Bamboo: $24.90",
   ],
   [
-    "Current order total for Bamboo: $16",
+    "Current order total for Bamboo: $16.95",
     "Current order does not meet delivery minimum ($17)"
   ],
   [

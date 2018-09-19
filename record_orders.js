@@ -24,9 +24,9 @@ module.exports.add_order = (rest_input, items, name) => {
   const { is_ambiguous, value } = calculate_order_value(rest_name);
 
   // Return messages based on delivery minimum, etc
-  const messages = [`Current order total for ${rest_name}: $${value}`];
+  const messages = [`Current order total for ${rest_name}: ${render_dollars(value)}`];
   if (value < restaurant.delivery_min) {
-    messages.push(`Current order ${is_ambiguous ? "may" : "does"} not meet delivery minimum ($${restaurant.delivery_min})`);
+    messages.push(`Current order ${is_ambiguous ? "may" : "does"} not meet delivery minimum (${render_dollars(restaurant.delivery_min)})`);
   }
 
   return messages;
@@ -58,10 +58,10 @@ module.exports.remove_order = (name) => {
   const { is_ambiguous, value } = calculate_order_value(modified_rest);
 
   // Return messages based on delivery minimum, etc
-  const messages = [`Current order total for ${modified_rest}: $${value}`];
+  const messages = [`Current order total for ${modified_rest}: ${render_dollars(value)}`];
   const restaurant = find_restaurant_by_name(modified_rest);
   if (value < restaurant.delivery_min) {
-    messages.push(`Current order ${is_ambiguous ? "may" : "does"} not meet delivery minimum ($${restaurant.delivery_min})`);
+    messages.push(`Current order ${is_ambiguous ? "may" : "does"} not meet delivery minimum (${render_dollars(restaurant.delivery_min)})`);
   }
 
   return messages;
@@ -90,4 +90,13 @@ const calculate_order_value = (restaurant) => {
     value: current_order_value,
     is_ambiguous,
   };
+};
+
+/**
+ * Render a float as a dollar value
+ */
+const render_dollars = (flt) => {
+  const flt_str = flt.toString();
+  const is_short = flt_str.indexOf(".") === flt_str.length - 2;
+  return `$${flt_str}${is_short ? "0" : ""}`;
 };
