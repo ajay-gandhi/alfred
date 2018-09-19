@@ -102,7 +102,8 @@ const scrape_menu = async (page, index) => {
   for (const tr of menu_trs) {
     const new_item = {};
     new_item.name = await page.evaluate(e => e.querySelector("div.MenuItemName").innerText, tr);
-    new_item.price = await page.evaluate(e => parseFloat(e.querySelector("td.price").innerText), tr);
+    const floats = (await page.evaluate(e => e.querySelector("td.price").innerText, tr)).match(FLOAT_REGEX);
+    new_item.price = floats ? parseFloat(floats[0]) : false;
     data.menu.push(new_item);
   }
   return data;
