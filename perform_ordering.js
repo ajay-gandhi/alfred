@@ -141,6 +141,12 @@ const fill_orders = async (page, orders) => {
  * the first and last names of all those involved in the order.
  */
 const fill_names = async (page, names) => {
+  // Clear existing names first
+  while (await page.$("td.delete a")) {
+    await page.click("td.delete a");
+    await page.waitForNavigation();
+  }
+
   for (const name of names) {
     await page.click("p#RecentAllocations a");
     await page.click("input#FirstName");
@@ -152,8 +158,5 @@ const fill_names = async (page, names) => {
     await page.click("tr#AddUser h4.PrimaryLink a");
     await page.waitForNavigation();
   }
-
-  await page.click("td.delete a");
-  await page.waitForNavigation();
 };
 
