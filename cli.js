@@ -3,8 +3,35 @@ const { parse_command } = require("./parse");
 const record_orders = require("./record_orders");
 const perform_ordering = require("./perform_ordering");
 
-const input = process.argv.slice(3).join(" ");
-const cmd = parse_command(process.argv[2], input);
-console.log(record_orders[cmd.command](cmd.params.restaurant, cmd.params.items, cmd.name));
+const args = process.argv.slice(2);
 
-setTimeout(perform_ordering, 3000);
+switch (args.shift()) {
+  case "add": {
+    const cmd = parse_command(args.shift(), args.join(" "));
+    console.log(record_orders[cmd.command](cmd.params.restaurant, cmd.params.items, cmd.name));
+    break;
+  }
+
+  case "forget": {
+    const cmd = parse_command(args.shift(), args.join(" "));
+    console.log(record_orders[cmd.command](cmd.name));
+    break;
+  }
+
+  case "order": {
+    perform_ordering();
+    break;
+  }
+
+  case "user": {
+    const [name, phone] = args;
+    const users = fs.existsSync("users.json") ? JSON.parse(fs.readFileSync("users.json")) : {};
+    users[name] = { name, phone };
+    fs.writeFileSync("users.json", JSON.stringify(users));
+  }
+
+  default: {
+    console.log("Command not recognized");
+  }
+}
+
