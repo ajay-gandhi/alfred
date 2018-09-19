@@ -96,9 +96,16 @@ const order_from_restaurant = async (page, restaurant, orders, names) => {
   await page.keyboard.type(phone_number);
 
   // Submit order
-  if (!DRY_RUN) {
+  if (DRY_RUN) {
+    const confirmation_path = `${dirname}/confirmations/${sanitize_filename(restaurant)}.pdf`;
+    await page.pdf(confirmation_path);
+    console.log(`Simulated order from ${restaurant}, confirmation is in ${confirmation_path}`);
+  } else {
     await page.click("a.findfoodbutton");
     await page.waitForNavigation();
+    const confirmation_path = `${dirname}/confirmations/${sanitize_filename(restaurant)}.pdf`;
+    await page.pdf({ path: confirmation_path });
+    console.log(`Ordered from ${restaurant}, confirmation is in ${confirmation_path}`);
   }
 };
 
@@ -172,3 +179,8 @@ const fill_names = async (page, names) => {
   }
 };
 
+/**
+ * Converts a restaurant name to one that's nice for the FS
+ */
+const NOT_ALPHAN_REGEX = /[\W_]+/g;
+const sanitize_filename = n => n.replace(NOT_ALPHAN_REGEX, "_").replace(/^_+|_+$/g, "");
