@@ -1,18 +1,19 @@
 
 const puppeteer = require("puppeteer");
+const fs = require("fs");
 const { extract_orders_and_names } = require("./data_util");
 
-const creds = require("./creds");
+const USERS = require("./users");
+const CREDS = require("./creds");
 
 const URLS = {
   login: "https://www.seamless.com/corporate/login/",
   choose_rest: "https://www.seamless.com/meals.m",
 };
 
-const TIME = "9:00 PM";
+const TIME = "5:00 PM";
 
-const PHONE = "123-456-7890";
-const DRY_RUN = true;
+const DRY_RUN = false;
 
 module.exports = async () => {
   const order_sets = extract_orders_and_names(require("./orders"));
@@ -27,7 +28,7 @@ module.exports = async () => {
   const page = await browser.newPage();
 
   try {
-    await login_to_seamless(page, creds);
+    await login_to_seamless(page, CREDS);
 
     // Should be logged in now
     // await order_from_restaurant(page, RESTAURANT, ORDERS, NAMES);
@@ -35,11 +36,14 @@ module.exports = async () => {
       await order_from_restaurant(page, order_set.restaurant, order_set.orders, order_set.names);
     }
 
-    if (!DRY_RUN) {
-      await browser.close();
-    }
+    // Clear orders
   } catch (err) {
     console.log("Crashed with error", err);
+  }
+
+  if (!DRY_RUN) {
+    fs.unlinkSync("orders.json");
+    await browser.close();
   }
 };
 
@@ -85,9 +89,11 @@ const order_from_restaurant = async (page, restaurant, orders, names) => {
   await fill_names(page, names);
 
   // Fill phone number
+  // For now, just do this based on who we have in users.json
+  const phone_number = names.map(n => n.join(" ")).reduce((memo, n) => USERS[n] ? USERS[n].phone : memo, false);
   await page.$eval("input#phoneNumber", e => e.value = "");
   await page.click("input#phoneNumber");
-  await page.keyboard.type(PHONE);
+  await page.keyboard.type(phone_number);
 
   // Submit order
   if (!DRY_RUN) {
