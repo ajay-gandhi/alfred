@@ -11,6 +11,7 @@ const URLS = {
 
 const TIME = "9:00 PM";
 
+const PHONE = "123-456-7890";
 const DRY_RUN = true;
 
 module.exports = async () => {
@@ -82,6 +83,11 @@ const order_from_restaurant = async (page, restaurant, orders, names) => {
   // Do the rest!
   await fill_orders(page, orders);
   await fill_names(page, names);
+
+  // Fill phone number
+  await page.$eval("input#phoneNumber", e => e.value = "");
+  await page.click("input#phoneNumber");
+  await page.keyboard.type(PHONE);
 
   // Submit order
   if (!DRY_RUN) {
