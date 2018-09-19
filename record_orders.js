@@ -95,7 +95,13 @@ const calculate_order_value = (restaurant) => {
  * Render a float as a dollar value
  */
 const render_dollars = (flt) => {
+  if (!flt) return "$0";
+
   const flt_str = flt.toString();
-  const is_short = flt_str.indexOf(".") === flt_str.length - 2;
-  return `$${flt_str}${is_short ? "0" : ""}`;
+  const pd_idx = flt_str.indexOf(".");
+  if (pd_idx === flt_str.length - 2) {
+    return `$${flt_str}0`;
+  } else if (pd_idx < flt_str.length - 3 && pd_idx > 0) {
+    return `$${flt_str.substring(0, pd_idx + 3)}`;
+  }
 };
