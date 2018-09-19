@@ -94,7 +94,7 @@ const scrape_menu = async (page, index) => {
   const restaurant_info = await page.$("div#restaurantinfo");
   data.name = await page.evaluate(e => e.querySelector("h1").innerText, restaurant_info);
   const description = await page.evaluate(e => e.innerText.split("\n").pop(), restaurant_info);
-  data.delivery_min = description.match(FLOAT_REGEX).map(parseFloat).reduce((a, b) => a + b, 0);
+  data.delivery_min = parseFloat(description.match(FLOAT_REGEX)[0]);
 
   // Get menu items
   data.menu = [];
