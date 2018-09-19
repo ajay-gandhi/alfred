@@ -1,5 +1,7 @@
 
 const puppeteer = require("puppeteer");
+const { extract_orders_and_names } = require("./data_util");
+
 const creds = require("./creds");
 
 const URLS = {
@@ -7,17 +9,13 @@ const URLS = {
   choose_rest: "https://www.seamless.com/meals.m",
 };
 
-const TIME = "10:00 PM";
-const RESTAURANT = "Bamboo".toLowerCase();
-const ORDERS = [
-  [ "Shioyaki", [] ],
-  [ "soda",     ["sprite"] ],
-];
-const NAMES = [["Johan", "Augustine"], ["James", "Wei"]];
+const TIME = "9:00 PM";
 
 const DRY_RUN = true;
 
-(async () => {
+module.exports = async () => {
+  const order_sets = extract_orders_and_names(require("./orders"));
+
   const browser = await puppeteer.launch({
     headless: false,
     defaultViewport: {
@@ -31,7 +29,10 @@ const DRY_RUN = true;
     await login_to_seamless(page, creds);
 
     // Should be logged in now
-    await order_from_restaurant(page, RESTAURANT, ORDERS, NAMES);
+    // await order_from_restaurant(page, RESTAURANT, ORDERS, NAMES);
+    for (const order_set of order_sets) {
+      await order_from_restaurant(page, order_set.restaurant, order_set.orders, order_set.names);
+    }
 
     if (!DRY_RUN) {
       await browser.close();
@@ -39,7 +40,7 @@ const DRY_RUN = true;
   } catch (err) {
     console.log("Crashed with error", err);
   }
-})();
+};
 
 /**
  * Given a puppeteer page, logs into Seamless with the given credentials.
@@ -72,8 +73,8 @@ const order_from_restaurant = async (page, restaurant, orders, names) => {
   const rest_links = await page.$$("a[name=\"vendorLocation\"]");
   let our_rest;
   for (const anchor of rest_links) {
-    const text = await page.evaluate(e => e.innerText.toLowerCase(), anchor);
-    if (text.includes(RESTAURANT)) our_rest = anchor;
+    const text = await page.evaluate(e => e.innerText, anchor);
+    if (text.includes(restaurant)) our_rest = anchor;
   }
   await our_rest.click();
   await page.waitForNavigation();
@@ -155,3 +156,4 @@ const fill_names = async (page, names) => {
   await page.click("td.delete a");
   await page.waitForNavigation();
 };
+
