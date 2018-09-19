@@ -7,4 +7,4 @@ console.log(record_order.add_order("bamboo", [["soda", ["sprite"]], ["tempura co
 
 console.log(record_order.add_order("extreme pizza", [["cheese pizza (medium)", []]], "Jay Jung"));
 
-setTimeout(perform_order, 3000);
+setTimeout(perform_order, 3000, true);

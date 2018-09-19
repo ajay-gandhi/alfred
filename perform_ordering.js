@@ -13,9 +13,7 @@ const URLS = {
 
 const TIME = "5:00 PM";
 
-const DRY_RUN = false;
-
-module.exports = async () => {
+module.exports = async (dry_run) => {
   const order_sets = extract_orders_and_names(require("./orders"));
 
   const browser = await puppeteer.launch({
@@ -41,7 +39,7 @@ module.exports = async () => {
     console.log("Crashed with error", err);
   }
 
-  if (!DRY_RUN) {
+  if (!dry_run) {
     fs.unlinkSync("orders.json");
     await browser.close();
   }
@@ -96,7 +94,7 @@ const order_from_restaurant = async (page, restaurant, orders, names) => {
   await page.keyboard.type(phone_number);
 
   // Submit order
-  if (DRY_RUN) {
+  if (dry_run) {
     const confirmation_path = `${dirname}/confirmations/${sanitize_filename(restaurant)}.pdf`;
     await page.pdf(confirmation_path);
     console.log(`Simulated order from ${restaurant}, confirmation is in ${confirmation_path}`);

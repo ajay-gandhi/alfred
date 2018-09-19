@@ -19,7 +19,8 @@ switch (args.shift()) {
   }
 
   case "order": {
-    perform_ordering();
+    // Must explicitly not do dry run
+    perform_ordering(args.shift() !== "false");
     break;
   }
 
