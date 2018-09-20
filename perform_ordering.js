@@ -11,7 +11,7 @@ const URLS = {
   choose_rest: "https://www.seamless.com/meals.m",
 };
 
-const TIME = "5:00 PM";
+const DEFAULT_TIME = "5:30 PM";
 
 module.exports = async (dry_run) => {
   const order_sets = extract_orders_and_names(require("./orders"));
@@ -68,7 +68,7 @@ const login_to_seamless = async (page, creds) => {
 const order_from_restaurant = async (page, restaurant, orders, names) => {
   await page.goto(URLS.choose_rest);
 
-  await page.select("#time", TIME).catch(() => {});
+  await page.select("#time", DEFAULT_TIME).catch(() => {});
   await page.click("tr.startorder a");
   await page.waitForNavigation();
 
