@@ -8,6 +8,7 @@ const test_inputs = [
   "alfred order chicken momo from newa",
   "alfred order chicken momo, chicken momo [large] from newa",
   "alfred order aquafina, cheese pizza (indee) [green peppers, chicken] from extreme pizza",
+  "alfred order chicken momo from newa at 5pm",
   "alfred forget",
 ];
 
@@ -45,6 +46,17 @@ const test_outputs = [
     },
   },
   {
+    command: "add_order",
+    name: test_name,
+    params: {
+      time: "5pm",
+      restaurant: "newa",
+      items: [
+        ["chicken momo", []],
+      ],
+    },
+  },
+  {
     command: "remove_order",
     name: test_name,
     params: {},
@@ -60,6 +72,10 @@ test("parses add order with one option", () => {
 });
 
 test("parses add order with multiple options", () => {
+  expect(parse_command(test_name, test_inputs[2])).toEqual(test_outputs[2]);
+});
+
+test("parses add order with a time", () => {
   expect(parse_command(test_name, test_inputs[2])).toEqual(test_outputs[2]);
 });
 

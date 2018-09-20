@@ -103,5 +103,7 @@ const render_dollars = (flt) => {
     return `$${flt_str}0`;
   } else if (pd_idx < flt_str.length - 3 && pd_idx > 0) {
     return `$${flt_str.substring(0, pd_idx + 3)}`;
+  } else {
+    return `$${flt_str}`;
   }
 };

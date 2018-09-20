@@ -5,7 +5,8 @@ const CMD_MAP = {
   "forget": "remove_order",
 };
 const CMD_REGEX = / .*/;
-const ORDER_REGEX = /order(.*)from/;
+const SPLIT_REGEX = /order (.*) from (.*) at (.*)/;
+const NO_TIME_REGEX = /order (.*) from (.*)/;
 const OPTIONS_REGEX = /\[(.*)\]/;
 
 /**
@@ -35,12 +36,11 @@ module.exports.parse_command = (name, input) => {
   switch (command) {
     case "add_order": {
       // Parse restaurant
-      const from_split = input.split(" from ");
-      params.restaurant = from_split.pop().trim();
+      const parsed = input.match(SPLIT_REGEX) || input.match(NO_TIME_REGEX);
+      params.restaurant = parsed[2];
+      params.time = parsed[3];
 
-      const order_str = input.match(ORDER_REGEX)[1];
-      const orders = split_outside_parens(order_str);
-      params.items = orders.map((order) => {
+      params.items = split_outside_parens(parsed[1]).map((order) => {
         const matched_options = order.match(OPTIONS_REGEX);
         if (matched_options) {
           const options = matched_options[1].split(",").map(x => x.trim());
