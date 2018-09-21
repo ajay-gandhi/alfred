@@ -3,6 +3,8 @@ const { parse_command } = require("./parse");
 const record_orders = require("./record_orders");
 const perform_ordering = require("./perform_ordering");
 
+const Users = require("./users");
+
 const args = process.argv.slice(2);
 
 switch (args.shift()) {
@@ -25,10 +27,8 @@ switch (args.shift()) {
   }
 
   case "user": {
-    const [name, phone] = args;
-    const users = fs.existsSync("data/users.json") ? JSON.parse(fs.readFileSync("data/users.json")) : {};
-    users[name] = { name, phone };
-    fs.writeFileSync("data/users.json", JSON.stringify(users));
+    const [username, name, phone] = args;
+    Users.add_user(username, name, phone);
   }
 
   default: {
