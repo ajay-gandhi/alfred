@@ -12,11 +12,9 @@ const OUTPUT_FILE = process.argv[2] || `${dirname}/data/menu_data.json`;
 
 const TIME = "8:00 PM";
 const FLOAT_REGEX = /[+-]?\d+(\.\d+)?/g;
-const TESTING = false;
 
 (async () => {
   const browser = await puppeteer.launch({
-    headless: !TESTING,
     defaultViewport: {
       width: 1200,
       height: 900,
@@ -48,9 +46,7 @@ const TESTING = false;
     console.log(`Writing to ${OUTPUT_FILE}`);
     fs.writeFileSync(OUTPUT_FILE, JSON.stringify(menu_data), "utf8");
 
-    if (!TESTING) {
-      await browser.close();
-    }
+    await browser.close();
   } catch (err) {
     console.log("Crashed with error", err);
   }
