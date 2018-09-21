@@ -1,7 +1,7 @@
 
 const puppeteer = require("puppeteer");
-const fs = require("fs");
-const { extract_orders_and_names } = require("./data_util");
+const Orders = require("./orders");
+const DataUtil = require("./data_util");
 
 const USERS = require("./data/users");
 const CREDS = require("./creds");
@@ -14,7 +14,7 @@ const URLS = {
 const DEFAULT_TIME = "5:30 PM";
 
 module.exports = async (dry_run) => {
-  const order_sets = extract_orders_and_names(require("./orders"));
+  const order_sets = extract_orders_and_names(Orders.get_orders());
 
   const browser = await puppeteer.launch({
     headless: false,
@@ -40,7 +40,7 @@ module.exports = async (dry_run) => {
   }
 
   if (!dry_run) {
-    fs.unlinkSync("data/orders.json");
+    Orders.clear_orders();
     await browser.close();
   }
 };
