@@ -26,9 +26,9 @@ switch (args.shift()) {
 
   case "user": {
     const [name, phone] = args;
-    const users = fs.existsSync("users.json") ? JSON.parse(fs.readFileSync("users.json")) : {};
+    const users = fs.existsSync("data/users.json") ? JSON.parse(fs.readFileSync("data/users.json")) : {};
     users[name] = { name, phone };
-    fs.writeFileSync("users.json", JSON.stringify(users));
+    fs.writeFileSync("data/users.json", JSON.stringify(users));
   }
 
   default: {

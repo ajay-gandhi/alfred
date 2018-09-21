@@ -3,7 +3,7 @@ const puppeteer = require("puppeteer");
 const fs = require("fs");
 const { extract_orders_and_names } = require("./data_util");
 
-const USERS = require("./users");
+const USERS = require("./data/users");
 const CREDS = require("./creds");
 
 const URLS = {
@@ -40,7 +40,7 @@ module.exports = async (dry_run) => {
   }
 
   if (!dry_run) {
-    fs.unlinkSync("orders.json");
+    fs.unlinkSync("data/orders.json");
     await browser.close();
   }
 };

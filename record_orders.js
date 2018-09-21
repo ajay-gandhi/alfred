@@ -2,7 +2,7 @@
 const fs = require("fs");
 const { find_restaurant_by_name, find_item_by_name } = require("./data_util");
 
-const all_orders = fs.existsSync("orders.json") ? JSON.parse(fs.readFileSync("orders.json")) : {};
+const all_orders = fs.existsSync("data/orders.json") ? JSON.parse(fs.readFileSync("data/orders.json")) : {};
 
 module.exports.add_order = (rest_input, items, name) => {
   // Convert restaurant to official name
@@ -17,7 +17,7 @@ module.exports.add_order = (rest_input, items, name) => {
     const item = find_item_by_name(rest_name, item_name);
     return [item.name, options];
   });
-  fs.writeFileSync("orders.json", JSON.stringify(all_orders));
+  fs.writeFileSync("data/orders.json", JSON.stringify(all_orders));
 
   // Compute total value of current order for this restaurant
   const { is_ambiguous, value } = calculate_order_value(rest_name);
@@ -47,10 +47,10 @@ module.exports.remove_order = (name) => {
   }
   if (Object.keys(all_orders[modified_rest]).length === 0) {
     delete all_orders[modified_rest];
-    fs.writeFileSync("orders.json", JSON.stringify(all_orders));
+    fs.writeFileSync("data/orders.json", JSON.stringify(all_orders));
     return [`No remaining orders for ${modified_rest}`];
   } else {
-    fs.writeFileSync("orders.json", JSON.stringify(all_orders));
+    fs.writeFileSync("data/orders.json", JSON.stringify(all_orders));
   }
 
   // Compute total value of current order for this restaurant
