@@ -4,6 +4,7 @@
   "description": "X",
   "main": "server.js",
   "dependencies": {
+    "fastify": "^1.11.2",
     "puppeteer": "^1.8.0"
   },
   "devDependencies": {

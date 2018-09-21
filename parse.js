@@ -1,9 +1,5 @@
 
 // Constants used in parsing
-const CMD_MAP = {
-  "order":  "add_order",
-  "forget": "remove_order",
-};
 const CMD_REGEX = / .*/;
 const SPLIT_REGEX = /order (.*) from (.*) at (.*)/;
 const NO_TIME_REGEX = /order (.*) from (.*)/;
@@ -22,19 +18,16 @@ const OPTIONS_REGEX = /\[(.*)\]/;
  * }
  *
  */
-module.exports.parse_command = (username, input) => {
+module.exports.parse_command = (input) => {
   // Remove alfred
   input = input.substring(input.indexOf(" ") + 1);
 
   // Parse command
-  const command = CMD_MAP[input.replace(CMD_REGEX, "").trim()];
-  if (!command) {
-    return { errors: ["Command not recognized"] };
-  }
+  const command = input.replace(CMD_REGEX, "").trim();
 
   const params = {};
   switch (command) {
-    case "add_order": {
+    case "order": {
       // Parse restaurant
       const parsed = input.match(SPLIT_REGEX) || input.match(NO_TIME_REGEX);
       params.restaurant = parsed[2];
@@ -55,20 +48,20 @@ module.exports.parse_command = (username, input) => {
       break;
     }
 
-    case "add_user": {
+    case "info": {
       const [name, phone] = input.substring(input.indexOf(" ") + 1).split(",");
       params.name = name.trim();
       params.phone = phone.trim();
     }
 
-    case "remove_order": {
+    // Don't have any extra params for this case
+    case "forget":
+    default:
       break;
-    }
   }
 
   return {
     command,
-    username,
     params,
   };
 };
