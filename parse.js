@@ -22,7 +22,7 @@ const OPTIONS_REGEX = /\[(.*)\]/;
  * }
  *
  */
-module.exports.parse_command = (name, input) => {
+module.exports.parse_command = (username, input) => {
   // Remove alfred
   input = input.substring(input.indexOf(" ") + 1);
 
@@ -54,6 +54,13 @@ module.exports.parse_command = (name, input) => {
       });
       break;
     }
+
+    case "add_user": {
+      const [name, phone] = input.substring(input.indexOf(" ") + 1).split(",");
+      params.name = name.trim();
+      params.phone = phone.trim();
+    }
+
     case "remove_order": {
       break;
     }
@@ -61,7 +68,7 @@ module.exports.parse_command = (name, input) => {
 
   return {
     command,
-    name,
+    username,
     params,
   };
 };
