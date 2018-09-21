@@ -1,9 +1,9 @@
 
 const puppeteer = require("puppeteer");
 const Orders = require("./orders");
+const Users = require("./users");
 const DataUtil = require("./data_util");
 
-const USERS = require("./data/users");
 const CREDS = require("./creds");
 
 const URLS = {
@@ -63,9 +63,9 @@ const login_to_seamless = async (page, creds) => {
 
 /**
  * Given a page with a logged-in status, this function will submit an order
- * at the given restaurant with the given items for the given names.
+ * at the given restaurant with the given items for the given usernames.
  */
-const order_from_restaurant = async (page, restaurant, orders, names) => {
+const order_from_restaurant = async (page, restaurant, orders, usernames) => {
   await page.goto(URLS.choose_rest);
 
   await page.select("#time", DEFAULT_TIME).catch(() => {});
@@ -84,11 +84,11 @@ const order_from_restaurant = async (page, restaurant, orders, names) => {
 
   // Do the rest!
   await fill_orders(page, orders);
-  await fill_names(page, names);
+  await fill_names(page, usernames);
 
-  // Fill phone number
-  // For now, just do this based on who we have in users.json
-  const phone_number = names.map(n => n.join(" ")).reduce((memo, n) => USERS[n] ? USERS[n].phone : memo, false);
+  // Fill [random] phone number
+  const phone_numbers = usernames.map(u => Users.get_user(n).phone);
+  const phone_number = phone_numbers[Math.floor(Math.random() * phone_numbers.length)];
   await page.$eval("input#phoneNumber", e => e.value = "");
   await page.click("input#phoneNumber");
   await page.keyboard.type(phone_number);
@@ -153,18 +153,20 @@ const fill_orders = async (page, orders) => {
 };
 
 /**
- * Given a page at the checkout stage, this function will enter the given names.
- * The names parameter should be an array of tuples, where each tuple contains
- * the first and last names of all those involved in the order.
+ * Given a page at the checkout stage, this function will enter the given
+ * usernames. The names parameter should be an array of tuples, where each
+ * tuple contains the first and last names of all those involved in the order.
  */
-const fill_names = async (page, names) => {
+const fill_names = async (page, usernames) => {
   // Clear existing names first
   while (await page.$("td.delete a")) {
     await page.click("td.delete a");
     await page.waitForNavigation();
   }
 
-  for (const name of names) {
+  for (const username of usernames) {
+    const name = Users.get_user(username).name.split(" ");
+
     await page.click("p#RecentAllocations a");
     await page.click("input#FirstName");
     await page.keyboard.type(name[0]);

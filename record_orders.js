@@ -2,7 +2,7 @@
 const Orders = require("./orders");
 const Menu = require("./menu");
 
-module.exports.add_order = (rest_input, items, name) => {
+module.exports.add_order = (rest_input, items, username) => {
   // Convert restaurant to official name
   const restaurant_data = Menu.find_restaurant_by_name(rest_input);
   const restaurant = restaurant_data.name;
@@ -13,7 +13,7 @@ module.exports.add_order = (rest_input, items, name) => {
     return [item.name, options];
   });
 
-  Orders.add_order(restaurant, name, items);
+  Orders.add_order(restaurant, username, items);
 };
 
 module.exports.remove_order = Orders.remove_order;

@@ -7,15 +7,22 @@
  * perform_orders
  */
 module.exports.extract_orders_and_names = (data) => {
-  const new_data = [];
+  const new_data = {};
 
-  const restaurants = Object.keys(data);
-  for (const restaurant of restaurants) {
-    const order_set = { restaurant };
-    order_set.names = Object.keys(data[restaurant]).map(n => n.split(" "));
-    order_set.orders = Object.keys(data[restaurant]).map(n => data[restaurant][n]).reduce((m, l) => m.concat(l), []);
-    new_data.push(order_set);
+  const usernames = Object.keys(data);
+  for (const username of usernames) {
+    const restaurant = data[username].restaurant;
+    if (!new_data[restaurant]) {
+      new_data[restaurant] = {
+        restaurant,
+        names: [],
+        items: [],
+      };
+    }
+
+    new_data[restaurant].names.push(username);
+    new_data[restaurant].items = new_data[restaurant].items.concat(data[username].items);
   }
 
-  return new_data;
+  return Object.values(new_data);
 };
