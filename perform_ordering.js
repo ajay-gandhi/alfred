@@ -18,6 +18,7 @@ module.exports = async (dry_run) => {
 
   const browser = await puppeteer.launch({
     headless: false,
+    executablePath: "/usr/bin/chromium-browser",
     defaultViewport: {
       width: 1200,
       height: 900,

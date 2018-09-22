@@ -15,6 +15,7 @@ const FLOAT_REGEX = /[+-]?\d+(\.\d+)?/g;
 
 (async () => {
   const browser = await puppeteer.launch({
+    executablePath: "/usr/bin/chromium-browser",
     defaultViewport: {
       width: 1200,
       height: 900,
@@ -45,11 +46,10 @@ const FLOAT_REGEX = /[+-]?\d+(\.\d+)?/g;
 
     console.log(`Writing to ${OUTPUT_FILE}`);
     fs.writeFileSync(OUTPUT_FILE, JSON.stringify(menu_data), "utf8");
-
-    await browser.close();
   } catch (err) {
     console.log("Crashed with error", err);
   }
+  await browser.close();
 })();
 
 /**
