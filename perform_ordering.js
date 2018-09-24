@@ -30,9 +30,11 @@ module.exports = async (dry_run) => {
     await login_to_seamless(page, CREDS);
 
     // Should be logged in now
-    // await order_from_restaurant(page, RESTAURANT, ORDERS, NAMES);
     for (const order_set of order_sets) {
-      await order_from_restaurant(page, order_set.restaurant, order_set.orders, order_set.names);
+      await order_from_restaurant(page, order_set.restaurant, order_set.orders, order_set.names, dry_run);
+
+      // Give seamless a break
+      await page.waitFor(5000);
     }
 
     // Clear orders
@@ -66,7 +68,7 @@ const login_to_seamless = async (page, creds) => {
  * Given a page with a logged-in status, this function will submit an order
  * at the given restaurant with the given items for the given usernames.
  */
-const order_from_restaurant = async (page, restaurant, orders, usernames) => {
+const order_from_restaurant = async (page, restaurant, orders, usernames, dry_run) => {
   await page.goto(URLS.choose_rest);
 
   await page.select("#time", DEFAULT_TIME).catch(() => {});
