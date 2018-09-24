@@ -10,7 +10,7 @@ const URLS = {
 
 const OUTPUT_FILE = process.argv[2] || `${__dirname}/data/menu_data.json`;
 
-const TIME = "8:00 PM";
+const TIME = "7:00 PM";
 const FLOAT_REGEX = /[+-]?\d+(\.\d+)?/g;
 
 (async () => {
@@ -26,7 +26,6 @@ const FLOAT_REGEX = /[+-]?\d+(\.\d+)?/g;
   try {
     await login_to_seamless(page, creds);
     console.log("Logged in");
-    // Should be logged in now
 
     await page.select("#time", TIME).catch(() => {});
     await page.click("tr.startorder a");
@@ -39,8 +38,15 @@ const FLOAT_REGEX = /[+-]?\d+(\.\d+)?/g;
     for (let i = 0; i < num_restaurants; i++) {
       const data = await scrape_menu(page, i);
       if (data) {
-        console.log(`  Scraped "${data.name}"`);
         menu_data[data.name] = data;
+        console.log("done");
+      }
+
+      // Give seamless a break every 5 restaurants smh
+      if (i % 5 == 4) {
+        process.stdout.write("Taking a break...");
+        await page.waitFor(5000);
+        console.log("resuming!\n");
       }
     }
 
@@ -83,12 +89,15 @@ const scrape_menu = async (page, index) => {
   // We've scraped all restaurants
   if (index >= rest_links.length) return false;
 
-  await rest_links[index].click();
-  await page.waitForNavigation();
+  // Click and wait fails on RPI
+  const url = await page.evaluate(e => e.href, rest_links[index]);
+  await page.goto(url);
 
   // Get restaurant metadata
   const restaurant_info = await page.$("div#restaurantinfo");
   data.name = await page.evaluate(e => e.querySelector("h1").innerText, restaurant_info);
+  process.stdout.write(`  Scraping "${data.name}"...`);
+
   const description = await page.evaluate(e => e.innerText.split("\n").pop(), restaurant_info);
   data.delivery_min = parseFloat(description.match(FLOAT_REGEX)[0]);
 
