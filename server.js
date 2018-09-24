@@ -1,28 +1,29 @@
 
 const fastify = require("fastify")({ logger: true });
 
+const { parse_command } = require("./parse");
 const RecordOrders = require("./record_orders");
 const Users = require("./users");
 const { slackIncomingToken } = require("./creds");
 
 const PORT = process.argv[2] || 9002;
 
+fastify.register(require("fastify-formbody"));
+fastify.register(require("fastify-static"), {
+  root: `${__dirname}/confirmations`,
+  prefix: "/confirmations/",
+});
+
 fastify.route({
   method: "POST",
   url: "/command",
-  schema: {
-    body: {
-      type: "object",
-      properties: {
-        text: { type: "string" },
-        user_name: { type: "string" },
-        token: { type: "string" },
-      },
-    },
-  },
   handler: async (req, res) => {
     if (req.body.token !== slackIncomingToken) {
       console.log("Request does not have proper secret");
+      return {};
+    }
+    if (!req.body.text || !req.body.user_name) {
+      console.log("Request is missing username or text");
       return {};
     }
 
@@ -31,7 +32,7 @@ fastify.route({
 
     switch (parsed.command) {
       case "order":
-        RecordOrders.add_order(parsed.restaurant, parsed.items, username);
+        RecordOrders.add_order(parsed.params.restaurant, parsed.params.items, username);
         break;
 
       case "forget":
@@ -39,7 +40,7 @@ fastify.route({
         break;
 
       case "info":
-        Users.add_user(username, parsed.name, parsed.phone);
+        Users.add_user(username, parsed.params.name, parsed.params.phone);
         break;
 
       default:
@@ -53,7 +54,6 @@ fastify.route({
 (async () => {
   try {
     await fastify.listen(PORT);
-    fastify.log.info(`server listening on ${fastify.server.address().port}`);
   } catch (err) {
     fastify.log.error(err);
     process.exit(1);
