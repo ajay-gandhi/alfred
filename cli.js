@@ -9,14 +9,15 @@ const args = process.argv.slice(2);
 
 switch (args.shift()) {
   case "add": {
-    const cmd = parse_command(args.shift(), args.join(" "));
-    console.log(record_orders[cmd.command](cmd.params.restaurant, cmd.params.items, cmd.name));
+    const username = args.shift();
+    const cmd = parse_command(args.join(" "));
+    console.log(record_orders.add_order(cmd.params.restaurant, cmd.params.items, username));
     break;
   }
 
   case "forget": {
     const cmd = parse_command(args.shift(), args.join(" "));
-    console.log(record_orders[cmd.command](cmd.name));
+    console.log(record_orders.remove_order(cmd.name));
     break;
   }
 
@@ -29,6 +30,7 @@ switch (args.shift()) {
   case "user": {
     const [username, name, phone] = args;
     Users.add_user(username, name, phone);
+    break;
   }
 
   default: {
