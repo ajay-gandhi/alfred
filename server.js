@@ -32,22 +32,24 @@ fastify.route({
 
     switch (parsed.command) {
       case "order":
-        RecordOrders.add_order(parsed.params.restaurant, parsed.params.items, username);
+        const order = RecordOrders.add_order(parsed.params.restaurant, parsed.params.items, username);
+        const items_list = order.items.map(i => i[0]).join(", ");
+        return { text: `Added ${items_list} from ${order.restaurant}` };
         break;
 
       case "forget":
-        RecordOrders.remove_order(username);
+        const order = RecordOrders.remove_order(username);
+        return { text: `Removed order from ${order.restaurant}` };
         break;
 
       case "info":
         Users.add_user(username, parsed.params.name, parsed.params.phone);
+        return { text: `Added information for ${username}` };
         break;
 
       default:
         return {};
     }
-
-    return { hello: "world" };
   },
 });
 

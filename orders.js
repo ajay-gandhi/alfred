@@ -16,8 +16,13 @@ module.exports.add_order = (restaurant, username, items) => {
   write();
 };
 module.exports.remove_order = (username) => {
-  if (orders[username]) delete orders[username];
+  let removed_order;
+  if (orders[username]) {
+    removed_order = orders[username];
+    delete orders[username];
+  }
   write();
+  return removed_order;
 };
 module.exports.clear_orders = () => {
   orders = {};

@@ -14,7 +14,7 @@ module.exports.add_order = (rest_input, items, username) => {
   });
 
   Orders.add_order(restaurant, username, items);
-  return true;
+  return { restaurant, items };
 };
 
 module.exports.remove_order = Orders.remove_order;
