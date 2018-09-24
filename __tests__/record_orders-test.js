@@ -29,14 +29,14 @@ const test_inputs = [
 
 const test_outputs = [
   {
-    "Ajay Gandhi": {"items": [["tempura combo", []], ["soda", ["sprite"]]], "restaurant": "Bamboo"},
+    "Ajay Gandhi": {"items": [["Tempura Combo", []], ["Can Soda", ["sprite"]]], "restaurant": "Bamboo"},
   },
   {
-    "Ajay Gandhi": {"items": [["tempura combo", []], ["soda", ["sprite"]]], "restaurant": "Bamboo"},
-    "Bionic Barry": {"items": [["shioyaki", []]], "restaurant": "Bamboo"},
+    "Ajay Gandhi": {"items": [["Tempura Combo", []], ["Can Soda", ["sprite"]]], "restaurant": "Bamboo"},
+    "Bionic Barry": {"items": [["Shioyaki a la Carte", []]], "restaurant": "Bamboo"},
   },
   {
-    "Bionic Barry": {"items": [["shioyaki", []]], "restaurant": "Bamboo"},
+    "Bionic Barry": {"items": [["Shioyaki a la Carte", []]], "restaurant": "Bamboo"},
   },
   {},
 ];

@@ -10,12 +10,15 @@ module.exports.add_order = (rest_input, items, username) => {
   // Add items to order while completing names
   const corrected_items = items.map(([ item_name, options ]) => {
     const item = Menu.find_item_by_name(restaurant, item_name);
-    return [item.name, options];
+    return [friendlize_item(item.name), options];
   });
 
-  Orders.add_order(restaurant, username, items);
-  return { restaurant, items };
+  Orders.add_order(restaurant, username, corrected_items);
+
+  return { restaurant, corrected_items };
 };
 
 module.exports.remove_order = Orders.remove_order;
 
+// Remove leading "X. "
+const friendlize_item = i => i.replace(/^[\w]{1,3}\. /, "");
