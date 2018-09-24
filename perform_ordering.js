@@ -8,16 +8,15 @@ const CREDS = require("./creds");
 
 const URLS = {
   login: "https://www.seamless.com/corporate/login/",
-  choose_rest: "https://www.seamless.com/meals.m",
+  choose_time: "https://www.seamless.com/meals.m",
 };
 
 const DEFAULT_TIME = "5:30 PM";
 
 module.exports = async (dry_run) => {
-  const order_sets = extract_orders_and_names(Orders.get_orders());
+  const order_sets = DataUtil.extract_orders_and_names(Orders.get_orders());
 
   const browser = await puppeteer.launch({
-    headless: false,
     executablePath: "/usr/bin/chromium-browser",
     defaultViewport: {
       width: 1200,
@@ -28,10 +27,11 @@ module.exports = async (dry_run) => {
 
   try {
     await login_to_seamless(page, CREDS);
+    console.log("Logged in");
 
     // Should be logged in now
     for (const order_set of order_sets) {
-      await order_from_restaurant(page, order_set.restaurant, order_set.orders, order_set.names, dry_run);
+      await order_from_restaurant(page, order_set.restaurant, order_set.items, order_set.names, dry_run);
 
       // Give seamless a break
       await page.waitFor(5000);
@@ -44,8 +44,8 @@ module.exports = async (dry_run) => {
 
   if (!dry_run) {
     Orders.clear_orders();
-    await browser.close();
   }
+  await browser.close();
 };
 
 /**
@@ -69,7 +69,7 @@ const login_to_seamless = async (page, creds) => {
  * at the given restaurant with the given items for the given usernames.
  */
 const order_from_restaurant = async (page, restaurant, orders, usernames, dry_run) => {
-  await page.goto(URLS.choose_rest);
+  await page.goto(URLS.choose_time);
 
   await page.select("#time", DEFAULT_TIME).catch(() => {});
   await page.click("tr.startorder a");
@@ -90,21 +90,20 @@ const order_from_restaurant = async (page, restaurant, orders, usernames, dry_ru
   await fill_names(page, usernames);
 
   // Fill [random] phone number
-  const phone_numbers = usernames.map(u => Users.get_user(n).phone);
+  const phone_numbers = usernames.map(u => Users.get_user(u).phone);
   const phone_number = phone_numbers[Math.floor(Math.random() * phone_numbers.length)];
   await page.$eval("input#phoneNumber", e => e.value = "");
   await page.click("input#phoneNumber");
   await page.keyboard.type(phone_number);
 
   // Submit order
+  const confirmation_path = `${__dirname}/confirmations/${sanitize_filename(restaurant)}.pdf`;
   if (dry_run) {
-    const confirmation_path = `${dirname}/confirmations/${sanitize_filename(restaurant)}.pdf`;
-    await page.pdf(confirmation_path);
+    await page.pdf({ path: confirmation_path });
     console.log(`Simulated order from ${restaurant}, confirmation is in ${confirmation_path}`);
   } else {
     await page.click("a.findfoodbutton");
     await page.waitForNavigation();
-    const confirmation_path = `${dirname}/confirmations/${sanitize_filename(restaurant)}.pdf`;
     await page.pdf({ path: confirmation_path });
     console.log(`Ordered from ${restaurant}, confirmation is in ${confirmation_path}`);
   }
@@ -150,8 +149,9 @@ const fill_orders = async (page, orders) => {
     await page.click("a#a1");
     await page.waitFor(2000);
   }
+  await page.waitFor(2000);
 
-  await page.click("a.findfoodbutton");
+  await page.evaluate(e => e.submit(), await page.$("form#pageForm"));
   await page.waitForNavigation();
 };
 
@@ -170,7 +170,8 @@ const fill_names = async (page, usernames) => {
   for (const username of usernames) {
     const name = Users.get_user(username).name.split(" ");
 
-    await page.click("p#RecentAllocations a");
+    page.evaluate(() => toggleAddUser(true, true));
+    await page.waitFor(1000);
     await page.click("input#FirstName");
     await page.keyboard.type(name[0]);
 
@@ -186,4 +187,4 @@ const fill_names = async (page, usernames) => {
  * Converts a restaurant name to one that's nice for the FS
  */
 const NOT_ALPHAN_REGEX = /[\W_]+/g;
-const sanitize_filename = n => n.replace(NOT_ALPHAN_REGEX, "_").replace(/^_+|_+$/g, "");
+const sanitize_filename = n => n.replace(NOT_ALPHAN_REGEX, "_").replace(/^_+|_+$/g, "").toLowerCase();
