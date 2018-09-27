@@ -14,7 +14,10 @@ const URLS = {
 const DEFAULT_TIME = "5:30 PM";
 
 module.exports = async (dry_run) => {
-  const order_sets = DataUtil.extract_orders_and_names(Orders.get_orders());
+  const orders = Orders.get_orders();
+  if (Object.keys(orders).length === 0) return;
+
+  const order_sets = DataUtil.extract_orders_and_names(orders);
 
   const browser = await puppeteer.launch({
     executablePath: "/usr/bin/chromium-browser",
