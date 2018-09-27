@@ -1,12 +1,21 @@
+# Alfred
+
+> Order food on Seamless corporate from Slack
+
+Alfred is a little server that takes orders through a Slack webhook integration,
+and places them on Seamless corporate.
 
 ## Todos
 
 Things to do, in order of urgency
 
+* Clean up / standardize style (all camel case)
+  * Document individual files and confusing functions
 * Implement time of delivery
 * Add error catching and understanding
   * E.g. if restaurant click fails, it's probably closed at that time
 * Implement returning confirmation page
+* Implement weekly scraping
 * Implement NLP
 
 ## Layout
@@ -102,3 +111,8 @@ The last step is to tell Alfred to actually perform the order at a given time ea
 # This inputs the orders at 3:30pm (15:30) each weekday
 # The argument to cli.js prevents the order input from being a "dry run"
 30 15 * * 1-5 node $HOME/alfred4.0/cli.js false
+```
+
+## Credits
+
+* Format of Slack interactions taken from [lil-delhi-alfred](https://github.com/mithunm93/lil-delhi-alfred)
