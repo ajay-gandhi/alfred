@@ -1,7 +1,7 @@
 
 const Parser = require("./parser");
 const Recorder = require("./recorder");
-const perform_ordering = require("./perform_ordering");
+const Perform = require("./perform");
 
 const Users = require("./users");
 
@@ -22,7 +22,7 @@ switch (args.shift()) {
 
   case "order": {
     // Must explicitly not do dry run
-    perform_ordering(args.shift() !== "false");
+    Perform.do(args.shift() !== "false");
     break;
   }
 

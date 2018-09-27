@@ -13,7 +13,7 @@ const URLS = {
 
 const DEFAULT_TIME = "5:30 PM";
 
-module.exports = async (dryRun) => {
+module.exports.do = async (dryRun) => {
   const orders = Orders.getOrders();
   if (Object.keys(orders).length === 0) return;
 
