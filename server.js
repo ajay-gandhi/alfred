@@ -7,7 +7,7 @@ const router = new (require("koa-router"))();
 const Logger = require("../util/logger");
 
 const { parse_command } = require("./parse");
-const RecordOrders = require("./record_orders");
+const Recorder = require("./recorder");
 const Users = require("./users");
 const { slackIncomingToken } = require("./creds");
 
@@ -40,13 +40,13 @@ router.post("/command", (ctx, next) => {
   switch (parsed.command) {
     case "order": {
       const order = RecordOrders.addOrder(parsed.params.restaurant, parsed.params.items, username);
-      const items_list = order.corrected_items.map(i => i[0]).join(", ");
-      ctx.body = { text: `Added ${items_list} from ${order.restaurant}` };
+      const itemsList = order.correctedItems.map(i => i[0]).join(", ");
+      ctx.body = { text: `Added ${itemsList} from ${order.restaurant}` };
       break;
     }
 
     case "forget": {
-      const order = RecordOrders.remove_order(username);
+      const order = RecordOrders.forgetOrder(username);
       ctx.body = { text: `Removed order from ${order.restaurant}` };
       break;
     }

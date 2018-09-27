@@ -8,16 +8,16 @@ const CREDS = require("./creds");
 
 const URLS = {
   login: "https://www.seamless.com/corporate/login/",
-  choose_time: "https://www.seamless.com/meals.m",
+  chooseTime: "https://www.seamless.com/meals.m",
 };
 
 const DEFAULT_TIME = "5:30 PM";
 
-module.exports = async (dry_run) => {
+module.exports = async (dryRun) => {
   const orders = Orders.getOrders();
   if (Object.keys(orders).length === 0) return;
 
-  const order_sets = DataUtil.extract_orders_and_names(orders);
+  const orderSets = DataUtil.extract_orders_and_names(orders);
 
   const browser = await puppeteer.launch({
     executablePath: "/usr/bin/chromium-browser",
@@ -29,12 +29,12 @@ module.exports = async (dry_run) => {
   const page = await browser.newPage();
 
   try {
-    await login_to_seamless(page, CREDS);
+    await loginToSeamless(page, CREDS);
     console.log("Logged in");
 
     // Should be logged in now
-    for (const order_set of order_sets) {
-      await order_from_restaurant(page, order_set.restaurant, order_set.items, order_set.names, dry_run);
+    for (const orderSet of orderSets) {
+      await orderFromRestaurant(page, orderSet.restaurant, orderSet.items, orderSet.names, dryRun);
 
       // Give seamless a break
       await page.waitFor(5000);
@@ -45,8 +45,8 @@ module.exports = async (dry_run) => {
     console.log("Crashed with error", err);
   }
 
-  if (!dry_run) {
-    Orders.clear_orders();
+  if (!dryRun) {
+    Orders.clearOrders();
   }
   await browser.close();
 };
@@ -54,7 +54,7 @@ module.exports = async (dry_run) => {
 /**
  * Given a puppeteer page, logs into Seamless with the given credentials.
  */
-const login_to_seamless = async (page, creds) => {
+const loginToSeamless = async (page, creds) => {
   await page.goto(URLS.login);
 
   await page.click("input#username");
@@ -71,44 +71,44 @@ const login_to_seamless = async (page, creds) => {
  * Given a page with a logged-in status, this function will submit an order
  * at the given restaurant with the given items for the given usernames.
  */
-const order_from_restaurant = async (page, restaurant, orders, usernames, dry_run) => {
-  await page.goto(URLS.choose_time);
+const orderFromRestaurant = async (page, restaurant, orders, usernames, dryRun) => {
+  await page.goto(URLS.chooseTime);
 
   await page.select("#time", DEFAULT_TIME).catch(() => {});
   await page.click("tr.startorder a");
   await page.waitForNavigation();
 
   // Choose restaurant
-  const rest_links = await page.$$("a[name=\"vendorLocation\"]");
-  let our_rest;
-  for (const anchor of rest_links) {
+  const restLinks = await page.$$("a[name=\"vendorLocation\"]");
+  let ourRest;
+  for (const anchor of restLinks) {
     const text = await page.evaluate(e => e.innerText, anchor);
-    if (text.includes(restaurant)) our_rest = anchor;
+    if (text.includes(restaurant)) ourRest = anchor;
   }
-  await our_rest.click();
+  await ourRest.click();
   await page.waitForNavigation();
 
   // Do the rest!
-  await fill_orders(page, orders);
-  await fill_names(page, usernames);
+  await fillOrders(page, orders);
+  await fillNames(page, usernames);
 
   // Fill [random] phone number
-  const phone_numbers = usernames.map(u => Users.getUser(u).phone);
-  const phone_number = phone_numbers[Math.floor(Math.random() * phone_numbers.length)];
+  const phoneNumbers = usernames.map(u => Users.getUser(u).phone);
+  const phoneNumber = phoneNumbers[Math.floor(Math.random() * phoneNumbers.length)];
   await page.$eval("input#phoneNumber", e => e.value = "");
   await page.click("input#phoneNumber");
-  await page.keyboard.type(phone_number);
+  await page.keyboard.type(phoneNumber);
 
   // Submit order
-  const confirmation_path = `${__dirname}/confirmations/${sanitize_filename(restaurant)}.pdf`;
-  if (dry_run) {
-    await page.pdf({ path: confirmation_path });
-    console.log(`Simulated order from ${restaurant}, confirmation is in ${confirmation_path}`);
+  const confirmationPath = `${__dirname}/confirmations/${sanitizeFilename(restaurant)}.pdf`;
+  if (dryRun) {
+    await page.pdf({ path: confirmationPath });
+    console.log(`Simulated order from ${restaurant}, confirmation is in ${confirmationPath}`);
   } else {
     await page.click("a.findfoodbutton");
     await page.waitForNavigation();
-    await page.pdf({ path: confirmation_path });
-    console.log(`Ordered from ${restaurant}, confirmation is in ${confirmation_path}`);
+    await page.pdf({ path: confirmationPath });
+    console.log(`Ordered from ${restaurant}, confirmation is in ${confirmationPath}`);
   }
 };
 
@@ -128,24 +128,24 @@ const order_from_restaurant = async (page, restaurant, orders, usernames, dry_ru
  *     ],
  *   ]
  */
-const fill_orders = async (page, orders) => {
+const fillOrders = async (page, orders) => {
   for (const [item, options] of orders) {
     // Click menu item
-    const item_links = await page.$$("a[name=\"product\"]");
-    let our_item;
-    for (const anchor of item_links) {
+    const itemLinks = await page.$$("a[name=\"product\"]");
+    let ourItem;
+    for (const anchor of itemLinks) {
       const text = await page.evaluate(e => e.innerText.toLowerCase(), anchor);
-      if (text.includes(item.toLowerCase())) our_item = anchor;
+      if (text.includes(item.toLowerCase())) ourItem = anchor;
     }
-    await our_item.click();
+    await ourItem.click();
     await page.waitFor(1500);
 
     // Select options
-    const option_links = await page.$$("li label");
-    for (const input of option_links) {
+    const optionLinks = await page.$$("li label");
+    for (const input of optionLinks) {
       const text = await page.evaluate(e => e.innerText.toLowerCase(), input);
-      const is_selected = options.reduce((memo, o) => memo || text.includes(o.toLowerCase()), false);
-      if (is_selected) await input.click();
+      const isSelected = options.reduce((memo, o) => memo || text.includes(o.toLowerCase()), false);
+      if (isSelected) await input.click();
     }
 
     // Click add to order
@@ -163,7 +163,7 @@ const fill_orders = async (page, orders) => {
  * usernames. The names parameter should be an array of tuples, where each
  * tuple contains the first and last names of all those involved in the order.
  */
-const fill_names = async (page, usernames) => {
+const fillNames = async (page, usernames) => {
   // Clear existing names first
   while (await page.$("td.delete a")) {
     await page.click("td.delete a");
@@ -190,4 +190,4 @@ const fill_names = async (page, usernames) => {
  * Converts a restaurant name to one that's nice for the FS
  */
 const NOT_ALPHAN_REGEX = /[\W_]+/g;
-const sanitize_filename = n => n.replace(NOT_ALPHAN_REGEX, "_").replace(/^_+|_+$/g, "").toLowerCase();
+const sanitizeFilename = n => n.replace(NOT_ALPHAN_REGEX, "_").replace(/^_+|_+$/g, "").toLowerCase();

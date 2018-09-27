@@ -1,6 +1,6 @@
 
 const { parse_command } = require("./parse");
-const record_orders = require("./record_orders");
+const Recorder = require("./recorder");
 const perform_ordering = require("./perform_ordering");
 
 const Users = require("./users");
@@ -11,13 +11,13 @@ switch (args.shift()) {
   case "add": {
     const username = args.shift();
     const cmd = parse_command(args.join(" "));
-    console.log(record_orders.addOrder(cmd.params.restaurant, cmd.params.items, username));
+    console.log(Recorder.recordOrder(cmd.params.restaurant, cmd.params.items, username));
     break;
   }
 
   case "forget": {
     const cmd = parse_command(args.shift(), args.join(" "));
-    console.log(record_orders.removeOrder(cmd.name));
+    console.log(Recorder.forgetOrder(cmd.name));
     break;
   }
 

@@ -1,9 +1,7 @@
-// Tests for record_orders.js
-
-const { addOrder, removeOrder } = require("../record_orders");
+// Tests for recorder.js
+const Recorder = require("../recorder");
 const Orders = require("../orders");
 
-// Try adding orders
 const testInputs = [
   {
     // Addition
@@ -42,22 +40,22 @@ const testOutputs = [
 ];
 
 test("adds to new restaurant", () => {
-  addOrder(testInputs[0].restaurant, testInputs[0].order, testInputs[0].name);
+  Recorder.recordOrder(testInputs[0].restaurant, testInputs[0].order, testInputs[0].name);
   expect(Orders.getOrders()).toEqual(testOutputs[0]);
 });
 
 test("adds to existing restaurant", () => {
-  addOrder(testInputs[1].restaurant, testInputs[1].order, testInputs[1].name);
+  Recorder.recordOrder(testInputs[1].restaurant, testInputs[1].order, testInputs[1].name);
   expect(Orders.getOrders()).toEqual(testOutputs[1]);
 });
 
 test("remove order", () => {
-  removeOrder(testInputs[2].name);
+  Recorder.forgetOrder(testInputs[2].name);
   expect(Orders.getOrders()).toEqual(testOutputs[2]);
 });
 
 test("remove last order", () => {
-  removeOrder(testInputs[3].name);
+  Recorder.forgetOrder(testInputs[3].name);
   expect(Orders.getOrders()).toEqual(testOutputs[3]);
 });
 
