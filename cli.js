@@ -16,8 +16,7 @@ switch (args.shift()) {
   }
 
   case "forget": {
-    const cmd = Parser.parse(args.shift(), args.join(" "));
-    console.log(Recorder.forgetOrder(cmd.name));
+    console.log(Recorder.forgetOrder(args.shift()));
     break;
   }
 
@@ -34,7 +33,11 @@ switch (args.shift()) {
   }
 
   default: {
-    console.log("Command not recognized");
+    console.log("Command not recognized, printing help. All args required:");
+    console.log("  add    [username] alfred order ___ from ___");
+    console.log("  forget [username]");
+    console.log("  order  [dry_run]");
+    console.log("  user   [username] [name] [phone]");
   }
 }
 
