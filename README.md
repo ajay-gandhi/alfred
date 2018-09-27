@@ -38,7 +38,9 @@ and is triggered by a cronjob on my server at a fixed time each day.
 1. `Cronjob` At 5:30pm each weekday, a cronjob wakes up
 2. `[cli.js]` The cronjob runs the CLI with the command order
 3. `[perform.js]` The data files persisted earlier are read to input the order on Seamless
-4. `[notify.js]` *In progress* A message is sent to Slack containing links to confirmations of orders
+4. `[util/slack.js]` A message is sent to Slack containing links to confirmations of orders
+
+Another asynchronous event is the changing of daily passwords. This is to protect the confirmation PDFs, which can contain sensitive information. A cronjob runs `util/generate_pw.js` every morning, and basic HTTP auth with the new password is required using `koa_confirmation_middleware.js`. The new password is sent to Slack when the orders are put in.
 
 ## Getting started
 
