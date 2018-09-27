@@ -40,7 +40,7 @@ router.post("/command", (ctx, next) => {
   switch (parsed.command) {
     case "order": {
       const order = RecordOrders.add_order(parsed.params.restaurant, parsed.params.items, username);
-      const items_list = order.items.map(i => i[0]).join(", ");
+      const items_list = order.corrected_items.map(i => i[0]).join(", ");
       ctx.body = { text: `Added ${items_list} from ${order.restaurant}` };
       break;
     }
