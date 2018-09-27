@@ -40,6 +40,7 @@ router.post("/command", (ctx, next) => {
 
   switch (parsed.command) {
     case "order": {
+      if (isLate()) return ctx.body = { text: "Alfred has already ordered for today." };
       const order = Recorder.addOrder(parsed.params.restaurant, parsed.params.items, username);
       const itemsList = order.correctedItems.map(i => i[0]).join(", ");
       ctx.body = { text: `Added ${itemsList} from ${order.restaurant}` };
@@ -47,6 +48,7 @@ router.post("/command", (ctx, next) => {
     }
 
     case "forget": {
+      if (isLate()) return ctx.body = { text: "Alfred has already ordered for today." };
       const order = Recorder.forgetOrder(username);
       ctx.body = { text: `Removed order from ${order.restaurant}` };
       break;
@@ -73,6 +75,8 @@ app.use((ctx) => {
   ctx.body = JSON.stringify(ctx.body);
 });
 
+/************************** Initialize HTTPS server ***************************/
+
 const httpsOpts = {
   key: fs.readFileSync(`${__dirname}/privkey.pem`).toString().trim(),
   cert: fs.readFileSync(`${__dirname}/fullchain.pem`).toString().trim(),
@@ -81,7 +85,16 @@ https.createServer(httpsOpts, app.callback()).listen(PORT, () => {
   LOG.log(`Server listening on port ${PORT}`);
 });
 
-/** Unencrypted server **/
+/********************************** Helpers ***********************************/
+
+// Returns true if it is past 3:30pm
+const isLate = () => {
+  const now = new Date();
+  return now.getHours() > 15 || (now.getHours() > 14 && now.getMinutes() > 30)
+};
+
+/***************************** Unencrypted server *****************************/
+
 const http = require("http");
 const unencryptedApp = new Koa();
 unencryptedApp.use(require("koa-static")(`${__dirname}/public`, { hidden: true }));
