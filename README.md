@@ -11,8 +11,6 @@ Things to do, _almost_ in order of urgency
 
 * Implement stats
 * Implement adding tip to reach minimum
-* Add error catching and understanding
-  * E.g. if restaurant click fails, it's probably closed at that time
 * Implement time of delivery
 * Implement confirmation at 3pm
 * Implement NLP

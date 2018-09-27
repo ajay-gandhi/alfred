@@ -34,6 +34,7 @@ module.exports.sendFinishedMessage = (parts) => {
       attachment.text = `${part.user} will receive the call.`;
     } else {
       attachment.title = `${part.restaurant} (failed)`;
+      attachment.text = part.errors.join("\n");
     }
     return attachment;
   });
