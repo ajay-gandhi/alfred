@@ -11,13 +11,13 @@ switch (args.shift()) {
   case "add": {
     const username = args.shift();
     const cmd = parse_command(args.join(" "));
-    console.log(record_orders.add_order(cmd.params.restaurant, cmd.params.items, username));
+    console.log(record_orders.addOrder(cmd.params.restaurant, cmd.params.items, username));
     break;
   }
 
   case "forget": {
     const cmd = parse_command(args.shift(), args.join(" "));
-    console.log(record_orders.remove_order(cmd.name));
+    console.log(record_orders.removeOrder(cmd.name));
     break;
   }
 

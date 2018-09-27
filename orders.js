@@ -7,24 +7,24 @@ const fs = require("fs");
 const ORDERS_FILE = `${__dirname}/data/orders.json`;
 const orders = fs.existsSync(ORDERS_FILE) ? JSON.parse(fs.readFileSync(ORDERS_FILE)) : {};
 
-module.exports.get_orders = () => orders;
-module.exports.add_order = (restaurant, username, items) => {
+module.exports.getOrders = () => orders;
+module.exports.addOrder = (restaurant, username, items) => {
   orders[username] = {
     restaurant,
     items,
   };
   write();
 };
-module.exports.remove_order = (username) => {
-  let removed_order;
+module.exports.removeOrder = (username) => {
+  let removedOrder;
   if (orders[username]) {
-    removed_order = orders[username];
+    removedOrder = orders[username];
     delete orders[username];
   }
   write();
-  return removed_order;
+  return removedOrder;
 };
-module.exports.clear_orders = () => {
+module.exports.clearOrders = () => {
   orders = {};
   write();
 };

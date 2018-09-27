@@ -14,7 +14,7 @@ const URLS = {
 const DEFAULT_TIME = "5:30 PM";
 
 module.exports = async (dry_run) => {
-  const orders = Orders.get_orders();
+  const orders = Orders.getOrders();
   if (Object.keys(orders).length === 0) return;
 
   const order_sets = DataUtil.extract_orders_and_names(orders);

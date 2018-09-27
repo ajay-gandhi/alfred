@@ -2,7 +2,7 @@
 const Orders = require("./orders");
 const Menu = require("./menu");
 
-module.exports.add_order = (rest_input, items, username) => {
+module.exports.addOrder = (rest_input, items, username) => {
   // Convert restaurant to official name
   const restaurant_data = Menu.find_restaurant_by_name(rest_input);
   const restaurant = restaurant_data.name;
@@ -13,12 +13,12 @@ module.exports.add_order = (rest_input, items, username) => {
     return [friendlize_item(item.name), options];
   });
 
-  Orders.add_order(restaurant, username, corrected_items);
+  Orders.addOrder(restaurant, username, corrected_items);
 
   return { restaurant, corrected_items };
 };
 
-module.exports.remove_order = Orders.remove_order;
+module.exports.removeOrder = Orders.removeOrder;
 
 // Remove leading "X. "
 const friendlize_item = i => i.replace(/^[\w]{1,3}\. /, "");

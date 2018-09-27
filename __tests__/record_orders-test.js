@@ -1,10 +1,10 @@
 // Tests for record_orders.js
 
-const { add_order, remove_order } = require("../record_orders");
+const { addOrder, removeOrder } = require("../record_orders");
 const Orders = require("../orders");
 
 // Try adding orders
-const test_inputs = [
+const testInputs = [
   {
     // Addition
     restaurant: "bamboo",
@@ -27,7 +27,7 @@ const test_inputs = [
   },
 ];
 
-const test_outputs = [
+const testOutputs = [
   {
     "Ajay Gandhi": {"items": [["Tempura Combo", []], ["Can Soda", ["sprite"]]], "restaurant": "Bamboo"},
   },
@@ -42,22 +42,22 @@ const test_outputs = [
 ];
 
 test("adds to new restaurant", () => {
-  add_order(test_inputs[0].restaurant, test_inputs[0].order, test_inputs[0].name);
-  expect(Orders.get_orders()).toEqual(test_outputs[0]);
+  addOrder(testInputs[0].restaurant, testInputs[0].order, testInputs[0].name);
+  expect(Orders.getOrders()).toEqual(testOutputs[0]);
 });
 
 test("adds to existing restaurant", () => {
-  add_order(test_inputs[1].restaurant, test_inputs[1].order, test_inputs[1].name);
-  expect(Orders.get_orders()).toEqual(test_outputs[1]);
+  addOrder(testInputs[1].restaurant, testInputs[1].order, testInputs[1].name);
+  expect(Orders.getOrders()).toEqual(testOutputs[1]);
 });
 
 test("remove order", () => {
-  remove_order(test_inputs[2].name);
-  expect(Orders.get_orders()).toEqual(test_outputs[2]);
+  removeOrder(testInputs[2].name);
+  expect(Orders.getOrders()).toEqual(testOutputs[2]);
 });
 
 test("remove last order", () => {
-  remove_order(test_inputs[3].name);
-  expect(Orders.get_orders()).toEqual(test_outputs[3]);
+  removeOrder(testInputs[3].name);
+  expect(Orders.getOrders()).toEqual(testOutputs[3]);
 });
 
