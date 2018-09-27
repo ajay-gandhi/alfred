@@ -4,9 +4,10 @@
   "description": "X",
   "main": "server.js",
   "dependencies": {
-    "fastify": "^1.11.2",
-    "fastify-formbody": "^2.0.1",
-    "fastify-static": "^0.14.0",
+    "koa": "^2.5.3",
+    "koa-bodyparser": "^4.2.1",
+    "koa-router": "^7.4.0",
+    "koa-static": "^5.0.0",
     "puppeteer": "^1.0.0"
   },
   "devDependencies": {
