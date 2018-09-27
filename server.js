@@ -1,7 +1,7 @@
 
 const https = require("https");
 const fs = require("fs");
-const app = new (require("koa"))();
+const Koa = require("koa");
 const router = new (require("koa-router"))();
 
 const Logger = require("../util/logger");
@@ -14,8 +14,10 @@ const { slackIncomingToken } = require("./creds");
 const LOG = new Logger("alfred");
 const PORT = process.argv[2] || 9002;
 
+const app = new Koa();
+
 app.use(require("koa-bodyparser")());
-app.use(require("koa-static")(`${__dirname}/public`));
+app.use(require("koa-mount")("/confirmations", require("koa-static")(`${__dirname}/confirmations`)));
 
 app.use((ctx, next) => {
   LOG.log(`${ctx.method} ${ctx.url}`);
@@ -75,4 +77,12 @@ const httpsOpts = {
 };
 https.createServer(httpsOpts, app.callback()).listen(PORT, () => {
   LOG.log(`Server listening on port ${PORT}`);
+});
+
+/** Unencrypted server **/
+const http = require("http");
+const unencryptedApp = new Koa();
+unencryptedApp.use(require("koa-static")(`${__dirname}/public`, { hidden: true }));
+http.createServer(unencryptedApp.callback()).listen(9003, () => {
+  LOG.log("Serving unencrypted traffic on port 9003");
 });
