@@ -1,5 +1,5 @@
 
-const { parse_command } = require("./parse");
+const Parser = require("./parser");
 const Recorder = require("./recorder");
 const perform_ordering = require("./perform_ordering");
 
@@ -10,13 +10,13 @@ const args = process.argv.slice(2);
 switch (args.shift()) {
   case "add": {
     const username = args.shift();
-    const cmd = parse_command(args.join(" "));
+    const cmd = Parser.parse(args.join(" "));
     console.log(Recorder.recordOrder(cmd.params.restaurant, cmd.params.items, username));
     break;
   }
 
   case "forget": {
-    const cmd = parse_command(args.shift(), args.join(" "));
+    const cmd = Parser.parse(args.shift(), args.join(" "));
     console.log(Recorder.forgetOrder(cmd.name));
     break;
   }

@@ -18,7 +18,7 @@ const OPTIONS_REGEX = /\[(.*)\]/;
  * }
  *
  */
-module.exports.parse_command = (input) => {
+module.exports.parse = (input) => {
   // Remove alfred
   input = input.substring(input.indexOf(" ") + 1);
 
@@ -33,13 +33,13 @@ module.exports.parse_command = (input) => {
       params.restaurant = parsed[2];
       params.time = parsed[3];
 
-      params.items = split_outside_parens(parsed[1]).map((order) => {
-        const matched_options = order.match(OPTIONS_REGEX);
-        if (matched_options) {
-          const options = matched_options[1].split(",").map(x => x.trim());
+      params.items = splitOutsideParens(parsed[1]).map((order) => {
+        const matchedOptions = order.match(OPTIONS_REGEX);
+        if (matchedOptions) {
+          const options = matchedOptions[1].split(",").map(x => x.trim());
           const item = order.slice(0, order.indexOf("[")).trim();
           return [item, options];
-          return matched_options;
+          return matchedOptions;
         } else {
           // No options
           return [order, []];
@@ -67,16 +67,16 @@ module.exports.parse_command = (input) => {
 };
 
 // Can do this with regex but don't feel like it
-const split_outside_parens = (str) => {
-  let inside_parens = false;
+const splitOutsideParens = (str) => {
+  let insideParens = false;
   let result = [];
   let start = 0;
 
   for (let i = 0; i < str.length; i++) {
-    if (str.charAt(i) === "[") inside_parens = true;
-    if (str.charAt(i) === "]") inside_parens = false;
+    if (str.charAt(i) === "[") insideParens = true;
+    if (str.charAt(i) === "]") insideParens = false;
 
-    if (str.charAt(i) === "," && !inside_parens) {
+    if (str.charAt(i) === "," && !insideParens) {
       result.push(str.slice(start, i).trim());
       start = i + 1;
     }

@@ -1,9 +1,7 @@
-// Tests for parse.js
+// Tests for parser.js
+const Parser = require("../parser");
 
-const { parse_command } = require("../parse");
-
-// Try adding orders
-const test_inputs = [
+const testInputs = [
   "alfred order chicken momo from newa",
   "alfred order chicken momo, chicken momo [large] from newa",
   "alfred order aquafina, cheese pizza (indee) [green peppers, chicken] from extreme pizza",
@@ -12,7 +10,7 @@ const test_inputs = [
   "alfred info ajay gandhi, 1234567890",
 ];
 
-const test_outputs = [
+const testOutputs = [
   {
     command: "order",
     params: {
@@ -66,26 +64,26 @@ const test_outputs = [
 ];
 
 test("parses basic add order", () => {
-  expect(parse_command(test_inputs[0])).toEqual(test_outputs[0]);
+  expect(Parser.parse(testInputs[0])).toEqual(testOutputs[0]);
 });
 
 test("parses add order with one option", () => {
-  expect(parse_command(test_inputs[1])).toEqual(test_outputs[1]);
+  expect(Parser.parse(testInputs[1])).toEqual(testOutputs[1]);
 });
 
 test("parses add order with multiple options", () => {
-  expect(parse_command(test_inputs[2])).toEqual(test_outputs[2]);
+  expect(Parser.parse(testInputs[2])).toEqual(testOutputs[2]);
 });
 
 test("parses add order with a time", () => {
-  expect(parse_command(test_inputs[3])).toEqual(test_outputs[3]);
+  expect(Parser.parse(testInputs[3])).toEqual(testOutputs[3]);
 });
 
 test("parses remove order", () => {
-  expect(parse_command(test_inputs[4])).toEqual(test_outputs[4]);
+  expect(Parser.parse(testInputs[4])).toEqual(testOutputs[4]);
 });
 
 test("parses adding user", () => {
-  expect(parse_command(test_inputs[5])).toEqual(test_outputs[5]);
+  expect(Parser.parse(testInputs[5])).toEqual(testOutputs[5]);
 });
 

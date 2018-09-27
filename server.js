@@ -6,7 +6,7 @@ const router = new (require("koa-router"))();
 
 const Logger = require("../util/logger");
 
-const { parse_command } = require("./parse");
+const Parser = require("./parser");
 const Recorder = require("./recorder");
 const Users = require("./users");
 const { slackIncomingToken } = require("./creds");
@@ -35,7 +35,7 @@ router.post("/command", (ctx, next) => {
   }
 
   const username = ctx.request.body.user_name;
-  const parsed = parse_command(ctx.request.body.text);
+  const parsed = Parser.parse(ctx.request.body.text);
 
   switch (parsed.command) {
     case "order": {
