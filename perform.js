@@ -10,8 +10,9 @@ const puppeteer = require("puppeteer");
 const Orders = require("./orders");
 const Users = require("./users");
 const Transform = require("./util/transform");
+const Slack = require("./util/slack");
 
-const CREDS = require("./creds");
+const creds = require("./creds");
 
 const URLS = {
   login: "https://www.seamless.com/corporate/login/",
@@ -35,17 +36,33 @@ module.exports.do = async (dryRun) => {
   });
   const page = await browser.newPage();
 
+  const results = [];
   try {
-    await loginToSeamless(page, CREDS);
+    await loginToSeamless(page, creds);
     console.log("Logged in");
 
     for (const orderSet of orderSets) {
-      await orderFromRestaurant(page, orderSet.restaurant, orderSet.items, orderSet.names, dryRun);
+      const orderResult = await orderFromRestaurant(page, orderSet.restaurant, orderSet.items, orderSet.names, dryRun);
+
+      if (orderResult) {
+        results.push({
+          successful: true,
+          restaurant: orderSet.restaurant,
+          user: orderResult.user.username,
+          confirmationUrl: `https://alfred.ajay-gandhi.com/confirmations/${sanitizeFilename(orderSet.restaurant)}.pdf`,
+        });
+      } else {
+        results.push({
+          successful: false,
+          restaurant: orderSet.restaurant,
+        });
+      }
 
       // Give seamless a break
       await page.waitFor(5000);
     }
 
+    Slack.sendFinishedMessage(results);
   } catch (err) {
     console.log("Crashed with error", err);
   }
@@ -78,43 +95,53 @@ const loginToSeamless = async (page, creds) => {
  * at the given restaurant with the given items for the given usernames.
  */
 const orderFromRestaurant = async (page, restaurant, orders, usernames, dryRun) => {
-  await page.goto(URLS.chooseTime);
+  try {
+    const result = {};
 
-  await page.select("#time", DEFAULT_TIME).catch(() => {});
-  await page.click("tr.startorder a");
-  await page.waitForNavigation();
+    await page.goto(URLS.chooseTime);
 
-  // Choose restaurant
-  const restLinks = await page.$$("a[name=\"vendorLocation\"]");
-  let ourRest;
-  for (const anchor of restLinks) {
-    const text = await page.evaluate(e => e.innerText, anchor);
-    if (text.includes(restaurant)) ourRest = anchor;
-  }
-  await ourRest.click();
-  await page.waitForNavigation();
-
-  // Do the rest!
-  await fillOrders(page, orders);
-  await fillNames(page, usernames);
-
-  // Fill random phone number
-  const phoneNumbers = usernames.map(u => Users.getUser(u).phone);
-  const phoneNumber = phoneNumbers[Math.floor(Math.random() * phoneNumbers.length)];
-  await page.$eval("input#phoneNumber", e => e.value = "");
-  await page.click("input#phoneNumber");
-  await page.keyboard.type(phoneNumber);
-
-  // Submit order
-  const confirmationPath = `${__dirname}/confirmations/${sanitizeFilename(restaurant)}.pdf`;
-  if (dryRun) {
-    await page.pdf({ path: confirmationPath });
-    console.log(`Simulated order from ${restaurant}, confirmation is in ${confirmationPath}`);
-  } else {
-    await page.click("a.findfoodbutton");
+    await page.select("#time", DEFAULT_TIME).catch(() => {});
+    await page.click("tr.startorder a");
     await page.waitForNavigation();
-    await page.pdf({ path: confirmationPath });
-    console.log(`Ordered from ${restaurant}, confirmation is in ${confirmationPath}`);
+
+    // Choose restaurant
+    const restLinks = await page.$$("a[name=\"vendorLocation\"]");
+    let ourRest;
+    for (const anchor of restLinks) {
+      const text = await page.evaluate(e => e.innerText, anchor);
+      if (text.includes(restaurant)) ourRest = anchor;
+    }
+    await ourRest.click();
+    await page.waitForNavigation();
+
+    // Do the rest!
+    await fillOrders(page, orders);
+    await fillNames(page, usernames);
+
+    // Fill random phone number
+    const usersForOrder  = usernames.map(u => Users.getUser(u));
+    const selectedUser = usersForOrder[Math.floor(Math.random() * usersForOrder.length)];
+    await page.$eval("input#phoneNumber", e => e.value = "");
+    await page.click("input#phoneNumber");
+    await page.keyboard.type(selectedUser.phone);
+
+    // Submit order
+    const confirmationPath = `${__dirname}/confirmations/${sanitizeFilename(restaurant)}.pdf`;
+    if (dryRun) {
+      await page.pdf({ path: confirmationPath });
+      console.log(`Simulated order from ${restaurant}, confirmation is in ${confirmationPath}`);
+    } else {
+      await page.click("a.findfoodbutton");
+      await page.waitForNavigation();
+      await page.pdf({ path: confirmationPath });
+      console.log(`Ordered from ${restaurant}, confirmation is in ${confirmationPath}`);
+    }
+    return {
+      user: selectedUser,
+    };
+  } catch (e) {
+    console.log(`Failed to order from ${restaurant}`, e);
+    return false;
   }
 };
 
