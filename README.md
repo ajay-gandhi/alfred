@@ -10,9 +10,11 @@ and places them on Seamless corporate.
 Things to do, in order of urgency
 
 * Implement adding tip to reach minimum
+* Implement proper response when Slack message is late
 * Add error catching and understanding
   * E.g. if restaurant click fails, it's probably closed at that time
 * Implement time of delivery
+* Implement confirmation at 3pm
 * Implement weekly scraping
 * Implement NLP
 
