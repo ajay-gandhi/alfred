@@ -9,11 +9,11 @@ and places them on Seamless corporate.
 
 Things to do, in order of urgency
 
-* Implement time of delivery
-* Add error catching and understanding
-  * E.g. if restaurant click fails, it's probably closed at that time
 * Implement returning who will get the call
 * Implement returning confirmation page
+* Add error catching and understanding
+  * E.g. if restaurant click fails, it's probably closed at that time
+* Implement time of delivery
 * Implement weekly scraping
 * Implement NLP
 
