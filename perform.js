@@ -96,34 +96,11 @@ const loginToSeamless = async (page, creds) => {
  */
 const orderFromRestaurant = async (page, restaurant, orders, usernames, dryRun) => {
   try {
-    const result = {};
-
-    await page.goto(URLS.chooseTime);
-
-    await page.select("#time", DEFAULT_TIME).catch(() => {});
-    await page.click("tr.startorder a");
-    await page.waitForNavigation();
-
-    // Choose restaurant
-    const restLinks = await page.$$("a[name=\"vendorLocation\"]");
-    let ourRest;
-    for (const anchor of restLinks) {
-      const text = await page.evaluate(e => e.innerText, anchor);
-      if (text.includes(restaurant)) ourRest = anchor;
-    }
-    await ourRest.click();
-    await page.waitForNavigation();
-
-    // Do the rest!
+    await chooseTime(page);
+    await chooseRestaurant(page, restaurant);
     await fillOrders(page, orders);
     await fillNames(page, usernames);
-
-    // Fill random phone number
-    const usersForOrder  = usernames.map(u => Users.getUser(u));
-    const selectedUser = usersForOrder[Math.floor(Math.random() * usersForOrder.length)];
-    await page.$eval("input#phoneNumber", e => e.value = "");
-    await page.click("input#phoneNumber");
-    await page.keyboard.type(selectedUser.phone);
+    const selectedUser = await fillPhoneNumber(page, usernames);
 
     // Submit order
     const confirmationPath = `${__dirname}/confirmations/${sanitizeFilename(restaurant)}.pdf`;
@@ -136,6 +113,7 @@ const orderFromRestaurant = async (page, restaurant, orders, usernames, dryRun) 
       await page.pdf({ path: confirmationPath });
       console.log(`Ordered from ${restaurant}, confirmation is in ${confirmationPath}`);
     }
+
     return {
       user: selectedUser,
     };
@@ -143,6 +121,43 @@ const orderFromRestaurant = async (page, restaurant, orders, usernames, dryRun) 
     console.log(`Failed to order from ${restaurant}`, e);
     return false;
   }
+};
+
+/**
+ * Given a page with a logged in status, chooses a time for ordering
+ */
+const chooseTime = async (page) => {
+  await page.goto(URLS.chooseTime);
+  await page.select("#time", DEFAULT_TIME).catch(() => {});
+  await page.click("tr.startorder a");
+  await page.waitForNavigation();
+};
+
+/**
+ * Given a page at the restaurant selection page, chooses the given restaurant
+ */
+const chooseRestaurant = async (page, restaurant) => {
+  const restLinks = await page.$$("a[name=\"vendorLocation\"]");
+  let ourRest;
+  for (const anchor of restLinks) {
+    const text = await page.evaluate(e => e.innerText, anchor);
+    if (text.includes(restaurant)) ourRest = anchor;
+  }
+  await ourRest.click();
+  await page.waitForNavigation();
+};
+
+/**
+ * Given a page at the checkout page, fills out a random phone number.
+ * Returns the user that was selected
+ */
+const fillPhoneNumber = async (page, usernames) => {
+  const usersForOrder  = usernames.map(u => Users.getUser(u));
+  const selectedUser = usersForOrder[Math.floor(Math.random() * usersForOrder.length)];
+  await page.$eval("input#phoneNumber", e => e.value = "");
+  await page.click("input#phoneNumber");
+  await page.keyboard.type(selectedUser.phone);
+  return selectedUser;
 };
 
 /**
