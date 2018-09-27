@@ -7,7 +7,7 @@ and places them on Seamless corporate.
 
 ## Todos
 
-Things to do, in order of urgency
+Things to do, _almost_ in order of urgency
 
 * Implement stats
 * Implement adding tip to reach minimum
@@ -15,7 +15,6 @@ Things to do, in order of urgency
   * E.g. if restaurant click fails, it's probably closed at that time
 * Implement time of delivery
 * Implement confirmation at 3pm
-* Implement weekly scraping
 * Implement NLP
 
 ## Layout
@@ -40,7 +39,9 @@ and is triggered by a cronjob on my server at a fixed time each day.
 3. `[perform.js]` The data files persisted earlier are read to input the order on Seamless
 4. `[util/slack.js]` A message is sent to Slack containing links to confirmations of orders
 
-Another asynchronous event is the changing of daily passwords. This is to protect the confirmation PDFs, which can contain sensitive information. A cronjob runs `util/generate_pw.js` every morning, and basic HTTP auth with the new password is required using `koa_confirmation_middleware.js`. The new password is sent to Slack when the orders are put in.
+*Other asynchronous events:*
+* Daily passwords: This is to protect the confirmation PDFs, which can contain sensitive information. A cronjob runs `util/generate_pw.js` every morning, and basic HTTP auth with the new password is required using `koa_confirmation_middleware.js`. The new password is sent to Slack when the orders are put in.
+* Weekly scraping: Every week, menus are scraped from Seamless.
 
 ## Getting started
 
