@@ -1,3 +1,10 @@
+/**
+ * Perform module
+ *
+ * This file contains the business logic for ordering through Seamless. The
+ * do() function below will initialize the headless browser, order using the
+ * orders module, and generate confirmations.
+ */
 
 const puppeteer = require("puppeteer");
 const Orders = require("./orders");
@@ -32,7 +39,6 @@ module.exports.do = async (dryRun) => {
     await loginToSeamless(page, CREDS);
     console.log("Logged in");
 
-    // Should be logged in now
     for (const orderSet of orderSets) {
       await orderFromRestaurant(page, orderSet.restaurant, orderSet.items, orderSet.names, dryRun);
 
@@ -40,12 +46,12 @@ module.exports.do = async (dryRun) => {
       await page.waitFor(5000);
     }
 
-    // Clear orders
   } catch (err) {
     console.log("Crashed with error", err);
   }
 
   if (!dryRun) {
+    // Clear orders if we're done
     Orders.clearOrders();
   }
   await browser.close();
@@ -92,7 +98,7 @@ const orderFromRestaurant = async (page, restaurant, orders, usernames, dryRun) 
   await fillOrders(page, orders);
   await fillNames(page, usernames);
 
-  // Fill [random] phone number
+  // Fill random phone number
   const phoneNumbers = usernames.map(u => Users.getUser(u).phone);
   const phoneNumber = phoneNumbers[Math.floor(Math.random() * phoneNumbers.length)];
   await page.$eval("input#phoneNumber", e => e.value = "");
@@ -119,12 +125,12 @@ const orderFromRestaurant = async (page, restaurant, orders, usernames, dryRun) 
  * The orders parameter should be an array of this form:
  *   [
  *     [
- *       "dish",
+ *       "dish1",
  *       ["option 1", "option 2"],
  *     ],
  *     [
  *       "dish2",
- *       [],
+ *       ["option 1", "option 2"],
  *     ],
  *   ]
  */

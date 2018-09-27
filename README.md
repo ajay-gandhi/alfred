@@ -9,11 +9,10 @@ and places them on Seamless corporate.
 
 Things to do, in order of urgency
 
-* Clean up / standardize style (all camel case)
-  * Document individual files and confusing functions
 * Implement time of delivery
 * Add error catching and understanding
   * E.g. if restaurant click fails, it's probably closed at that time
+* Implement returning who will get the call
 * Implement returning confirmation page
 * Implement weekly scraping
 * Implement NLP
@@ -28,16 +27,16 @@ and is triggered by a cronjob on my server at a fixed time each day.
 
 1. `Slack` User sends a message
 2. `[server.js]` The message is posted to Alfred
-3. `[parse.js]` The message is parsed into a command
-4. `[record_orders.js | users.js]` The server delegates the command, depending on the keyword
-5. `[order.js | users.js]` The appropriate file persists the data to the filesystem in a `.json` file
+3. `[parser.js]` The message is parsed into a command
+4. `[recorder.js | users.js]` The server delegates the command, depending on the keyword
+5. `[orders.js | users.js]` The appropriate file persists the data to the filesystem in a `.json` file
 5. `[server.js]` The server returns text to Slack depending on the command
 
 ### Asynchronous
 
 1. `Cronjob` At 5:30pm each weekday, a cronjob wakes up
 2. `[cli.js]` The cronjob runs the CLI with the command order
-3. `[perform_ordering.js]` The data files persisted earlier are read to input the order on Seamless
+3. `[perform.js]` The data files persisted earlier are read to input the order on Seamless
 4. `[notify.js]` *In progress* A message is sent to Slack containing links to confirmations of orders
 
 ## Getting started

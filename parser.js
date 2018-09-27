@@ -1,3 +1,10 @@
+/**
+ * Parsing module
+ *
+ * This module parses the message received from slack into a standardized
+ * command format. In the future, this would use an AI to allow NLP-based
+ * parsing.
+ */
 
 // Constants used in parsing
 const CMD_REGEX = / .*/;
@@ -6,14 +13,15 @@ const NO_TIME_REGEX = /order (.*) from (.*)/;
 const OPTIONS_REGEX = /\[(.*)\]/;
 
 /**
+ * Main parsing function. This function takes in a simple string input which is
+ * the message received from Slack.
+ *
  * Returns an object of this format:
  *
  * {
- *   command: "add_order",
- *   name: "Ajay Gandhi",
+ *   command,
  *   params: {
- *     restaurant: "extreme pizza",
- *     items: [[aquafina, []]],
+ *     # depends on the command
  *   },
  * }
  *
@@ -22,24 +30,24 @@ module.exports.parse = (input) => {
   // Remove alfred
   input = input.substring(input.indexOf(" ") + 1);
 
-  // Parse command
+  // Grab command
   const command = input.replace(CMD_REGEX, "").trim();
 
   const params = {};
   switch (command) {
     case "order": {
-      // Parse restaurant
+      // Split message into pieces (orders,  restaurant, time)
       const parsed = input.match(SPLIT_REGEX) || input.match(NO_TIME_REGEX);
       params.restaurant = parsed[2];
       params.time = parsed[3];
 
+      // Parse items and options
       params.items = splitOutsideParens(parsed[1]).map((order) => {
         const matchedOptions = order.match(OPTIONS_REGEX);
         if (matchedOptions) {
           const options = matchedOptions[1].split(",").map(x => x.trim());
           const item = order.slice(0, order.indexOf("[")).trim();
           return [item, options];
-          return matchedOptions;
         } else {
           // No options
           return [order, []];
@@ -52,6 +60,7 @@ module.exports.parse = (input) => {
       const [name, phone] = input.substring(input.indexOf(" ") + 1).split(",");
       params.name = name.trim();
       params.phone = phone.trim();
+      break;
     }
 
     // Don't have any extra params for this case

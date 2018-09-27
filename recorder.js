@@ -1,3 +1,9 @@
+/**
+ * Recorder module
+ *
+ * Records orders to the persisten orders file. Using data from scraped menus,
+ * it also corrects names.
+ */
 
 const Orders = require("./orders");
 const Menu = require("./menu");

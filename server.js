@@ -39,14 +39,14 @@ router.post("/command", (ctx, next) => {
 
   switch (parsed.command) {
     case "order": {
-      const order = RecordOrders.addOrder(parsed.params.restaurant, parsed.params.items, username);
+      const order = Recorder.addOrder(parsed.params.restaurant, parsed.params.items, username);
       const itemsList = order.correctedItems.map(i => i[0]).join(", ");
       ctx.body = { text: `Added ${itemsList} from ${order.restaurant}` };
       break;
     }
 
     case "forget": {
-      const order = RecordOrders.forgetOrder(username);
+      const order = Recorder.forgetOrder(username);
       ctx.body = { text: `Removed order from ${order.restaurant}` };
       break;
     }

@@ -1,5 +1,5 @@
 /**
- * Module for interacting with persistent orders data
+ * Module for persistent orders data
  */
 
 const fs = require("fs");
@@ -25,7 +25,7 @@ module.exports.removeOrder = (username) => {
   return removedOrder;
 };
 module.exports.clearOrders = () => {
-  orders = {};
+  Object.keys(orders).forEach(k => { delete orders[k]; });
   write();
 };
 

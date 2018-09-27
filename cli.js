@@ -1,3 +1,9 @@
+/**
+ * Command line interface
+ *
+ * This is a very bare-bones command line interface, mostly intended for
+ * manually testing.
+ */
 
 const Parser = require("./parser");
 const Recorder = require("./recorder");
