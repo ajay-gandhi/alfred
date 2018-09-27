@@ -1,14 +1,20 @@
+/**
+ * Scraper
+ *
+ * This script will scrape the data for all menus for each restaurant on
+ * Seamless, and store the data persistently in the `data/` subdirectory.
+ */
 
 const puppeteer = require("puppeteer");
 const fs = require("fs");
-const creds = require("./creds");
+const creds = require("../creds");
 
 const URLS = {
   login: "https://www.seamless.com/corporate/login/",
   chooseRest: "https://www.seamless.com/MealsVendorSelection.m",
 };
 
-const OUTPUT_FILE = process.argv[2] || `${__dirname}/data/menu_data.json`;
+const OUTPUT_FILE = process.argv[2] || `${__dirname}/../data/menu_data.json`;
 
 const TIME = "7:00 PM";
 const FLOAT_REGEX = /[+-]?\d+(\.\d+)?/g;
@@ -16,10 +22,6 @@ const FLOAT_REGEX = /[+-]?\d+(\.\d+)?/g;
 (async () => {
   const browser = await puppeteer.launch({
     executablePath: "/usr/bin/chromium-browser",
-    defaultViewport: {
-      width: 1200,
-      height: 900,
-    },
   });
   const page = await browser.newPage();
 
@@ -35,6 +37,7 @@ const FLOAT_REGEX = /[+-]?\d+(\.\d+)?/g;
     const menuData = {};
     const numRestaurants = await page.$eval("div#options a.OtherLink", e => parseInt(e.innerText));
     console.log(`${numRestaurants} restaurants open`);
+
     for (let i = 0; i < numRestaurants; i++) {
       const data = await scrapeMenu(page, i);
       if (data) {
@@ -86,10 +89,11 @@ const scrapeMenu = async (page, index) => {
   // Choose restaurant
   const restLinks = await page.$$("a[name=\"vendorLocation\"]");
 
-  // We've scraped all restaurants
+  // We've scraped all restaurants (or more likely, there's a bug)
+  // Overall, this case shouldn't really occur
   if (index >= restLinks.length) return false;
 
-  // Click and wait fails on RPI
+  // Click and wait fails on RPI, so we have to goto the href
   const url = await page.evaluate(e => e.href, restLinks[index]);
   await page.goto(url);
 
