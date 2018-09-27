@@ -2,7 +2,7 @@
 const puppeteer = require("puppeteer");
 const Orders = require("./orders");
 const Users = require("./users");
-const DataUtil = require("./data_util");
+const Transform = require("./util/transform");
 
 const CREDS = require("./creds");
 
@@ -17,7 +17,7 @@ module.exports = async (dryRun) => {
   const orders = Orders.getOrders();
   if (Object.keys(orders).length === 0) return;
 
-  const orderSets = DataUtil.extract_orders_and_names(orders);
+  const orderSets = Transform.extractOrdersAndNames(orders);
 
   const browser = await puppeteer.launch({
     executablePath: "/usr/bin/chromium-browser",

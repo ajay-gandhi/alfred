@@ -4,12 +4,12 @@ const Menu = require("./menu");
 
 module.exports.recordOrder = (restInput, items, username) => {
   // Convert restaurant to official name
-  const restaurantData = Menu.find_restaurant_by_name(restInput);
+  const restaurantData = Menu.findRestaurantByName(restInput);
   const restaurant = restaurantData.name;
 
   // Add items to order while completing names
   const correctedItems = items.map(([ itemName, options ]) => {
-    const item = Menu.find_item_by_name(restaurant, itemName);
+    const item = Menu.findItemByName(restaurant, itemName);
     return [friendlizeItem(item.name), options];
   });
 
