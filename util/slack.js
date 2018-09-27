@@ -37,8 +37,14 @@ module.exports.sendFinishedMessage = (parts) => {
     }
     return attachment;
   });
+
+  const { daily_password } = require("../creds");
+
   sendMessage({
-    text: "Alfred ordered from the following restaurants for delivery at 5:30pm.",
+    text: [
+      "Alfred ordered from the following restaurants for delivery at 5:30pm.",
+      `Today's password is \`${daily_password}\`.`,
+    ].join("\n"),
     attachments,
   });
 };

@@ -9,7 +9,6 @@ and places them on Seamless corporate.
 
 Things to do, in order of urgency
 
-* Add password protection for confirmations
 * Implement adding tip to reach minimum
 * Add error catching and understanding
   * E.g. if restaurant click fails, it's probably closed at that time

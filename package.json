@@ -4,10 +4,12 @@
   "description": "X",
   "main": "server.js",
   "dependencies": {
+    "basic-auth": "^2.0.1",
     "koa": "^2.5.3",
     "koa-bodyparser": "^4.2.1",
     "koa-mount": "^4.0.0",
     "koa-router": "^7.4.0",
+    "koa-send": "^5.0.0",
     "koa-static": "^5.0.0",
     "puppeteer": "^1.0.0",
     "request": "^2.88.0"

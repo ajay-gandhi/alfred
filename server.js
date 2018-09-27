@@ -2,30 +2,31 @@
 const https = require("https");
 const fs = require("fs");
 const Koa = require("koa");
+const mount = require("koa-mount");
 const router = new (require("koa-router"))();
 
 const Logger = require("../util/logger");
+const LOG = new Logger("alfred");
 
 const Parser = require("./parser");
 const Recorder = require("./recorder");
 const Users = require("./users");
-const { slackIncomingToken } = require("./creds");
-
-const LOG = new Logger("alfred");
-const PORT = process.argv[2] || 9002;
+const creds = require("./creds");
 
 const app = new Koa();
+const PORT = process.argv[2] || 9002;
 
 app.use(require("koa-bodyparser")());
-app.use(require("koa-mount")("/confirmations", require("koa-static")(`${__dirname}/confirmations`)));
+app.use(mount("/confirmations", require("./koa_confirmation_middleware")()));
 
+// Logging requests
 app.use((ctx, next) => {
   LOG.log(`${ctx.method} ${ctx.url}`);
   next();
 });
 
 router.post("/command", (ctx, next) => {
-  if (ctx.request.body.token !== slackIncomingToken) {
+  if (ctx.request.body.token !== creds.slackIncomingToken) {
     LOG.log("Request does not have proper secret");
     return {};
   }
@@ -66,6 +67,7 @@ router.post("/command", (ctx, next) => {
 app.use(router.routes());
 app.use(router.allowedMethods());
 
+// Logging response
 app.use((ctx) => {
   if (ctx.body) LOG.log(`Responded with "${ctx.body.text}"`);
   ctx.body = JSON.stringify(ctx.body);
