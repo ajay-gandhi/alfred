@@ -7,9 +7,9 @@ const fs = require("fs");
 const USERS_FILE = `${__dirname}/data/users.json`;
 const users = fs.existsSync(USERS_FILE) ? JSON.parse(fs.readFileSync(USERS_FILE)) : {};
 
-module.exports.get_all_users = () => users;
-module.exports.get_user = username => users[username];
-module.exports.add_user = (username, name, phone) => {
+module.exports.getAllUsers = () => users;
+module.exports.getUser = username => users[username];
+module.exports.addUser = (username, name, phone) => {
   users[username] = {
     username,
     name,

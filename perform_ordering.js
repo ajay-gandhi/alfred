@@ -93,7 +93,7 @@ const order_from_restaurant = async (page, restaurant, orders, usernames, dry_ru
   await fill_names(page, usernames);
 
   // Fill [random] phone number
-  const phone_numbers = usernames.map(u => Users.get_user(u).phone);
+  const phone_numbers = usernames.map(u => Users.getUser(u).phone);
   const phone_number = phone_numbers[Math.floor(Math.random() * phone_numbers.length)];
   await page.$eval("input#phoneNumber", e => e.value = "");
   await page.click("input#phoneNumber");
@@ -171,7 +171,7 @@ const fill_names = async (page, usernames) => {
   }
 
   for (const username of usernames) {
-    const name = Users.get_user(username).name.split(" ");
+    const name = Users.getUser(username).name.split(" ");
 
     page.evaluate(() => toggleAddUser(true, true));
     await page.waitFor(1000);

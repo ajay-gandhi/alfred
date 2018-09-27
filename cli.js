@@ -29,7 +29,7 @@ switch (args.shift()) {
 
   case "user": {
     const [username, name, phone] = args;
-    Users.add_user(username, name, phone);
+    Users.addUser(username, name, phone);
     break;
   }
 

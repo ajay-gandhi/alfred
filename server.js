@@ -52,7 +52,7 @@ router.post("/command", (ctx, next) => {
     }
 
     case "info": {
-      Users.add_user(username, parsed.params.name, parsed.params.phone);
+      Users.addUser(username, parsed.params.name, parsed.params.phone);
       ctx.body = { text: `Added information for ${username}` };
       break;
     }
