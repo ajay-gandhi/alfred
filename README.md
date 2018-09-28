@@ -7,12 +7,12 @@ and places them on Seamless corporate.
 
 ## Todos
 
-Things to do, _almost_ in order of urgency
+Things to do, in order of urgency
 
-* Implement stats
 * Implement adding tip to reach minimum
-* Implement time of delivery
 * Implement confirmation at 3pm
+* Implement stats
+* Implement time of delivery
 * Implement NLP
 
 ## Layout
