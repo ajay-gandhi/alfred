@@ -44,6 +44,10 @@ router.post("/command", (ctx, next) => {
         ctx.body = { text: "Alfred has already ordered for today." };
         break;
       }
+      if (!Users.getUser(username)) {
+        ctx.body = { text: "Please register your info first." };
+        break;
+      }
       const order = Recorder.recordOrder(parsed.params.restaurant, parsed.params.items, username);
       const itemsList = order.correctedItems.map(i => i[0]).join(", ");
       ctx.body = { text: `Added ${itemsList} from ${order.restaurant}` };
@@ -53,6 +57,10 @@ router.post("/command", (ctx, next) => {
     case "forget": {
       if (isLate()) {
         ctx.body = { text: "Alfred has already ordered for today." };
+        break;
+      }
+      if (!Users.getUser(username)) {
+        ctx.body = { text: "Please register your info first." };
         break;
       }
       const order = Recorder.forgetOrder(username);

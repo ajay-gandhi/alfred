@@ -39,12 +39,12 @@ module.exports.sendFinishedMessage = (parts) => {
     return attachment;
   });
 
-  const { daily_password } = require("../creds");
+  const { dailyPassword } = require("../creds");
 
   sendMessage({
     text: [
       "Alfred ordered from the following restaurants for delivery at 5:30pm.",
-      `Today's password is \`${daily_password}\`.`,
+      `Today's password is \`${dailyPassword}\`.`,
     ].join("\n"),
     attachments,
   });

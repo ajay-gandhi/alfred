@@ -123,9 +123,9 @@ const orderFromRestaurant = async (page, restaurant, orders, usernames, dryRun, 
           } else {
             return stepOutput;
           }
+        } else {
+          result = Object.assign(result, stepOutput);
         }
-      } else {
-        result = Object.assign(result, stepOutput);
       }
     }
 
@@ -145,7 +145,7 @@ const orderFromRestaurant = async (page, restaurant, orders, usernames, dryRun, 
   } catch (e) {
     console.log(`Failed to order from ${restaurant}`, e);
     return {
-      errors: ["Order failed for unknown reason."];
+      errors: ["Order failed for unknown reason."],
     };
   }
 };
@@ -316,7 +316,7 @@ const fillPhoneNumber = async (page, usernames) => {
     await page.$eval("input#phoneNumber", e => e.value = "");
     await page.click("input#phoneNumber");
     await page.keyboard.type(selectedUser.phone);
-    return selectedUser;
+    return { user: selectedUser };
   } catch (e) {
     // Most likely a timeout
     return {
