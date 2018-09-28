@@ -72,7 +72,11 @@ Add a file called `creds.json` in the top level directory of the repo. The file 
 ```json
 {
   "username": "[Seamless corp username]",
-  "password": "[Seamless corp password]"
+  "password": "[Seamless corp password]",
+  "slackIncomingToken": "[token for authing incoming post from Slack]",
+  "slackOutgoingUrl": "[url for slack incoming webhook]",
+  "confUsername": "[unchanging username to access confirmations]",
+  "dailyPassword": "[daily updated password to access confirmations]"
 }
 ```
 

@@ -40,15 +40,21 @@ router.post("/command", (ctx, next) => {
 
   switch (parsed.command) {
     case "order": {
-      if (isLate()) return ctx.body = { text: "Alfred has already ordered for today." };
-      const order = Recorder.addOrder(parsed.params.restaurant, parsed.params.items, username);
+      if (isLate()) {
+        ctx.body = { text: "Alfred has already ordered for today." };
+        break;
+      }
+      const order = Recorder.recordOrder(parsed.params.restaurant, parsed.params.items, username);
       const itemsList = order.correctedItems.map(i => i[0]).join(", ");
       ctx.body = { text: `Added ${itemsList} from ${order.restaurant}` };
       break;
     }
 
     case "forget": {
-      if (isLate()) return ctx.body = { text: "Alfred has already ordered for today." };
+      if (isLate()) {
+        ctx.body = { text: "Alfred has already ordered for today." };
+        break;
+      }
       const order = Recorder.forgetOrder(username);
       ctx.body = { text: `Removed order from ${order.restaurant}` };
       break;

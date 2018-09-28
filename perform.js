@@ -145,7 +145,7 @@ const orderFromRestaurant = async (page, restaurant, orders, usernames, dryRun, 
   } catch (e) {
     console.log(`Failed to order from ${restaurant}`, e);
     return {
-      errors: ["Order failed for unknown reason"];
+      errors: ["Order failed for unknown reason."];
     };
   }
 };
@@ -252,7 +252,7 @@ const fillOrders = async (page, orders) => {
   if (continueLinks.length === 0) {
     return {
       retry: false,
-      errors: ["Delivery minimum not met"],
+      errors: ["Delivery minimum not met."],
     };
   }
 
@@ -300,7 +300,7 @@ const fillNames = async (page, usernames) => {
     // Exceeded budget
     return {
       retry: false,
-      errors: ["Order exceeded budget"],
+      errors: ["Order exceeded budget."],
     };
   }
 };

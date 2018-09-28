@@ -7,13 +7,13 @@ const compose = require("koa-compose");
 const auth = require("basic-auth");
 const send = require("koa-send");
 
-let { daily_username, daily_password } = require("./creds");
+let { confUsername, dailyPassword } = require("./creds");
 
 module.exports = () => async (ctx, next) => {
   updateLocalCredentials();
   const credentials = auth(ctx.request);
 
-  if (!credentials || credentials.name !== daily_username || credentials.pass !== daily_password) {
+  if (!credentials || credentials.name !== confUsername || credentials.pass !== dailyPassword) {
     ctx.response.status = 401;
     ctx.response.set("WWW-Authenticate", "Basic realm=\"alfred.ajay-gandhi.com\"")
     ctx.body = "Access denied";
@@ -27,6 +27,7 @@ updateLocalCredentials = () => {
   if (lastUpdate.getDate() !== (new Date()).getDate()) {
     // Last update happened sometime other than today
     lastUpdate = new Date();
-    { daily_username, daily_password } = require("./creds");
+    const newCreds = require("./creds");
+    dailyPassword = newCreds.dailyPassword;
   }
 };
