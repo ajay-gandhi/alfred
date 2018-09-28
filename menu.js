@@ -28,11 +28,13 @@ module.exports.findRestaurantByName = (restName) => {
  */
 module.exports.findItemByName = (restaurant, itemName) => {
   const menu = MenuData[restaurant].menu;
-  return menu.reduce((memo, item) => {
-    if (item.name.toLowerCase().includes(itemName.toLowerCase())) {
-      return item;
-    } else {
-      return memo;
+  let selectedItem = {};
+  for (let i = 0; i < menu.length; i++) {
+    if (menu[i].name.toLowerCase().includes(itemName.toLowerCase())) {
+      if (!(selectedItem.name && selectedItem.name.length < menu[i].name.length)) {
+        selectedItem = menu[i];
+      }
     }
-  }, {});
+  }
+  return selectedItem;
 };
