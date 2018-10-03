@@ -5,6 +5,7 @@
   "main": "server.js",
   "dependencies": {
     "basic-auth": "^2.0.1",
+    "fuzzaldrin": "^2.1.0",
     "koa": "^2.5.3",
     "koa-bodyparser": "^4.2.1",
     "koa-mount": "^4.0.0",

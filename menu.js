@@ -5,6 +5,8 @@
  * scraped from Seamless.
  */
 
+const FuzzAldrin = require("fuzzaldrin");
+
 const MenuData = require("./data/menu_data");
 const RestaurantNames = Object.keys(MenuData);
 
@@ -28,13 +30,5 @@ module.exports.findRestaurantByName = (restName) => {
  */
 module.exports.findItemByName = (restaurant, itemName) => {
   const menu = MenuData[restaurant].menu;
-  let selectedItem = {};
-  for (let i = 0; i < menu.length; i++) {
-    if (menu[i].name.toLowerCase().includes(itemName.toLowerCase())) {
-      if (!(selectedItem.name && selectedItem.name.length < menu[i].name.length)) {
-        selectedItem = menu[i];
-      }
-    }
-  }
-  return selectedItem;
+  return FuzzAldrin.filter(menu, itemName, { key: "name" })[0];
 };
