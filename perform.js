@@ -12,7 +12,7 @@ const Users = require("./users");
 const Transform = require("./util/transform");
 const Slack = require("./util/slack");
 
-const creds = require("./creds");
+const private = require("./private");
 
 const URLS = {
   login: "https://www.seamless.com/corporate/login/",
@@ -39,7 +39,7 @@ module.exports.do = async (dryRun) => {
 
   const results = [];
   try {
-    await loginToSeamless(page, creds);
+    await loginToSeamless(page, private);
     console.log("Logged in");
 
     for (const orderSet of orderSets) {

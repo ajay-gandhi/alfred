@@ -3,7 +3,7 @@
  */
 
 const request = require("request");
-const creds = require("../creds");
+const private = require("../private");
 
 module.exports.sendBasicMessage = (message) => {
   sendMessage({ text: message });
@@ -39,7 +39,7 @@ module.exports.sendFinishedMessage = (parts) => {
     return attachment;
   });
 
-  const { dailyPassword } = require("../creds");
+  const { dailyPassword } = require("../private");
 
   sendMessage({
     text: [
@@ -54,7 +54,7 @@ module.exports.sendFinishedMessage = (parts) => {
 const sendMessage = (contents) => {
   contents.channel = "#ot-test-ram",
   request({
-    url: creds.slackOutgoingUrl,
+    url: private.slackOutgoingUrl,
     method: "POST",
     json: contents,
   },

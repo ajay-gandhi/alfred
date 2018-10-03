@@ -7,7 +7,7 @@ const compose = require("koa-compose");
 const auth = require("basic-auth");
 const send = require("koa-send");
 
-let { confUsername, dailyPassword } = require("./creds");
+let { confUsername, dailyPassword } = require("./private");
 
 module.exports = () => async (ctx, next) => {
   updateLocalCredentials();
@@ -31,7 +31,7 @@ updateLocalCredentials = () => {
   if (lastUpdate.getDate() !== (new Date()).getDate()) {
     // Last update happened sometime other than today
     lastUpdate = new Date();
-    const newCreds = require("./creds");
+    const newCreds = require("./private");
     dailyPassword = newCreds.dailyPassword;
   }
 };

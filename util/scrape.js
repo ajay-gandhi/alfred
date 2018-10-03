@@ -7,7 +7,7 @@
 
 const puppeteer = require("puppeteer");
 const fs = require("fs");
-const creds = require("../creds");
+const private = require("../private");
 
 const URLS = {
   login: "https://www.seamless.com/corporate/login/",
@@ -26,7 +26,7 @@ const FLOAT_REGEX = /[+-]?\d+(\.\d+)?/g;
   const page = await browser.newPage();
 
   try {
-    await loginToSeamless(page, creds);
+    await loginToSeamless(page, private);
     console.log("Logged in");
 
     await page.select("#time", TIME).catch(() => {});

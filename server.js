@@ -9,7 +9,7 @@ const LOG = new Logger("alfred");
 const Parser = require("./parser");
 const Recorder = require("./recorder");
 const Users = require("./users");
-const creds = require("./creds");
+const private = require("./private");
 
 const app = new Koa();
 const PORT = process.argv[2] || 9002;
@@ -24,7 +24,7 @@ app.use(async (ctx, next) => {
 app.use(require("koa-mount")("/confirmations", require("./koa_confirmation_middleware")()));
 
 router.post("/command", (ctx, next) => {
-  if (ctx.request.body.token !== creds.slackIncomingToken) {
+  if (ctx.request.body.token !== private.slackIncomingToken) {
     LOG.log("Request does not have proper secret");
     return {};
   }
