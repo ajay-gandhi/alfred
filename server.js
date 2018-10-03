@@ -1,8 +1,6 @@
 
-const https = require("https");
 const fs = require("fs");
 const Koa = require("koa");
-const mount = require("koa-mount");
 const router = new (require("koa-router"))();
 
 const Logger = require("../util/logger");
@@ -17,13 +15,13 @@ const app = new Koa();
 const PORT = process.argv[2] || 9002;
 
 app.use(require("koa-bodyparser")());
-app.use(mount("/confirmations", require("./koa_confirmation_middleware")()));
 
 // Logging requests
-app.use((ctx, next) => {
+app.use(async (ctx, next) => {
   LOG.log(`${ctx.method} ${ctx.url}`);
-  next();
+  await next();
 });
+app.use(require("koa-mount")("/confirmations", require("./koa_confirmation_middleware")()));
 
 router.post("/command", (ctx, next) => {
   if (ctx.request.body.token !== creds.slackIncomingToken) {
@@ -84,20 +82,22 @@ app.use(router.routes());
 app.use(router.allowedMethods());
 
 // Logging response
-app.use((ctx) => {
-  if (ctx.body) LOG.log(`Responded with "${ctx.body.text}"`);
-  ctx.body = JSON.stringify(ctx.body);
+app.use(async (ctx, next) => {
+  if (ctx.body && ctx.body.text) {
+    LOG.log(`Responded with "${ctx.body.text}"`);
+    ctx.body = JSON.stringify(ctx);
+  }
+  await next();
+});
+
+app.on("error", (err, ctx) => {
+  LOG.log(err);
 });
 
 /************************** Initialize HTTPS server ***************************/
 
-const httpsOpts = {
-  key: fs.readFileSync(`${__dirname}/privkey.pem`).toString().trim(),
-  cert: fs.readFileSync(`${__dirname}/fullchain.pem`).toString().trim(),
-};
-https.createServer(httpsOpts, app.callback()).listen(PORT, () => {
-  LOG.log(`Server listening on port ${PORT}`);
-});
+app.listen(PORT);
+LOG.log(`Server listening on ${PORT}`);
 
 /********************************** Helpers ***********************************/
 
@@ -106,12 +106,3 @@ const isLate = () => {
   const now = new Date();
   return now.getHours() > 15 || (now.getHours() > 14 && now.getMinutes() > 30)
 };
-
-/***************************** Unencrypted server *****************************/
-
-const http = require("http");
-const unencryptedApp = new Koa();
-unencryptedApp.use(require("koa-static")(`${__dirname}/public`, { hidden: true }));
-http.createServer(unencryptedApp.callback()).listen(9003, () => {
-  LOG.log("Serving unencrypted traffic on port 9003");
-});

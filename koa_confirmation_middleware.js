@@ -18,7 +18,11 @@ module.exports = () => async (ctx, next) => {
     ctx.response.set("WWW-Authenticate", "Basic realm=\"alfred.ajay-gandhi.com\"")
     ctx.body = "Access denied";
   } else {
-    await send(ctx, ctx.path, { root: __dirname + '/confirmations' });
+    await send(ctx, ctx.path, {
+      root: __dirname + "/confirmations",
+      extensions: ["pdf"],
+    });
+    await next();
   }
 };
 
