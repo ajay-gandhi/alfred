@@ -82,7 +82,8 @@ router.post("/command", (ctx, next) => {
         "> If you'd like to select / add options to a dish, add them them as a comma-separated list surrounded by square brackets `[]`\n" +
         "> `restaurant` is the name of the restaurant\n\n" +
         "```alfred forget```\n" +
-        "> Forget today's order";
+        "> Forget today's order\n\n" +
+        "Ordering ends at 3:30, and delivery time is selected for 5:30.";
       ctx.body = { text };
     }
   }
