@@ -72,8 +72,19 @@ router.post("/command", (ctx, next) => {
       break;
     }
 
-    default:
-      ctx.body = "{}";
+    default: {
+      const text = "Hi, I'm Alfred! Make sure you enter your info before ordering.\n" +
+        "```alfred info [name], [number]```\n" +
+        "> `name` should be your name on Seamless\n" +
+        "> `number` is the phone number you'll receive the call on if you're selected\n\n" +
+        "```alfred order [dishes] from [restaurant]```\n" +
+        "> `dishes` is a comma-separated list of the items you'd like to order.\n" +
+        "> If you'd like to select / add options to a dish, add them them as a comma-separated list surrounded by square brackets `[]`\n" +
+        "> `restaurant` is the name of the restaurant\n\n" +
+        "```alfred forget```\n" +
+        "> Forget today's order";
+      ctx.body = { text };
+    }
   }
   next();
 });
@@ -85,7 +96,7 @@ app.use(router.allowedMethods());
 app.use(async (ctx, next) => {
   if (ctx.body && ctx.body.text) {
     LOG.log(`Responded with "${ctx.body.text}"`);
-    ctx.body = JSON.stringify(ctx);
+    ctx.body = JSON.stringify(ctx.body);
   }
   await next();
 });
