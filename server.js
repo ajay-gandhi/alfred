@@ -32,6 +32,7 @@ router.post("/command", (ctx, next) => {
     LOG.log("Request is missing username or text");
     return {};
   }
+  if (ctx.request.body.user_name === "slackbot") return {};
 
   const username = ctx.request.body.user_name;
   const parsed = Parser.parse(ctx.request.body.text);

@@ -229,13 +229,15 @@ const fillOrders = async (page, orders) => {
       // Select options
       const optionLinks = await page.$$("li label");
       for (const input of optionLinks) {
-        const text = await page.evaluate(e => e.innerText.toLowerCase(), input);
-        const isSelected = options.reduce((memo, o) => memo || text.includes(o.toLowerCase()), false);
-        if (isSelected) await input.click();
+        await page.evaluate((elm, opts) => {
+          const text = elm.innerText.toLowerCase();
+          const isSelected = opts.reduce((memo, o) => memo || text.includes(o.toLowerCase()), false);
+          if (isSelected) elm.click();
+        }, input, options);
       }
 
       // Click add to order
-      await page.click("a#a1");
+      await page.$eval("a#a1", e => e.click());
       await page.waitFor(2000);
     }
   } catch (e) {
