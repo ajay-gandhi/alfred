@@ -57,6 +57,9 @@ module.exports.parse = (input) => {
     }
 
     case "info": {
+      if (input.trim() === "info") {
+        break;
+      }
       const [name, phone] = input.substring(input.indexOf(" ") + 1).split(",");
       params.name = name.trim();
       params.phone = phone.trim();

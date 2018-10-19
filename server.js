@@ -67,13 +67,19 @@ router.post("/command", (ctx, next) => {
     }
 
     case "info": {
-      Users.addUser(username, parsed.params.name, parsed.params.phone);
-      ctx.body = { text: `Added information for ${username}` };
+      if (!parsed.params.name || !parsed.params.phone) {
+        const you = Users.getUser(username);
+        ctx.body = { text: `${you.name}'s number is ${you.phone}.` };
+      } else {
+        Users.addUser(username, parsed.params.name, parsed.params.phone);
+        ctx.body = { text: `Added information for ${username}` };
+      }
       break;
     }
 
     default: {
-      const text = "Hi, I'm Alfred! Make sure you enter your info before ordering.\n" +
+      const prefix = parsed.command === "help" ? "" : "_Command not recognized_\n";
+      const text = `${prefix}Hi, I'm Alfred! Make sure you enter your info before ordering.\n` +
         "```alfred info [name], [number]```\n" +
         "> `name` should be your name on Seamless\n" +
         "> `number` is the phone number you'll receive the call on if you're selected\n\n" +
