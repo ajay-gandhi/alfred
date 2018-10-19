@@ -77,9 +77,8 @@ router.post("/command", (ctx, next) => {
       break;
     }
 
-    default: {
-      const prefix = parsed.command === "help" ? "" : "_Command not recognized_\n";
-      const text = `${prefix}Hi, I'm Alfred! Make sure you enter your info before ordering.\n` +
+    case "help": {
+      const text = "Hi, I'm Alfred! Make sure you enter your info before ordering.\n" +
         "```alfred info [name], [number]```\n" +
         "> `name` should be your name on Seamless\n" +
         "> `number` is the phone number you'll receive the call on if you're selected\n\n" +
@@ -91,6 +90,10 @@ router.post("/command", (ctx, next) => {
         "> Forget today's order\n\n" +
         "Ordering ends at 3:30, and delivery time is selected for 5:30.";
       ctx.body = { text };
+    }
+
+    default: {
+      ctx.body = { text: "Command not recognized. Try \`alfred help\`" };
     }
   }
   next();
