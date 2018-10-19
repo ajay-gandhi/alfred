@@ -18,5 +18,5 @@ module.exports.addUser = (username, name, phone) => {
   write();
 };
 
-const write = () => fs.writeFileSync(USERS_FILE, JSON.stringify(users));
+const write = () => fs.writeFileSync(USERS_FILE, JSON.stringify(users, null, 2));
 

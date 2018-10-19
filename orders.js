@@ -29,5 +29,5 @@ module.exports.clearOrders = () => {
   write();
 };
 
-const write = () => fs.writeFileSync(ORDERS_FILE, JSON.stringify(orders));
+const write = () => fs.writeFileSync(ORDERS_FILE, JSON.stringify(orders, null, 2));
 
