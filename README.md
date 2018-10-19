@@ -7,13 +7,13 @@ and places them on Seamless corporate.
 
 ## Todos
 
-Things to do, in order of urgency
+Things to do, in order of urgency:
 
-* Implement adding tip to reach minimum
-* Implement confirmation at 3pm
-* Implement stats
-* Implement time of delivery
-* Implement NLP
+* Save stats
+* Adding tip to reach minimum
+* Send confirmation at 3pm
+* NLP
+* Configurable time of delivery
 
 ## Layout
 
