@@ -72,7 +72,7 @@ router.post("/command", (ctx, next) => {
         const you = Users.getUser(username);
         ctx.body = { text: `${you.name}'s number is ${you.phone}.` };
       } else {
-        Users.addUser(username, parsed.params.name, parsed.params.phone);
+        Users.addUser(username, parsed.params.name, parsed.params.phone, ctx.request.body.user_id);
         ctx.body = { text: `Added information for ${username}` };
       }
       break;

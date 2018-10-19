@@ -9,7 +9,6 @@ and places them on Seamless corporate.
 
 Things to do, in order of urgency
 
-* Store user ID when saving info
 * Implement adding tip to reach minimum
 * Implement confirmation at 3pm
 * Implement stats

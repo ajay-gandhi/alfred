@@ -31,7 +31,7 @@ module.exports.sendFinishedMessage = (parts) => {
     if (part.successful) {
       attachment.title = part.restaurant;
       attachment.title_link = part.confirmationUrl;
-      attachment.text = `${part.user} will receive the call.`;
+      attachment.text = `<@${part.slackId}> will receive the call.`;
     } else {
       attachment.title = `${part.restaurant} (failed)`;
       attachment.text = part.errors.join("\n");

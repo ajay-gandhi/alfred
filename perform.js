@@ -55,7 +55,7 @@ module.exports.do = async (dryRun) => {
         results.push({
           successful: true,
           restaurant: orderSet.restaurant,
-          user: orderResult.user.username,
+          user: orderResult.user.slackId,
           confirmationUrl: `https://alfred.ajay-gandhi.com/confirmations/${sanitizeFilename(orderSet.restaurant)}.pdf`,
         });
       }
