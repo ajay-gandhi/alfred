@@ -8,6 +8,9 @@ const testInputs = [
   "alfred order chicken momo from newa at 5pm",
   "alfred forget",
   "alfred info ajay gandhi, 1234567890",
+  "alfred stats",
+  "alfred stats from xyz",
+  "alfred all-stats",
 ];
 
 const testOutputs = [
@@ -61,6 +64,20 @@ const testOutputs = [
       phone: "1234567890",
     },
   },
+  {
+    command: "stats",
+    params: {},
+  },
+  {
+    command: "stats",
+    params: {
+      restaurant: "xyz",
+    },
+  },
+  {
+    command: "all-stats",
+    params: {},
+  },
 ];
 
 test("parses basic add order", () => {
@@ -85,5 +102,17 @@ test("parses remove order", () => {
 
 test("parses adding user", () => {
   expect(Parser.parse(testInputs[5])).toEqual(testOutputs[5]);
+});
+
+test("parses getting stats", () => {
+  expect(Parser.parse(testInputs[6])).toEqual(testOutputs[6]);
+});
+
+test("parses getting stats from restaurant", () => {
+  expect(Parser.parse(testInputs[7])).toEqual(testOutputs[7]);
+});
+
+test("parses getting all stats", () => {
+  expect(Parser.parse(testInputs[8])).toEqual(testOutputs[8]);
 });
 

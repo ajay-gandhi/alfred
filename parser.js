@@ -67,7 +67,7 @@ module.exports.parse = (input) => {
     }
 
     case "stats": {
-      const parts = input.substring(input.indexOf(" ") + 1).split(" from ");
+      const parts = input.split(" from ");
       if (parts.length > 1) {
         params.restaurant = parts[1];
       }
