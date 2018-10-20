@@ -66,7 +66,16 @@ module.exports.parse = (input) => {
       break;
     }
 
-    // Don't have any extra params for this case
+    case "stats": {
+      const parts = input.substring(input.indexOf(" ") + 1).split(" from ");
+      if (parts.length > 1) {
+        params.restaurant = parts[1];
+      }
+      break;
+    }
+
+    // Don't have any extra params for these cases
+    case "all-stats":
     case "forget":
     default:
       break;

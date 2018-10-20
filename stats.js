@@ -128,6 +128,7 @@ const save = () => fs.writeFileSync(STATS_FILE, JSON.stringify(stats, null, 2));
 
 module.exports = {
   getDollarsForRestaurant,
+  getDollarsForUser,
   getTotalDollars,
   getTopDishesForRestaurant,
   getTopDishesForUser,

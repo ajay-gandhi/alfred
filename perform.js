@@ -56,14 +56,14 @@ module.exports.do = async (dryRun) => {
         results.push({
           successful: true,
           restaurant: orderSet.restaurant,
-          user: orderResult.user.slackId,
+          user: orderResult.user.username,
           confirmationUrl: `https://alfred.ajay-gandhi.com/confirmations/${sanitizeFilename(orderSet.restaurant)}.pdf`,
         });
 
         // Record stats
-        // if (!dryRun) {
+        if (!dryRun) {
           statsHelper(orderSet.restaurant, orders, orderResult.orderAmounts);
-        // }
+        }
       }
 
       // Give seamless a break

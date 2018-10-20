@@ -3,10 +3,19 @@
  */
 
 const request = require("request");
+const Users = require("../users");
 const private = require("../private");
 
 module.exports.sendBasicMessage = (message) => {
   sendMessage({ text: message });
+};
+
+const atUser = username => `<@${Users.getUser(username).slackId}>`;
+module.exports.atUser = atUser;
+
+// Formats the given stats
+module.exports.statsFormatter = (dollars, dishes) => {
+  return `\`\`\`Total spent: $${dollars}\n\nTop dishes:\n${dishes.map(d => `  ${d}`).join("\n")}`;
 };
 
 /**
@@ -31,7 +40,7 @@ module.exports.sendFinishedMessage = (parts) => {
     if (part.successful) {
       attachment.title = part.restaurant;
       attachment.title_link = part.confirmationUrl;
-      attachment.text = `<@${part.slackId}> will receive the call.`;
+      attachment.text = `${atUser(parts.user)} will receive the call.`;
     } else {
       attachment.title = `${part.restaurant} (failed)`;
       attachment.text = part.errors.join("\n");

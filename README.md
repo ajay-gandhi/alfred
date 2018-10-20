@@ -9,7 +9,6 @@ and places them on Seamless corporate.
 
 Things to do, in order of urgency:
 
-* Save dollar amount stats
 * Adding tip to reach minimum
 * Send confirmation at 3pm
 * NLP

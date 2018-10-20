@@ -9,6 +9,8 @@ const LOG = new Logger("alfred");
 const Parser = require("./parser");
 const Recorder = require("./recorder");
 const Users = require("./users");
+const Stats = require("./stats");
+const Slack = require("../util/slack");
 const private = require("./private");
 
 const app = new Koa();
@@ -78,8 +80,30 @@ router.post("/command", (ctx, next) => {
       break;
     }
 
+    case "stats": {
+      if (parsed.params.restaurant) {
+        const restaurant = Menu.findRestaurantByName(parsed.params.restaurant).name;
+        const dollars = Stats.getDollarsForRestaurant(username, restaurant);
+        const topDishes = Stats.getTopDishesForRestaurant(username, restaurant);
+        const text = `Stats for ${Slack.atUser(username)} from ${restaurant}:\n${Slack.statsFormatter(dollars, topDishes)}`;
+        ctx.body = { text };
+      } else {
+        const dollars = Stats.getDollarsForUser(username);
+        const topDishes = Stats.getTopDishesForUser(username);
+        const text = `General stats for ${Slack.atUser(username)}:\n${Slack.statsFormatter(dollars, topDishes)}`;
+        ctx.body = { text };
+      }
+    }
+
+    case "all-stats": {
+      const dollars = Stats.getTotalDollars();
+      const topDishes = Stats.getTopDishes();
+      const text = `Global stats:\n${Slack.statsFormatter(dollars, topDishes)}`;
+      ctx.body = { text };
+    }
+
     case "help": {
-      const text = "Hi, I'm Alfred! Make sure you enter your info before ordering.\n" +
+      const text = "Hi, I'm Alfred! Make sure you enter you're info before ordering.\n" +
         "```alfred info [name], [number]```\n" +
         "> `name` should be your name on Seamless\n" +
         "> `number` is the phone number you'll receive the call on if you're selected\n\n" +
