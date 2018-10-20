@@ -26,22 +26,34 @@ const testOutputs = [
   [
     {
       "restaurant": "american",
-      "names": ["alice"],
-      "items": [["hot dog", []], ["burger", ["lettuce"]]],
+      "users": [
+        {
+          "username": "alice",
+          "items": [["hot dog", []], ["burger", ["lettuce"]]],
+        },
+      ],
     },
     {
       "restaurant": "italian",
-      "names": ["bob", "cad"],
-      "items": [["pizza", ["onions"]], ["pasta", []], ["pizza", ["chicken"]]],
+      "users": [
+        {
+          "username": "bob",
+          "items": [["pizza", ["onions"]], ["pasta", []]],
+        },
+        {
+          "username": "cad",
+          "items": [["pizza", ["chicken"]]],
+        },
+      ],
     },
   ],
 ];
 
 test("transforms empty data", () => {
-  expect(Transform.extractOrdersAndNames(testInputs[0])).toEqual(testOutputs[0]);
+  expect(Transform.indexByRestaurantAndUser(testInputs[0])).toEqual(testOutputs[0]);
 });
 
 test("transforms several data", () => {
-  expect(Transform.extractOrdersAndNames(testInputs[1])).toEqual(testOutputs[1]);
+  expect(Transform.indexByRestaurantAndUser(testInputs[1])).toEqual(testOutputs[1]);
 });
 
