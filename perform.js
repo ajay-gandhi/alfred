@@ -21,13 +21,13 @@ const URLS = {
 };
 const INITIAL_RETRIES = 2;
 
-const DEFAULT_TIME = "5:30 PM";
+const DEFAULT_TIME = "10:00 PM";
 
 module.exports.do = async (dryRun) => {
   const orders = Orders.getOrders();
   if (Object.keys(orders).length === 0) return;
 
-  const orderSets = Transform.extractOrdersAndNames(orders);
+  const orderSets = Transform.indexByRestaurantAndUser(orders);
 
   const browser = await puppeteer.launch({
     executablePath: "/usr/bin/chromium-browser",
@@ -44,7 +44,7 @@ module.exports.do = async (dryRun) => {
     console.log("Logged in");
 
     for (const orderSet of orderSets) {
-      const orderResult = await orderFromRestaurant(page, orderSet.restaurant, orderSet.items, orderSet.names, dryRun, INITIAL_RETRIES);
+      const orderResult = await orderFromRestaurant(page, orderSet.restaurant, orderSet.users, dryRun, INITIAL_RETRIES);
 
       if (orderResult.errors) {
         results.push({
@@ -61,16 +61,18 @@ module.exports.do = async (dryRun) => {
         });
 
         // Record stats
-        if (!dryRun) {
-          statsHelper(orderSet.restaurant, orders);
-        }
+        // if (!dryRun) {
+          statsHelper(orderSet.restaurant, orders, orderResult.orderAmounts);
+        // }
       }
 
       // Give seamless a break
       await page.waitFor(5000);
     }
 
-    Slack.sendFinishedMessage(results);
+    if (!dryRun) {
+      Slack.sendFinishedMessage(results);
+    }
   } catch (err) {
     console.log("Crashed with error", err);
   }
@@ -103,14 +105,16 @@ const loginToSeamless = async (page, creds) => {
  * Given a page with a logged-in status, this function will submit an order
  * at the given restaurant with the given items for the given usernames.
  */
-const orderFromRestaurant = async (page, restaurant, orders, usernames, dryRun, retries) => {
+const orderFromRestaurant = async (page, restaurant, userOrders, dryRun, retries) => {
   try {
     let result = {};
+
+    const usernames = userOrders.map(o => o.username);
 
     const steps = [
       chooseTime.bind(null, page),
       chooseRestaurant.bind(null, page, restaurant),
-      fillOrders.bind(null, page, orders),
+      fillOrders.bind(null, page, userOrders),
       fillNames.bind(null, page, usernames),
       fillPhoneNumber.bind(null, page, usernames),
     ];
@@ -126,7 +130,7 @@ const orderFromRestaurant = async (page, restaurant, orders, usernames, dryRun, 
         if (stepOutput.errors) {
           if (stepOutput.retry && retries > 0) {
             // Don't really care why, just retry
-            return await orderFromRestaurant(page, restaurant, orders, usernames, dryRun, retries - 1);
+            return await orderFromRestaurant(page, restaurant, userOrders, dryRun, retries - 1);
           } else {
             return stepOutput;
           }
@@ -220,33 +224,48 @@ const chooseRestaurant = async (page, restaurant) => {
  *     ],
  *   ]
  */
-const fillOrders = async (page, orders) => {
+const fillOrders = async (page, userOrders) => {
+  console.log("Filling orders", userOrders);
   try {
-    for (const [item, options] of orders) {
-      // Click menu item
-      const itemLinks = await page.$$("a[name=\"product\"]");
-      let ourItem;
-      for (const anchor of itemLinks) {
-        const text = await page.evaluate(e => e.innerText.toLowerCase(), anchor);
-        if (text.includes(item.toLowerCase())) ourItem = anchor;
-      }
-      await ourItem.click();
-      await page.waitFor(1500);
+    const orderAmounts = [];
 
-      // Select options
-      const optionLinks = await page.$$("li label");
-      for (const input of optionLinks) {
-        await page.evaluate((elm, opts) => {
-          const text = elm.innerText.toLowerCase();
-          const isSelected = opts.reduce((memo, o) => memo || text.includes(o.toLowerCase()), false);
-          if (isSelected) elm.click();
-        }, input, options);
+    for (let i = 0; i < userOrders.length; i++) {
+      const totalBefore = await foodBevTotal(page);
+      for (const [item, options] of userOrders[i].items) {
+        // Click menu item
+        const itemLinks = await page.$$("a[name=\"product\"]");
+        let ourItem;
+        for (const anchor of itemLinks) {
+          const text = await page.evaluate(e => e.innerText.toLowerCase(), anchor);
+          if (text.includes(item.toLowerCase())) ourItem = anchor;
+        }
+        await ourItem.click();
+        await page.waitFor(1500);
+
+        // Select options
+        const optionLinks = await page.$$("li label");
+        for (const input of optionLinks) {
+          await page.evaluate((elm, opts) => {
+            const text = elm.innerText.toLowerCase();
+            const isSelected = opts.reduce((memo, o) => memo || text.includes(o.toLowerCase()), false);
+            if (isSelected) elm.click();
+          }, input, options);
+        }
+
+        // Click add to order
+        await page.$eval("a#a1", e => e.click());
+        await page.waitFor(2000);
       }
 
-      // Click add to order
-      await page.$eval("a#a1", e => e.click());
-      await page.waitFor(2000);
+      // Record for stats
+      orderAmounts.push({
+        username: userOrders[i].username,
+        amount: (await foodBevTotal(page)) - totalBefore,
+      });
     }
+
+    console.log(orderAmounts);
+    return { orderAmounts };
   } catch (e) {
     // Most likely a timeout, or we didn't wait long enough
     return {
@@ -346,10 +365,21 @@ const sanitizeFilename = n => n.replace(NOT_ALPHAN_REGEX, "_").replace(/^_+|_+$/
 /**
  * Saves the provided data as stats
  */
-const statsHelper = (restaurant, allOrders) => {
+const statsHelper = (restaurant, allOrders, orderAmounts) => {
   Object.keys(allOrders).forEach((username) => {
     if (allOrders[username].restaurant === restaurant) {
       allOrders[username].items.forEach(i => Stats.recordDish(username, restaurant, i));
     }
   });
+
+  orderAmounts.forEach(oa => Stats.recordDollars[oa.username, oa.amount]);
 };
+
+/**
+ * Given a page at the add items stage, returns the current food/beverages total
+ */
+const totalSelector = "div#OrderTotals table tbody tr:not(.noline):not(.subtotal) td:not(.main)";
+const foodBevTotal = async (page) => {
+  const textTotal = await page.$eval(totalSelector, e => e.innerText);
+  return parseFloat(textTotal.substring(1));
+}

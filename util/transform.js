@@ -1,17 +1,16 @@
 /**
  * Module for transforming data
  *
- * Orders data is stored persistently in a JSON hash keyed by name, with the
+ * Orders data is stored persistently in a JSON hash keyed by username, with the
  * value being a hash containing the restaurant and items. This allows for easy
  * overwriting and removing of orders.
  *
- * When inputting the order on Seamless, it's necessary to do so by batching
- * orders by restaurant. This function transforms the hash defined above to an
- * array of objects, containing the restaurant, the names of all those involved
- * in the orders from this restaurant, and a list of all orders.
- *
+ * When inputting the order on Seamless, it's necessary to group orders by
+ * restaurant. This function transforms the hash defined above to an array of
+ * objects, containing the restaurant and an array of objects containing the
+ * username and the items they ordered.
  */
-module.exports.extractOrdersAndNames = (data) => {
+module.exports.indexByRestaurantAndUser = (data) => {
   const newData = {};
 
   const usernames = Object.keys(data);
@@ -20,13 +19,14 @@ module.exports.extractOrdersAndNames = (data) => {
     if (!newData[restaurant]) {
       newData[restaurant] = {
         restaurant,
-        names: [],
-        items: [],
+        users: [],
       };
     }
 
-    newData[restaurant].names.push(username);
-    newData[restaurant].items = newData[restaurant].items.concat(data[username].items);
+    newData[restaurant].users.push({
+      username,
+      items: data[username].items,
+    });
   }
 
   return Object.values(newData);
