@@ -9,6 +9,7 @@
 const puppeteer = require("puppeteer");
 const Orders = require("./orders");
 const Users = require("./users");
+const Stats = require("./stats");
 const Transform = require("./util/transform");
 const Slack = require("./util/slack");
 
@@ -58,6 +59,11 @@ module.exports.do = async (dryRun) => {
           user: orderResult.user.slackId,
           confirmationUrl: `https://alfred.ajay-gandhi.com/confirmations/${sanitizeFilename(orderSet.restaurant)}.pdf`,
         });
+
+        // Record stats
+        if (!dryRun) {
+          statsHelper(orderSet.restaurant, orders);
+        }
       }
 
       // Give seamless a break
@@ -72,6 +78,7 @@ module.exports.do = async (dryRun) => {
   if (!dryRun) {
     // Clear orders if we're done
     Orders.clearOrders();
+    Stats.save();
   }
   await browser.close();
 };
@@ -328,8 +335,21 @@ const fillPhoneNumber = async (page, usernames) => {
   }
 };
 
+/********************************** Helpers ***********************************/
+
 /**
  * Converts a restaurant name to one that's nice for the FS
  */
 const NOT_ALPHAN_REGEX = /[\W_]+/g;
 const sanitizeFilename = n => n.replace(NOT_ALPHAN_REGEX, "_").replace(/^_+|_+$/g, "").toLowerCase();
+
+/**
+ * Saves the provided data as stats
+ */
+const statsHelper = (restaurant, allOrders) => {
+  Object.keys(allOrders).forEach((username) => {
+    if (allOrders[username].restaurant === restaurant) {
+      allOrders[username].items.forEach(i => Stats.recordDish(username, restaurant, i));
+    }
+  });
+};
