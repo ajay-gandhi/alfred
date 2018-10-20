@@ -15,7 +15,13 @@ module.exports.atUser = atUser;
 
 // Formats the given stats
 module.exports.statsFormatter = (dollars, dishes) => {
-  return `\`\`\`Total spent: $${dollars}\n\nTop dishes:\n${dishes.map(d => `  ${d}`).join("\n")}`;
+  let dishStats = "  None";
+  if (dishes.length > 0) {
+    const rest = d.restaurant ? ` from ${d.restaurant}` : "";
+    dishStats = dishes.map(d => `  ${d.count} of "${d.itemName}"${rest}`);
+  }
+  const dishStats = dishes.length === 0 ? "  None" : dishes.map(d => `  ${d}`).join("\n");
+  return `\`\`\`Total spent: $${dollars}\n\nTop dishes:\n${dishStats}`;
 };
 
 /**

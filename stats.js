@@ -35,6 +35,8 @@ const getTotalDollars = () => Object.keys(stats).reduce((m, u) => m + getDollars
  * Return the top dishes for this user at this restaurant
  */
 const getTopDishesForRestaurant = (user, restaurant, givenTops) => {
+  if (!stats[user] || !stats[user][restaurant]) return [];
+
   const tops = givenTops || [];
   if (!givenTops) for (let i = 0; i < N_TOP_DISHES; i++) { tops.push({ count: 0 }); }
 
@@ -46,6 +48,7 @@ const getTopDishesForRestaurant = (user, restaurant, givenTops) => {
           itemName,
           count: stats[user][restaurant].items[itemName],
         });
+        if (givenTops) tops[i].restaurant = restaurant;
         tops.pop();
       }
     }
@@ -57,6 +60,8 @@ const getTopDishesForRestaurant = (user, restaurant, givenTops) => {
  * Return the top dishes for this user
  */
 const getTopDishesForUser = (user) => {
+  if (!stats[user]) return [];
+
   const tops = [];
   for (let i = 0; i < N_TOP_DISHES; i++) { tops.push({ count: 0 }); }
 
@@ -102,6 +107,8 @@ const getTopDishes = () => {
       }
     });
   });
+
+  return tops.filter(t => !!t.restaurant);
 };
 
 /**
@@ -116,7 +123,7 @@ const recordDollars = (user, restaurant, dollars) => {
 };
 
 /**
- * Record that the give user ordered the given item from the given restaurant
+ * Record that the given user ordered the given item from the given restaurant
  */
 const recordDish = (user, restaurant, itemName) => {
   if (!stats[user])                             stats[user] = {};
