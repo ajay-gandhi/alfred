@@ -116,16 +116,16 @@ const getTopDishes = () => {
 /********************************** Exports ***********************************/
 
 // The following functions consolidate data from above helpers
-const getStatsForUserFromRestaurant => (user, restaurant) => ({
+const getStatsForUserFromRestaurant = (user, restaurant) => ({
   dollars: getDollarsForRestaurant(user, restaurant),
   dishes: getTopDishesForRestaurant(user, restaurant),
 });
-const getStatsForUser => (user) => ({
+const getStatsForUser = (user) => ({
   calls: getCallsForUser(user),
   dollars: getDollarsForUser(user),
   dishes: getTopDishesForUser(user),
 });
-const getGlobalStats => () => ({
+const getGlobalStats = () => ({
   dollars: getTotalDollars(),
   dishes: getTopDishes(),
 });

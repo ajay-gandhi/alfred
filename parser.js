@@ -21,7 +21,7 @@ const OPTIONS_REGEX = /\[(.*)\]/;
  * {
  *   command,
  *   params: {
- *     # depends on the command
+ *     // depends on the command
  *   },
  * }
  *
