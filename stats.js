@@ -14,12 +14,12 @@ module.exports.getAllStats = () => stats;
 /**
  * Return the dollar value that the user spent at this restaurant
  */
-const getDollarsForRestaurant = (u, r) => stats[u][r].dollars;
+const getDollarsForRestaurant = (u, r) => stats[u] && stats[u][r] && stats[u][r] && stats[u][r].dollars || 0;
 
 /**
  * Return the dollar value that the user spent
  */
-const getDollarsForUser = (u) => Object.keys(stats[u]).reduce((m, r) => m + getDollarsForRestaurant(u, r), 0);
+const getDollarsForUser = u => Object.keys(stats[u]).reduce((m, r) => m + getDollarsForRestaurant(u, r), 0);
 
 /**
  * Return the dollar value that all users spent

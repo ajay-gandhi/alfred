@@ -104,15 +104,36 @@ router.post("/command", (ctx, next) => {
 
     case "help": {
       const text = "Hi, I'm Alfred! Make sure you enter you're info before ordering.\n" +
-        "```alfred info [name], [number]```\n" +
+        "```alfred info {name}, {number}```\n" +
         "> `name` should be your name on Seamless\n" +
         "> `number` is the phone number you'll receive the call on if you're selected\n\n" +
-        "```alfred order [dishes] from [restaurant]```\n" +
+        "```alfred order {dishes} from {restaurant}```\n" +
         "> `dishes` is a comma-separated list of the items you'd like to order.\n" +
         "> If you'd like to select / add options to a dish, add them them as a comma-separated list surrounded by square brackets `[]`\n" +
         "> `restaurant` is the name of the restaurant\n\n" +
         "```alfred forget```\n" +
         "> Forget today's order\n\n" +
+        "```alfred full-help```\n" +
+        "> See the complete list of commands\n\n" +
+        "Ordering ends at 3:30, and delivery time is selected for 5:30.";
+      ctx.body = { text };
+    }
+
+    case "full-help": {
+      const text = "Hi, I'm Alfred! Make sure you enter you're info before ordering.\n" +
+        "```alfred info {name}, {number}```\n" +
+        "> `name` should be your name on Seamless\n" +
+        "> `number` is the phone number you'll receive the call on if you're selected\n\n" +
+        "```alfred order {dishes} from {restaurant}```\n" +
+        "> `dishes` is a comma-separated list of the items you'd like to order.\n" +
+        "> If you'd like to select / add options to a dish, add them them as a comma-separated list surrounded by square brackets `[]`\n" +
+        "> `restaurant` is the name of the restaurant\n\n" +
+        "```alfred forget```\n" +
+        "> Forget today's order\n\n" +
+        "```alfred stats [from {restaurant}]```\n" +
+        "> See your stats, optionally specifying the restaurant\n\n" +
+        "```alfred all-stats```\n" +
+        "> See global stats\n\n" +
         "Ordering ends at 3:30, and delivery time is selected for 5:30.";
       ctx.body = { text };
     }

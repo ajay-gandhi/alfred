@@ -9,6 +9,7 @@ and places them on Seamless corporate.
 
 Things to do, in order of urgency:
 
+* Use a proper DB LOL
 * Adding tip to reach minimum
 * Send confirmation at 3pm
 * NLP
