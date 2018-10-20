@@ -83,22 +83,19 @@ router.post("/command", (ctx, next) => {
     case "stats": {
       if (parsed.params.restaurant) {
         const restaurant = Menu.findRestaurantByName(parsed.params.restaurant).name;
-        const dollars = Stats.getDollarsForRestaurant(username, restaurant);
-        const topDishes = Stats.getTopDishesForRestaurant(username, restaurant);
-        const text = `Stats for ${Slack.atUser(username)} from ${restaurant}:\n${Slack.statsFormatter(dollars, topDishes)}`;
+        const stats = Stats.getStatsForUserFromRestaurant(username, restaurant);
+        const text = `Stats for ${Slack.atUser(username)} from ${restaurant}:\n${Slack.statsFormatter(stats)}`;
         ctx.body = { text };
       } else {
-        const dollars = Stats.getDollarsForUser(username);
-        const topDishes = Stats.getTopDishesForUser(username);
-        const text = `General stats for ${Slack.atUser(username)}:\n${Slack.statsFormatter(dollars, topDishes)}`;
+        const stats = Stats.getStatsForUser(username);
+        const text = `General stats for ${Slack.atUser(username)}:\n${Slack.statsFormatter(stats)}`;
         ctx.body = { text };
       }
     }
 
     case "all-stats": {
-      const dollars = Stats.getTotalDollars();
-      const topDishes = Stats.getTopDishes();
-      const text = `Global stats:\n${Slack.statsFormatter(dollars, topDishes)}`;
+      const stats = Stats.getGlobalStats();
+      const text = `Global stats:\n${Slack.statsFormatter(stats)}`;
       ctx.body = { text };
     }
 

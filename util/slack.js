@@ -14,14 +14,22 @@ const atUser = username => `<@${Users.getUser(username).slackId}>`;
 module.exports.atUser = atUser;
 
 // Formats the given stats
-module.exports.statsFormatter = (dollars, dishes) => {
-  let dishStats = "  None";
-  if (dishes.length > 0) {
-    const rest = d.restaurant ? ` from ${d.restaurant}` : "";
-    dishStats = dishes.map(d => `  ${d.count} of "${d.itemName}"${rest}`);
+const otherMessage = "\n\nWant other stats? Message Ajay!";
+module.exports.statsFormatter = (stats) => {
+  const dollarStats = `Total spent: $${stats.dollars}\n\n`;
+
+  let callStats = "";
+  if (stats.calls) {
+    callStats = `Total calls received: ${stats.calls}`;
   }
-  const dishStats = dishes.length === 0 ? "  None" : dishes.map(d => `  ${d}`).join("\n");
-  return `\`\`\`Total spent: $${dollars}\n\nTop dishes:\n${dishStats}`;
+
+  let dishStats = "  None";
+  if (stats.dishes.length > 0) {
+    const rest = d.restaurant ? ` from ${d.restaurant}` : "";
+    formattedDishes= stats.dishes.map(d => `  ${d.count} of "${d.itemName}"${rest}`);
+    dishStats = `Top dishes:\n${formattedDishes.join("\n")}`;
+  }
+  return `\`\`\`${dollarStats}${callStats}${dishStats}${otherMessage}\`\`\``;
 };
 
 /**

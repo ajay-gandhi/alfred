@@ -11,6 +11,8 @@ const N_TOP_DISHES = 3;
 
 module.exports.getAllStats = () => stats;
 
+/********************************** Helpers ***********************************/
+
 /**
  * Return how many times the given user has been called
  */
@@ -111,6 +113,23 @@ const getTopDishes = () => {
   return tops.filter(t => !!t.restaurant);
 };
 
+/********************************** Exports ***********************************/
+
+// The following functions consolidate data from above helpers
+const getStatsForUserFromRestaurant => (user, restaurant) => ({
+  dollars: getDollarsForRestaurant(user, restaurant),
+  dishes: getTopDishesForRestaurant(user, restaurant),
+});
+const getStatsForUser => (user) => ({
+  calls: getCallsForUser(user),
+  dollars: getDollarsForUser(user),
+  dishes: getTopDishesForUser(user),
+});
+const getGlobalStats => () => ({
+  dollars: getTotalDollars(),
+  dishes: getTopDishes(),
+});
+
 /**
  * Record that the given user ordered the given dollar amount from the given
  * restaurant
@@ -147,13 +166,9 @@ const recordCall = (user) => {
 const save = () => fs.writeFileSync(STATS_FILE, JSON.stringify(stats, null, 2));
 
 module.exports = {
-  getCallsForUser,
-  getDollarsForRestaurant,
-  getDollarsForUser,
-  getTotalDollars,
-  getTopDishesForRestaurant,
-  getTopDishesForUser,
-  getTopDishes,
+  getStatsForUserFromRestaurant,
+  getStatsForUser,
+  getGlobalStats,
   recordDollars,
   recordDish,
   recordCall,
