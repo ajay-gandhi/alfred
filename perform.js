@@ -212,20 +212,22 @@ const chooseRestaurant = async (page, restaurant) => {
  * Given a page at the order stage, this function will add the given orders to
  * the cart.
  *
- * The orders parameter should be an array of this form:
- *   [
- *     [
- *       "dish1",
- *       ["option 1", "option 2"],
- *     ],
- *     [
- *       "dish2",
- *       ["option 1", "option 2"],
- *     ],
- *   ]
+ * The userOrders parameter should be an array of objects of this form:
+ *   {
+ *     username: "bobby",
+ *     items: [
+ *       [
+ *         "dish1",
+ *         ["option 1", "option 2"],
+ *       ],
+ *       [
+ *         "dish2",
+ *         ["option 1", "option 2"],
+ *       ],
+ *     ]
+ *   }
  */
 const fillOrders = async (page, userOrders) => {
-  console.log("Filling orders", userOrders);
   try {
     const orderAmounts = [];
 
@@ -264,7 +266,6 @@ const fillOrders = async (page, userOrders) => {
       });
     }
 
-    console.log(orderAmounts);
     return { orderAmounts };
   } catch (e) {
     // Most likely a timeout, or we didn't wait long enough
