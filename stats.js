@@ -12,6 +12,11 @@ const N_TOP_DISHES = 3;
 module.exports.getAllStats = () => stats;
 
 /**
+ * Return how many times the given user has been called
+ */
+const getCallsForUser = u => stats[u] && stats[u].calls || 0;
+
+/**
  * Return the dollar value that the user spent at this restaurant
  */
 const getDollarsForRestaurant = (u, r) => stats[u] && stats[u][r] && stats[u][r] && stats[u][r].dollars || 0;
@@ -122,11 +127,20 @@ const recordDish = (user, restaurant, itemName) => {
 };
 
 /**
+ * Record that the given user was selected for a call
+ */
+const recordCall = (user) => {
+  if (!stats[user]) stats[user] = {};
+  stats[user].calls = stats[user].calls ? stats[user].calls + 1 : 1;
+};
+
+/**
  * Save the new data to disk
  */
 const save = () => fs.writeFileSync(STATS_FILE, JSON.stringify(stats, null, 2));
 
 module.exports = {
+  getCallsForUser,
   getDollarsForRestaurant,
   getDollarsForUser,
   getTotalDollars,
@@ -135,6 +149,6 @@ module.exports = {
   getTopDishes,
   recordDollars,
   recordDish,
+  recordCall,
   save,
 };
-
