@@ -40,22 +40,22 @@ const getTopDishesForRestaurant = (user, restaurant, givenTops) => {
   if (!stats[user] || !stats[user][restaurant]) return [];
 
   const tops = givenTops || [];
-  if (!givenTops) for (let i = 0; i < N_TOP_DISHES; i++) { tops.push({ count: 0 }); }
 
   Object.keys(stats[user][restaurant].items).forEach((itemName) => {
     for (let i = 0; i < N_TOP_DISHES; i++) {
-      if (stats[user][restaurant].items[itemName] > tops[i].count) {
+      if (!tops[i] || stats[user][restaurant].items[itemName] > tops[i].count) {
         tops.splice(i, 0, {
           restaurant,
           itemName,
           count: stats[user][restaurant].items[itemName],
         });
         if (givenTops) tops[i].restaurant = restaurant;
-        tops.pop();
+        if (tops.length > N_TOP_DISHES) tops.pop();
+        break;
       }
     }
   });
-  return tops.filter(t => !!t.restaurant);
+  return tops.filter(t => t.count > 0);
 };
 
 /**
@@ -64,13 +64,9 @@ const getTopDishesForRestaurant = (user, restaurant, givenTops) => {
 const getTopDishesForUser = (user) => {
   if (!stats[user]) return [];
 
-  const tops = [];
-  for (let i = 0; i < N_TOP_DISHES; i++) { tops.push({ count: 0 }); }
-
-  Object.keys(stats[user]).forEach((restaurant) => {
-    tops = getTopDishesForRestaurant(user, restaurant, tops);
-  });
-  return tops.filter(t => !!t.restaurant);
+  return Object.keys(stats[user]).reduce((memo, restaurant) => {
+    return getTopDishesForRestaurant(user, restaurant, memo);
+  }, []).filter(t => t.count > 0);
 };
 
 /**
