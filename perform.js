@@ -228,9 +228,8 @@ const chooseRestaurant = async (page, restaurant) => {
  *   }
  */
 const fillOrders = async (page, userOrders) => {
+  const orderAmounts = [];
   try {
-    const orderAmounts = [];
-
     for (let i = 0; i < userOrders.length; i++) {
       const totalBefore = await foodBevTotal(page);
       for (const [item, options] of userOrders[i].items) {
@@ -265,8 +264,6 @@ const fillOrders = async (page, userOrders) => {
         amount: (await foodBevTotal(page)) - totalBefore,
       });
     }
-
-    return { orderAmounts };
   } catch (e) {
     // Most likely a timeout, or we didn't wait long enough
     return {
@@ -286,8 +283,9 @@ const fillOrders = async (page, userOrders) => {
   }
 
   try {
-    await page.evaluate(e => e.submit(), await page.$("form#pageForm"));
+    await page.$eval("a.findfoodbutton", e => e.click());
     await page.waitForNavigation();
+    return { orderAmounts };
   } catch (e) {
     // Most likely a timeout
     return {
@@ -369,7 +367,7 @@ const sanitizeFilename = n => n.replace(NOT_ALPHAN_REGEX, "_").replace(/^_+|_+$/
 const statsHelper = (restaurant, allOrders, orderAmounts) => {
   Object.keys(allOrders).forEach((username) => {
     if (allOrders[username].restaurant === restaurant) {
-      allOrders[username].items.forEach(i => Stats.recordDish(username, restaurant, i));
+      allOrders[username].items.forEach(i => Stats.recordDish(username, restaurant, i[0]));
     }
   });
 
