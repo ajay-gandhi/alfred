@@ -17,21 +17,23 @@ const atUser = username => {
 module.exports.atUser = atUser;
 
 // Formats the given stats
-const otherMessage = "\n\nWant other stats? Message Ajay!";
 module.exports.statsFormatter = (stats) => {
-  const dollarStats = `Total spent: $${stats.dollars}\n\n`;
+  const dollarStats = `Total spent: $${stats.dollars.toFixed(2)}\n\n`;
 
   let callStats = "";
   if (stats.calls) {
-    callStats = `Total calls received: ${stats.calls}`;
+    callStats = `Total calls received: ${stats.calls}\n\n`;
   }
 
   let dishStats = "  None";
   if (stats.dishes.length > 0) {
-    const rest = d.restaurant ? ` from ${d.restaurant}` : "";
-    formattedDishes= stats.dishes.map(d => `  ${d.count} of "${d.itemName}"${rest}`);
+    formattedDishes= stats.dishes.map((d) => {
+      const rest = d.restaurant ? ` from ${d.restaurant}` : "";
+      return `  ${d.count} of "${d.itemName}"${rest}`;
+    });
     dishStats = `Top dishes:\n${formattedDishes.join("\n")}`;
   }
+  const otherMessage = Math.random() > 0.8 ? "\n\nWant other stats? Message Ajay!" : "";
   return `\`\`\`${dollarStats}${callStats}${dishStats}${otherMessage}\`\`\``;
 };
 
