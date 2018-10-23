@@ -21,7 +21,7 @@ const URLS = {
 };
 const INITIAL_RETRIES = 2;
 
-const DEFAULT_TIME = "10:00 PM";
+const DEFAULT_TIME = "5:30 PM";
 
 module.exports.do = async (dryRun) => {
   const orders = Orders.getOrders();
@@ -62,7 +62,7 @@ module.exports.do = async (dryRun) => {
 
         // Record stats
         if (!dryRun) {
-          statsHelper(orderSet.restaurant, orders, orderResult.orderAmounts);
+          statsHelper(orderSet.restaurant, orders, orderResult.orderAmounts, orderResult.user.username);
         }
       }
 
@@ -154,7 +154,6 @@ const orderFromRestaurant = async (page, restaurant, userOrders, dryRun, retries
 
     return result;
   } catch (e) {
-    console.log(`Failed to order from ${restaurant}`, e);
     return {
       errors: ["Order failed for unknown reason."],
     };
@@ -364,7 +363,7 @@ const sanitizeFilename = n => n.replace(NOT_ALPHAN_REGEX, "_").replace(/^_+|_+$/
 /**
  * Saves the provided data as stats
  */
-const statsHelper = (restaurant, allOrders, orderAmounts) => {
+const statsHelper = (restaurant, allOrders, orderAmounts, userCall) => {
   Object.keys(allOrders).forEach((username) => {
     if (allOrders[username].restaurant === restaurant) {
       allOrders[username].items.forEach(i => Stats.recordDish(username, restaurant, i[0]));
@@ -372,6 +371,7 @@ const statsHelper = (restaurant, allOrders, orderAmounts) => {
   });
 
   orderAmounts.forEach(oa => Stats.recordDollars[oa.username, oa.amount]);
+  Stats.recordCall(userCall);
 };
 
 /**
