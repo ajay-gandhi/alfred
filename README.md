@@ -11,6 +11,7 @@ Things to do, in order of urgency:
 
 * Handle errors when menu items DNE
 * Use a proper DB LOL
+* Redesign stats schema so calls isn't on same level as restaurants
 * Adding tip to reach minimum
 * Send confirmation at 3pm
 * NLP

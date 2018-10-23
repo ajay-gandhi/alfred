@@ -9,8 +9,6 @@ const stats = fs.existsSync(STATS_FILE) ? JSON.parse(fs.readFileSync(STATS_FILE)
 
 const N_TOP_DISHES = 3;
 
-module.exports.getAllStats = () => stats;
-
 /********************************** Helpers ***********************************/
 
 /**
@@ -65,7 +63,8 @@ const getTopDishesForUser = (user) => {
   if (!stats[user]) return [];
 
   return Object.keys(stats[user]).reduce((memo, restaurant) => {
-    return getTopDishesForRestaurant(user, restaurant, memo);
+    // Call this tech debt LOL I'm lazy
+    return restaurant === "calls" ? memo : getTopDishesForRestaurant(user, restaurant, memo);
   }, []).filter(t => t.count > 0);
 };
 
