@@ -59,7 +59,7 @@ module.exports.do = (ctx, next) => {
     case "info": {
       if (!parsed.params.name || !parsed.params.phone) {
         const you = Users.getUser(username);
-        ctx.body = { text: `${you.name}'s number is ${you.phone}.` };
+        ctx.body = { text: `${Slack.atUser(username)}'s info:\`\`\`Name: ${you.name}\nNumber: ${you.phone}\`\`\`` };
       } else {
         Users.addUser(username, parsed.params.name, parsed.params.phone, ctx.request.body.user_id);
         ctx.body = { text: `Added information for ${username}` };
