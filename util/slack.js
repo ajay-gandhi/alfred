@@ -10,7 +10,10 @@ module.exports.sendBasicMessage = (message) => {
   sendMessage({ text: message });
 };
 
-const atUser = username => `<@${Users.getUser(username).slackId}>`;
+const atUser = username => {
+  const u = Users.getUser(username);
+  return u.slackId ? `<@${u.slackId}>` : `@${username}`;
+}
 module.exports.atUser = atUser;
 
 // Formats the given stats
