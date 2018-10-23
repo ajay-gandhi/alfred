@@ -76,6 +76,7 @@ const getTopDishes = () => {
   const consolidated = {};
   Object.keys(stats).forEach((user) => {
     Object.keys(stats[user]).forEach((restaurant) => {
+      if (restaurant === "calls") return;
       if (!consolidated[restaurant]) consolidated[restaurant] = {};
       Object.keys(stats[user][restaurant].items).forEach((itemName) => {
         if (consolidated[restaurant][itemName]) {
@@ -93,13 +94,14 @@ const getTopDishes = () => {
   Object.keys(consolidated).forEach((restaurant) => {
     Object.keys(consolidated[restaurant]).forEach((itemName) => {
       for (let i = 0; i < N_TOP_DISHES; i++) {
-        if (stats[user][restaurant].items[itemName] > tops[i].count) {
+        if (consolidated[restaurant][itemName] > tops[i].count) {
           tops.splice(i, 0, {
             restaurant,
             itemName,
-            count: stats[user][restaurant].items[itemName],
+            count: consolidated[restaurant][itemName],
           });
           tops.pop();
+          break;
         }
       }
     });

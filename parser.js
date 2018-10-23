@@ -31,7 +31,7 @@ module.exports.parse = (input) => {
   input = input.substring(input.indexOf(" ") + 1);
 
   // Grab command
-  const command = input.replace(CMD_REGEX, "").trim();
+  const command = input.split(" ")[0];
 
   const params = {};
   switch (command) {

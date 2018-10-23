@@ -78,12 +78,14 @@ module.exports.do = (ctx, next) => {
         const text = `General stats for ${Slack.atUser(username)}:\n${Slack.statsFormatter(stats)}`;
         ctx.body = { text };
       }
+      break;
     }
 
     case "all-stats": {
       const stats = Stats.getGlobalStats();
       const text = `Global stats:\n${Slack.statsFormatter(stats)}`;
       ctx.body = { text };
+      break;
     }
 
     case "help": {
