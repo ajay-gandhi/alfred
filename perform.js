@@ -370,7 +370,7 @@ const statsHelper = (restaurant, allOrders, orderAmounts, userCall) => {
     }
   });
 
-  orderAmounts.forEach(oa => Stats.recordDollars(oa.username, oa.amount));
+  orderAmounts.forEach(oa => Stats.recordDollars(oa.username, restaurant, oa.amount));
   Stats.recordCall(userCall);
 };
 
