@@ -37,8 +37,12 @@ module.exports.do = (ctx, next) => {
         break;
       }
       const order = Recorder.recordOrder(parsed.params.restaurant, parsed.params.items, username);
-      const itemsList = order.correctedItems.map(i => i[0]).join(", ");
-      ctx.body = { text: `Added ${itemsList} from ${order.restaurant}` };
+      if (order.error) {
+        ctx.body = { text: `${order.error}. Please reorder!` };
+      } else {
+        const itemsList = order.correctedItems.map(i => i[0]).join(", ");
+        ctx.body = { text: `Added ${itemsList} from ${order.restaurant}` };
+      }
       break;
     }
 

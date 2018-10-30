@@ -9,7 +9,6 @@ and places them on Seamless corporate.
 
 Things to do, in order of urgency:
 
-* Handle errors when menu items DNE
 * Use a proper DB LOL
 * Redesign stats schema so calls isn't on same level as restaurants
 * Adding tip to reach minimum

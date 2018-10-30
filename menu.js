@@ -20,7 +20,7 @@ module.exports.findRestaurantByName = (restName) => {
     } else {
       return memo;
     }
-  }, {});
+  }, false);
 };
 
 /**
@@ -30,5 +30,6 @@ module.exports.findRestaurantByName = (restName) => {
  */
 module.exports.findItemByName = (restaurant, itemName) => {
   const menu = MenuData[restaurant].menu;
-  return FuzzAldrin.filter(menu, itemName, { key: "name" })[0];
+  const matches = FuzzAldrin.filter(menu, itemName, { key: "name" });
+  return matches.length === 0 ? false : matches[0];
 };
