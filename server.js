@@ -18,7 +18,7 @@ app.use(async (ctx, next) => {
   LOG.log(`${ctx.method} ${ctx.url}`);
   await next();
 });
-app.use(require("koa-mount")("/confirmations", require("./koa_confirmation_middleware")()));
+app.use(require("koa-mount")("/confirmations", require("./koa_confirmation_middleware")(LOG)));
 
 router.post("/command", Commander.do);
 
