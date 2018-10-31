@@ -9,9 +9,9 @@ and places them on Seamless corporate.
 
 Things to do, in order of urgency:
 
+* Adding tip to reach minimum
 * Use a proper DB LOL
 * Redesign stats schema so calls isn't on same level as restaurants
-* Adding tip to reach minimum
 * Send confirmation at 3pm
 * NLP
 * Configurable time of delivery
@@ -27,16 +27,18 @@ and is triggered by a cronjob on my server at a fixed time each day.
 1. `Slack` User sends a message
 2. `[server.js]` The message is posted to Alfred
 3. `[parser.js]` The message is parsed into a command
-4. `[recorder.js | users.js]` The server delegates the command, depending on the command
+4. `[commander.js]` The server formats the command
+4. `[recorder.js | users.js]` The request is delegated depending on command
 5. `[orders.js | users.js]` The appropriate file persists the data to the filesystem in a `.json` file
 5. `[server.js]` The server returns confirmation text to Slack depending on the command
 
 ### Asynchronous
 
 1. `Cronjob` At 5:30pm each weekday, a cronjob wakes up
-2. `[cli.js]` The cronjob runs the CLI with the command "order"
+2. `[cli.js]` The cronjob runs the CLI with the command "perform"
 3. `[perform.js]` The data files persisted earlier are read to input the order on Seamless
-4. `[util/slack.js]` A message is sent to Slack containing links to confirmations of orders
+4. `[stats.js]` Stats are recorded for the order.
+5. `[util/slack.js]` A message is sent to Slack containing links to confirmations of orders
 
 *Other asynchronous events:*
 * Daily passwords: This is to protect the confirmation PDFs, which can contain sensitive information. A cronjob runs `util/daily_tasks.js` every morning, and basic HTTP auth with the new password is required using `koa_confirmation_middleware.js`. The new password is sent to Slack when the orders are put in.
@@ -91,7 +93,7 @@ Running the scraper is a good way to test that you have everything working:
 $ node scraper.js
 ```
 
-The scraper will output messages as it moves along. Note that the scraper sets the time of its fake order to be 7pm, so you must run the scraper before 6pm (or change the time). 7pm was chosen because that is when all the restaurants on Seamless are open.
+The scraper will output messages as it moves along. Note that the scraper sets the time of its fake order to be 7pm, so you must run the scraper before 5pm (or change the time). 7pm was chosen because that is when all the restaurants on Seamless are open (I think).
 
 #### Run the server
 
@@ -112,16 +114,16 @@ The last step is to add crontabs for Alfred to perform asynchronous functions. A
 ```
 # This inputs the orders at 3:30pm (15:30) each weekday
 # The argument to cli.js prevents the order input from being a "dry run"
-30 15 * * 1-5 /path/to/node /path/to/alfred4.0/cli.js false
+30 15 * * 1-5 /path/to/node /path/to/alfred/cli.js perform false
 
 # Regenerate a daily password each weekday at midnight
 # This also removes the confirmation PDFs from the previous day
-0 0 * * 1-5 /path/to/node /path/to/alfred4.0/util/daily_tasks.js
+0 0 * * 1-5 /path/to/node /path/to/alfred/util/daily_tasks.js
 
 # Scrape menus every week to stay up-to-date
-0 0 * * 1 /path/to/node /path/to/alfred4.0/util/scrape.js
+0 0 * * 1 /path/to/node /path/to/alfred/util/scrape.js
 ```
 
 ## Credits
 
-* Format of Slack interactions taken from [lil-delhi-alfred](https://github.com/mithunm93/lil-delhi-alfred)
+* Inspired by [lil-delhi-alfred](https://github.com/mithunm93/lil-delhi-alfred)
