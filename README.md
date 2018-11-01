@@ -122,6 +122,9 @@ The last step is to add crontabs for Alfred to perform asynchronous functions. A
 
 # Scrape menus every week to stay up-to-date
 0 0 * * 1 /path/to/node /path/to/alfred/util/scrape.js
+
+# Send a heads up that Alfred is taking orders
+0 10 * * 1-5 /path/to/node /path/to/alfred/util/open.js
 ```
 
 ## Credits
