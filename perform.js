@@ -13,6 +13,9 @@ const Stats = require("./stats");
 const Transform = require("./util/transform");
 const Slack = require("./util/slack");
 
+const Logger = require("../util/logger");
+const LOG = new Logger("alfred-order");
+
 const private = require("./private");
 
 const URLS = {
@@ -41,7 +44,7 @@ module.exports.do = async (dryRun) => {
   const results = [];
   try {
     await loginToSeamless(page, private);
-    console.log("Logged in");
+    LOG.log("Logged in");
 
     for (const orderSet of orderSets) {
       const orderResult = await orderFromRestaurant(page, orderSet.restaurant, orderSet.users, dryRun, INITIAL_RETRIES);
@@ -74,7 +77,7 @@ module.exports.do = async (dryRun) => {
       Slack.sendFinishedMessage(results);
     }
   } catch (err) {
-    console.log("Crashed with error", err);
+    LOG.log("Crashed with error", err);
   }
 
   if (!dryRun) {
@@ -144,12 +147,12 @@ const orderFromRestaurant = async (page, restaurant, userOrders, dryRun, retries
     const confirmationPath = `${__dirname}/confirmations/${sanitizeFilename(restaurant)}.pdf`;
     if (dryRun) {
       await page.pdf({ path: confirmationPath });
-      console.log(`Simulated order from ${restaurant}, confirmation is in ${confirmationPath}`);
+      LOG.log(`Simulated order from ${restaurant}, confirmation is in ${confirmationPath}`);
     } else {
       await page.click("a.findfoodbutton");
       await page.waitForNavigation();
       await page.pdf({ path: confirmationPath });
-      console.log(`Ordered from ${restaurant}, confirmation is in ${confirmationPath}`);
+      LOG.log(`Ordered from ${restaurant}, confirmation is in ${confirmationPath}`);
     }
 
     return result;
