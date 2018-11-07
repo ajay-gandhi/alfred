@@ -10,6 +10,8 @@ and places them on Seamless corporate.
 Things to do, in order of urgency:
 
 * Adding tip to reach minimum
+* Implement saving favorites
+* Guess restaurant if not provided
 * Use a proper DB LOL
 * Redesign stats schema so calls isn't on same level as restaurants
 * Send confirmation at 3pm
