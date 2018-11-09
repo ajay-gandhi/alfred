@@ -5,6 +5,7 @@
   "main": "server.js",
   "dependencies": {
     "basic-auth": "^2.0.1",
+    "dialogflow": "^0.7.0",
     "fuzzaldrin": "^2.1.0",
     "koa": "^2.5.3",
     "koa-bodyparser": "^4.2.1",

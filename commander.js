@@ -5,11 +5,12 @@
 const Logger = require("../util/logger");
 const LOG = new Logger("alfred");
 
-const Parser = require("./parser");
-const Recorder = require("./recorder");
+const dfParse = require("./df-parse");
 const Users = require("./users");
 const Stats = require("./stats");
 const Slack = require("./util/slack");
+const Transform = require("./util/transform");
+const Orders = require("./orders");
 const private = require("./private");
 
 module.exports.do = (ctx, next) => {
@@ -24,117 +25,144 @@ module.exports.do = (ctx, next) => {
   if (ctx.request.body.user_name === "slackbot") return {};
 
   const username = ctx.request.body.user_name;
-  const parsed = Parser.parse(ctx.request.body.text);
+  return new Promise((resolve) => {
+    dfParse(ctx.request.body.text, (command, args) => {
+      switch (command) {
+        case "Regular Order": {
+          if (isLate()) {
+            ctx.body = { text: "Alfred has already ordered for today." };
+            break;
+          }
+          if (!Users.getUser(username)) {
+            ctx.body = { text: "Please register your info first." };
+            break;
+          }
 
-  switch (parsed.command) {
-    case "order": {
-      if (isLate()) {
-        ctx.body = { text: "Alfred has already ordered for today." };
-        break;
+          // Find correct restaurant
+          const parts = args["input"].split(" from ");
+          const restaurant = Transform.correctRestaurant(parts[1]);
+          if (restaurant.error) {
+            ctx.body = { text: `${restaurant.error}. Please reorder!` };
+            break;
+          }
+
+          // Fix items
+          const items = Transform.parseOrders(parts[0], restaurant.name);
+          if (items.error) {
+            ctx.body = { text: `${items.error}. Please reorder!` };
+            break;
+          }
+
+          Orders.addOrder(restaurant.name, username, items.correctedItems);
+          const itemsList = items.correctedItems.map(i => i[0]).join(", ");
+          ctx.body = { text: `Added ${itemsList} from ${restaurant.name}` };
+          break;
+        }
+
+        case "Forget": {
+          if (!Users.getUser(username)) {
+            ctx.body = { text: "Please register your info first." };
+            break;
+          }
+
+          if (args["forget-what"] === "info") {
+            // Remove user
+            Users.removeUser(username);
+            ctx.body = { text: `Removed user ${username}` };
+          } else if (args["forget-what"] === "favorite") {
+            // Remove favorite
+            ctx.body = { text: "Still working on this feature!" };
+          } else {
+            // Default forget order
+            if (isLate()) {
+              ctx.body = { text: "Alfred has already ordered for today." };
+              break;
+            }
+            const order = Orders.removeOrder(username);
+            ctx.body = { text: `Removed order from ${order.restaurant}` };
+          }
+          break;
+        }
+
+        case "Order Favorite": {
+          ctx.body = { text: "Still working on this feature!" };
+          break;
+        }
+
+        case "Set Favorite": {
+          ctx.body = { text: "Still working on this feature!" };
+          break;
+        }
+
+        case "Get Info": {
+          const you = Users.getUser(username);
+          ctx.body = { text: `${Slack.atUser(username)}'s info:\`\`\`Name:   ${you.name}\nNumber: ${you.phone}\`\`\`` };
+          break;
+        }
+
+        case "Set Info": {
+          Users.addUser(username, `${args["given-name"]} ${args["last-name"]}`, args["phone-number"], ctx.request.body.user_id);
+          ctx.body = { text: `Added information for ${username}` };
+          break;
+        }
+
+        case "Stats": {
+          if (args["stats-type"]) {
+            // Global stats
+            let errMsg = "";
+            if (args["restaurant"]) {
+              errMsg = "Global stats for specific restaurants isn't supported.\n";
+            }
+            const stats = Stats.getGlobalStats();
+            const text = `${errMsg}Global stats:\n${Slack.statsFormatter(stats)}`;
+            ctx.body = { text };
+          } else {
+            if (args["restaurant"]) {
+              // Stats for user from restaurant
+              const restaurant = Transform.correctRestaurant(args["restaurant"]).name;
+              const stats = Stats.getStatsForUserFromRestaurant(username, restaurant);
+              const text = `Stats for ${Slack.atUser(username)} from ${restaurant}:\n${Slack.statsFormatter(stats)}`;
+              ctx.body = { text };
+            } else {
+              // General stats for user
+              const stats = Stats.getStatsForUser(username);
+              const text = `General stats for ${Slack.atUser(username)}:\n${Slack.statsFormatter(stats)}`;
+              ctx.body = { text };
+            }
+          }
+          break;
+        }
+
+        case "Help": {
+          const egs = [
+            "toppings for pizza",
+            "how many wings",
+            "which salad dressing",
+            "how spicy to make your food",
+          ];
+          const eg = egs[Math.floor(egs.length * Math.random())];
+          const text = "Hi, I'm Alfred! Order with me is easy:\n" +
+            "1. Enter your information by telling Alfred your name and phone number.\n" +
+            "2. Order your item by telling Alfred what you want and from which restaurant.\n" +
+            `Specify additional options (like ${eg}) by putting them in parentheses.\n` +
+            "Alfred receives orders until 3:30, and each order is placed for 5:30.";
+          ctx.body = { text };
+          break;
+        }
+
+        default: {
+          const unknown = [
+            "I didn't get that.",
+            "Command not recognized.",
+            "Couldn't parse a command.",
+          ];
+          const tryHelp = "Try asking Alfred for help.";
+          ctx.body = { text: `${unknown[Math.floor(unknown.length * Math.random())]} ${tryHelp}` };
+        }
       }
-      if (!Users.getUser(username)) {
-        ctx.body = { text: "Please register your info first." };
-        break;
-      }
-      const order = Recorder.recordOrder(parsed.params.restaurant, parsed.params.items, username);
-      if (order.error) {
-        ctx.body = { text: `${order.error}. Please reorder!` };
-      } else {
-        const itemsList = order.correctedItems.map(i => i[0]).join(", ");
-        ctx.body = { text: `Added ${itemsList} from ${order.restaurant}` };
-      }
-      break;
-    }
-
-    case "forget": {
-      if (isLate()) {
-        ctx.body = { text: "Alfred has already ordered for today." };
-        break;
-      }
-      if (!Users.getUser(username)) {
-        ctx.body = { text: "Please register your info first." };
-        break;
-      }
-      const order = Recorder.forgetOrder(username);
-      ctx.body = { text: `Removed order from ${order.restaurant}` };
-      break;
-    }
-
-    case "info": {
-      if (!parsed.params.name || !parsed.params.phone) {
-        const you = Users.getUser(username);
-        ctx.body = { text: `${Slack.atUser(username)}'s info:\`\`\`Name: ${you.name}\nNumber: ${you.phone}\`\`\`` };
-      } else {
-        Users.addUser(username, parsed.params.name, parsed.params.phone, ctx.request.body.user_id);
-        ctx.body = { text: `Added information for ${username}` };
-      }
-      break;
-    }
-
-    case "stats": {
-      if (parsed.params.restaurant) {
-        const restaurant = Menu.findRestaurantByName(parsed.params.restaurant).name;
-        const stats = Stats.getStatsForUserFromRestaurant(username, restaurant);
-        const text = `Stats for ${Slack.atUser(username)} from ${restaurant}:\n${Slack.statsFormatter(stats)}`;
-        ctx.body = { text };
-      } else {
-        const stats = Stats.getStatsForUser(username);
-        const text = `General stats for ${Slack.atUser(username)}:\n${Slack.statsFormatter(stats)}`;
-        ctx.body = { text };
-      }
-      break;
-    }
-
-    case "all-stats": {
-      const stats = Stats.getGlobalStats();
-      const text = `Global stats:\n${Slack.statsFormatter(stats)}`;
-      ctx.body = { text };
-      break;
-    }
-
-    case "help": {
-      const text = "Hi, I'm Alfred! Make sure you enter you're info before ordering.\n" +
-        "```alfred info {name}, {number}```\n" +
-        "> `name` should be your name on Seamless\n" +
-        "> `number` is the phone number you'll receive the call on if you're selected\n\n" +
-        "```alfred order {dishes} from {restaurant}```\n" +
-        "> `dishes` is a comma-separated list of the items you'd like to order.\n" +
-        "> If you'd like to select / add options to a dish, add them them as a comma-separated list surrounded by square brackets `[]`\n" +
-        "> `restaurant` is the name of the restaurant\n\n" +
-        "```alfred forget```\n" +
-        "> Forget today's order\n\n" +
-        "```alfred full-help```\n" +
-        "> See the complete list of commands\n\n" +
-        "Ordering ends at 3:30, and delivery time is selected for 5:30.";
-      ctx.body = { text };
-      break;
-    }
-
-    case "full-help": {
-      const text = "Hi, I'm Alfred! Make sure you enter you're info before ordering.\n" +
-        "```alfred info {name}, {number}```\n" +
-        "> `name` should be your name on Seamless\n" +
-        "> `number` is the phone number you'll receive the call on if you're selected\n\n" +
-        "```alfred order {dishes} from {restaurant}```\n" +
-        "> `dishes` is a comma-separated list of the items you'd like to order.\n" +
-        "> If you'd like to select / add options to a dish, add them them as a comma-separated list surrounded by square brackets `[]`\n" +
-        "> `restaurant` is the name of the restaurant\n\n" +
-        "```alfred forget```\n" +
-        "> Forget today's order\n\n" +
-        "```alfred stats [from {restaurant}]```\n" +
-        "> See your stats, optionally specifying the restaurant\n\n" +
-        "```alfred all-stats```\n" +
-        "> See global stats\n\n" +
-        "Ordering ends at 3:30, and delivery time is selected for 5:30.";
-      ctx.body = { text };
-      break;
-    }
-
-    default: {
-      ctx.body = { text: "Command not recognized. Try \`alfred help\`" };
-    }
-  }
-  next();
+      resolve(next());
+    });
+  });
 };
 
 /********************************** Helpers ***********************************/

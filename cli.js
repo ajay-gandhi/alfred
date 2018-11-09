@@ -31,7 +31,6 @@ if (args[0] === "perform") {
 
   ctx.request.body.text = args.filter(a => !a.startsWith("--user=")).join(" ");
 
-  Commander.do(ctx, () => {});
-  console.log(ctx.body ? ctx.body.text : "No output");
+  Commander.do(ctx, () => console.log(ctx.body ? ctx.body.text : "No output"));
 }
 

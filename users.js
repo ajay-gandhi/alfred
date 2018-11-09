@@ -9,6 +9,10 @@ const users = fs.existsSync(USERS_FILE) ? JSON.parse(fs.readFileSync(USERS_FILE)
 
 module.exports.getAllUsers = () => users;
 module.exports.getUser = username => users[username] || {};
+module.exports.removeUser = (username) => {
+  if (users[username]) delete users[username];
+  write();
+};
 module.exports.addUser = (username, name, phone, slackId) => {
   users[username] = {
     username,
