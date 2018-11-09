@@ -9,38 +9,37 @@ and places them on Seamless corporate.
 
 Things to do, in order of urgency:
 
-* Adding tip to reach minimum
 * Implement saving favorites
+* Adding tip to reach minimum
 * Guess restaurant if not provided
 * Use a proper DB LOL
-* Redesign stats schema so calls isn't on same level as restaurants
-* Send confirmation at 3pm
-* NLP
+* Redesign stats schema so calls isn't on same level as restaurants (should happen anyway if move to DB)
+* Send confirmations at 3pm
 * Configurable time of delivery
 
 ## Layout
 
 There are two main data flows in this implementation of Alfred. One is
-synchronous, and is triggered by a message in Slack. The other is asynchronous,
-and is triggered by a cronjob on my server at a fixed time each day.
+synchronous; triggered by a message in Slack. The other is asynchronous;
+triggered by a cronjob on my server at a fixed time each day.
 
 ### Synchronous
 
 1. `Slack` User sends a message
 2. `[server.js]` The message is posted to Alfred
-3. `[parser.js]` The message is parsed into a command
-4. `[commander.js]` The server formats the command
-4. `[recorder.js | users.js]` The request is delegated depending on command
+3. `[df-parse.js]` The message is sent to [Dialogflow](#Dialogflow), which returns the intent and any arguments
+4. `[commander.js]` The server formats the action and delegates it
 5. `[orders.js | users.js]` The appropriate file persists the data to the filesystem in a `.json` file
-5. `[server.js]` The server returns confirmation text to Slack depending on the command
+6. `[commander.js]` The server returns confirmation text to Slack depending on the command
 
 ### Asynchronous
 
 1. `Cronjob` At 5:30pm each weekday, a cronjob wakes up
 2. `[cli.js]` The cronjob runs the CLI with the command "perform"
 3. `[perform.js]` The data files persisted earlier are read to input the order on Seamless
-4. `[stats.js]` Stats are recorded for the order.
+4. `[stats.js]` Stats are recorded for the order
 5. `[util/slack.js]` A message is sent to Slack containing links to confirmations of orders
+6. `[koa_confirmation_middleware.js]` If a user visits the confirmation PDFs, they are authenticated with this module
 
 *Other asynchronous events:*
 * Daily passwords: This is to protect the confirmation PDFs, which can contain sensitive information. A cronjob runs `util/daily_tasks.js` every morning, and basic HTTP auth with the new password is required using `koa_confirmation_middleware.js`. The new password is sent to Slack when the orders are put in.
@@ -48,7 +47,7 @@ and is triggered by a cronjob on my server at a fixed time each day.
 
 ## Getting started
 
-Alfred requires a recent version of Node.js (and npm) to run.
+Alfred requires Node.js v10.6.0+ (and npm) to run.
 
 #### Installing the repo
 
@@ -59,7 +58,7 @@ Alfred uses a headless browser called [Puppeteer](http://pptr.dev) to perform it
 Because I'm running Alfred on a Raspberry Pi, the puppeteer npm package doesn't come bundled with a version of chromium that is compatible. Therefore, I installed chromium on my own, and gave puppeteer a path to my version. If you also need to do this, run `npm install` as follows so that you don't unnecessarily download a copy of chromium:
 
 ```bash
-$ PUPPETEER_SKIP_CHROMIUM_DOWNLOAD=true npm install
+$ PUPPETEER_SKIP_CHROMIUM_DOWNLOAD=true npm install # I actually added this env var to my bash profile
 $ sudo apt-get install chromium-browser
 ```
 ```js
@@ -70,7 +69,7 @@ const browser = await puppeteer.launch({
 });
 ```
 
-_Note:_ Because I need to install chromium manually, I'm using Puppeteer v1.0.0, which is compatible with this version of chromium (65).
+_Note:_ Because I need to install chromium manually, I'm using Puppeteer v1.0.0, which is compatible with the version of chromium I installed (65).
 
 #### Adding private data
 
@@ -101,13 +100,13 @@ The scraper will output messages as it moves along. Note that the scraper sets t
 
 Note that the server that runs only serves HTTP traffic - I *highly* recommend using SSL. I'm running Alfred behind a reverse proxy which handles the SSL portion.
 
-Then, you can run the server:
+Run the server:
 
 ```
 $ node server.js [port]
 ```
 
-The given argument is the port the server runs on.
+The given argument is the port the server runs on, default 9002.
 
 #### Add crontabs
 
@@ -128,6 +127,16 @@ The last step is to add crontabs for Alfred to perform asynchronous functions. A
 # Send a heads up that Alfred is taking orders
 0 10 * * 1-5 /path/to/node /path/to/alfred/util/open.js
 ```
+
+## Koa Confirmation Middleware
+
+This file (`koa_confirmation_middleware.js`) contains a very basic HTTP authentication setup. In order to access confirmation PDFs, you must enter the username `meraki` with the daily password that is sent to Slack.
+
+## Dialogflow
+
+[Dialogflow](https://dialogflow.com) is used to perform natural language processing. I added one Intent for each possible command, and tried to add as many unique training phrases as I could imagine. I also set the priority of the "Regular Order" and "Stats" intents to High so that they get prioritized over setting favorites, getting info, etc.
+
+If you setup a Dialogflow application to work with Alfred, be sure to download the credentials JSON file and pass it as an env variable [as suggested](https://dialogflow.com/docs/reference/v2-auth-setup).
 
 ## Credits
 
