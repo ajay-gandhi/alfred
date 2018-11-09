@@ -1,5 +1,5 @@
 {
-  "name": "alfred4",
+  "name": "alfred",
   "version": "0.0.1",
   "description": "X",
   "main": "server.js",
@@ -24,7 +24,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/ajay-gandhi/alfred4.0.git"
+    "url": "git+https://github.com/ajay-gandhi/alfred.git"
   },
   "keywords": [
     "alfred",
@@ -36,7 +36,7 @@
   "author": "Ajay Gandhi",
   "license": "ISC",
   "bugs": {
-    "url": "https://github.com/ajay-gandhi/alfred4.0/issues"
+    "url": "https://github.com/ajay-gandhi/alfred/issues"
   },
-  "homepage": "https://github.com/ajay-gandhi/alfred4.0#readme"
+  "homepage": "https://github.com/ajay-gandhi/alfred#readme"
 }
