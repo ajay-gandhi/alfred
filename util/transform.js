@@ -49,7 +49,7 @@ module.exports.correctRestaurant = (restInput) => {
   // Convert restaurant to official name
   const matches = FuzzAldrin.filter(restaurantNames, restInput);
   if (matches.length === 0) {
-    return { error: `Couldn't find restaurant called "${restInput}"` };
+    return { error: `Couldn't find restaurant called "${restInput}".` };
   } else {
     return MenuData[matches[0]];
   }
@@ -126,7 +126,7 @@ const transformOrders = (items, restaurantName) => {
   if (errors.length > 0) {
     const itemNoun = errors.length === 1 ? "item" : "items";
     const items = errors.map(i => `"${i}"`).join(", ");
-    return { error: `Couldn't find ${itemNoun} called ${items}` };
+    return { error: `Couldn't find ${itemNoun} called ${items}.` };
   }
   return { correctedItems };
 };

@@ -9,7 +9,6 @@ and places them on Seamless corporate.
 
 Things to do, in order of urgency:
 
-* Implement saving favorites
 * Adding tip to reach minimum
 * Guess restaurant if not provided
 * Use a proper DB LOL

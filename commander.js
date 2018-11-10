@@ -38,24 +38,14 @@ module.exports.do = (ctx, next) => {
             break;
           }
 
-          // Find correct restaurant
-          const parts = args["input"].split(" from ");
-          const restaurant = Transform.correctRestaurant(parts[1]);
-          if (restaurant.error) {
-            ctx.body = { text: `${restaurant.error}. Please reorder!` };
-            break;
+          const fixed = fixRestaurantAndOrders(args["restaurant"], args["order"]);
+          if (fixed.error) {
+            ctx.body = { text: `${fixed.error} Please reorder!` };
+          } else {
+            Orders.addOrder(fixed.restaurantName, username, fixed.items);
+            const itemList = items.correctedItems.map(i => i[0]).join(", ");
+            ctx.body = { text: `Added ${itemList} from ${restaurant.name}` };
           }
-
-          // Fix items
-          const items = Transform.parseOrders(parts[0], restaurant.name);
-          if (items.error) {
-            ctx.body = { text: `${items.error}. Please reorder!` };
-            break;
-          }
-
-          Orders.addOrder(restaurant.name, username, items.correctedItems);
-          const itemsList = items.correctedItems.map(i => i[0]).join(", ");
-          ctx.body = { text: `Added ${itemsList} from ${restaurant.name}` };
           break;
         }
 
@@ -85,12 +75,40 @@ module.exports.do = (ctx, next) => {
         }
 
         case "Order Favorite": {
-          ctx.body = { text: "Still working on this feature!" };
+          if (isLate()) {
+            ctx.body = { text: "Alfred has already ordered for today." };
+            break;
+          }
+          if (!Users.getUser(username)) {
+            ctx.body = { text: "Please register your info first." };
+            break;
+          }
+
+          const favorite = Users.getUser(username).favorite;
+          if (!favorite) {
+            ctx.body = { text: "No favorite order saved" };
+          } else {
+            Orders.addOrder(favorite.restaurant, username, favorite.items);
+            const itemList = favorite.items.map(i => i[0]).join(", ");
+            ctx.body = { text: `Ordered ${itemList} from ${favorite.restaurant}` };
+          }
           break;
         }
 
         case "Set Favorite": {
-          ctx.body = { text: "Still working on this feature!" };
+          if (!Users.getUser(username)) {
+            ctx.body = { text: "Please register your info first." };
+            break;
+          }
+
+          const fixed = fixRestaurantAndOrders(args["restaurant"], args["order"]);
+          if (fixed.error) {
+            ctx.body = { text: `${fixed.error} Please re-enter!` };
+          } else {
+            Users.saveFavorite(username, fixed.restaurant, fixed.items);
+            const itemList = fixed.items.map(i => i[0]).join(", ");
+            ctx.body = { text: `Saved favorite as ${itemList} from ${fixed.restaurant}` };
+          }
           break;
         }
 
@@ -170,5 +188,22 @@ module.exports.do = (ctx, next) => {
 // Returns true if it is past 3:30pm
 const isLate = () => {
   const now = new Date();
-  return now.getHours() > 15 || (now.getHours() > 14 && now.getMinutes() > 30)
+  return false;
+  // return now.getHours() > 15 || (now.getHours() > 14 && now.getMinutes() > 30)
+};
+
+// Helper to call transform functions
+const fixRestaurantAndOrders = (restaurantInput, orderInput) => {
+  // Find correct restaurant
+  const restaurant = Transform.correctRestaurant(restaurantInput);
+  if (restaurant.error) return { error: restaurant.error };
+
+  // Fix items
+  const items = Transform.parseOrders(orderInput, restaurant.name);
+  if (items.error) return { error: items.error };
+
+  return {
+    restaurant: restaurant.name,
+    items: items.correctedItems,
+  };
 };

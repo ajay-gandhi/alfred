@@ -66,7 +66,7 @@ describe("correctRestaurant", () => {
 
   test("returns false for an invalid restaurant", () => {
     const invalidRest = "nwea";
-    expect(Transform.correctRestaurant(invalidRest).error).toEqual(`Couldn't find restaurant called "${invalidRest}"`);
+    expect(Transform.correctRestaurant(invalidRest).error).toEqual(`Couldn't find restaurant called "${invalidRest}".`);
   });
 });
 
@@ -94,6 +94,12 @@ describe("parseOrders", () => {
         ["Classic Cheese Pizza (Indee)", ["mushrooms", "chicken"]],
         ["Boneless Wings", ["5 lb"]],
       ],
+    });
+  });
+
+  test("item not found", () => {
+    expect(Transform.parseOrders("chicken choila", "Extreme Pizza (Folsom)")).toEqual({
+      "error": "Couldn't find item called \"chicken choila\".",
     });
   });
 });
