@@ -43,8 +43,8 @@ module.exports.do = (ctx, next) => {
             ctx.body = { text: `${fixed.error} Please reorder!` };
           } else {
             Orders.addOrder(fixed.restaurantName, username, fixed.items);
-            const itemList = items.correctedItems.map(i => i[0]).join(", ");
-            ctx.body = { text: `Added ${itemList} from ${restaurant.name}` };
+            const itemList = fixed.items.map(i => i[0]).join(", ");
+            ctx.body = { text: `Added ${itemList} from ${fixed.restaurantName}` };
           }
           break;
         }
@@ -59,7 +59,7 @@ module.exports.do = (ctx, next) => {
             // Remove user
             Users.removeUser(username);
             ctx.body = { text: `Removed user ${username}` };
-          } else if (args["forget-what"] === "favorite") {
+          } else if (args["forget-what"] === "favorite" || args["forget-what"] === "fav") {
             // Remove favorite
             ctx.body = { text: "Still working on this feature!" };
           } else {
@@ -203,7 +203,7 @@ const fixRestaurantAndOrders = (restaurantInput, orderInput) => {
   if (items.error) return { error: items.error };
 
   return {
-    restaurant: restaurant.name,
+    restaurantName: restaurant.name,
     items: items.correctedItems,
   };
 };
