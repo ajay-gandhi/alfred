@@ -16,9 +16,12 @@ const SESSION_PATH = sessionClient.sessionPath(PROJECT_ID, SESSION_ID);
  * and arguments
  */
 module.exports = (text, callback) => {
-  const input = text.substring(6);
+  const input = text.substring(7);
   const request = {
     session: SESSION_PATH,
+    queryParams: {
+      resetContexts: true,
+    },
     queryInput: {
       text: {
         text: input,
