@@ -105,16 +105,48 @@ module.exports.do = (ctx, next) => {
           if (fixed.error) {
             ctx.body = { text: `${fixed.error} Please re-enter!` };
           } else {
-            Users.saveFavorite(username, fixed.restaurant, fixed.items);
+            Users.saveFavorite(username, fixed.restaurantName, fixed.items);
             const itemList = fixed.items.map(i => i[0]).join(", ");
-            ctx.body = { text: `Saved favorite as ${itemList} from ${fixed.restaurant}` };
+            ctx.body = { text: `Saved favorite as ${itemList} from ${fixed.restaurantName}` };
           }
           break;
         }
 
-        case "Get Info": {
-          const you = Users.getUser(username);
-          ctx.body = { text: `${Slack.atUser(username)}'s info:\`\`\`Name:   ${you.name}\nNumber: ${you.phone}\`\`\`` };
+        case "Get": {
+          if (!Users.getUser(username)) {
+            ctx.body = { text: "Please register your info first." };
+            break;
+          }
+
+          if (args["get-what"] === "info") {
+            // Show info
+            const you = Users.getUser(username);
+            ctx.body = { text: `${Slack.atUser(username)}'s info:\`\`\`Name:   ${you.name}\nNumber: ${you.phone}\`\`\`` };
+          } else if (args["get-what"] === "favorite" || args["get-what"] === "fav") {
+            // Show favorite
+            const you = Users.getUser(username);
+            if (you.favorite) {
+              const items = you.favorite.items.map((i) => {
+                return i[1].length > 0 ? `${i[0]} (${i[1].join(", ")})` : i[0];
+              }).join(", ");
+              const text = `Your favorite order is ${items} from ${you.favorite.restaurant}`;
+              ctx.body = { text };
+            } else {
+              ctx.body = { text: "No favorite saved!" };
+            }
+          } else {
+            // Show current order
+            const order = Orders.getOrders()[username];
+            if (order) {
+              const items = order.items.map((i) => {
+                return i[1].length > 0 ? `${i[0]} (${i[1].join(", ")})` : i[0];
+              }).join(", ");
+              const text = `Your current order is ${items} from ${order.restaurant}`;
+              ctx.body = { text };
+            } else {
+              ctx.body = { text: "You haven't submitted an order for today." };
+            }
+          }
           break;
         }
 
