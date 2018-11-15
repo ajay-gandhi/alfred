@@ -11,6 +11,7 @@ Things to do, in order of urgency:
 
 * Adding tip to reach minimum
 * Guess restaurant if not provided
+* Allow adding to pre-existing order
 * Use a proper DB LOL
 * Redesign stats schema so calls isn't on same level as restaurants (should happen anyway if move to DB)
 * Send confirmations at 3pm
