@@ -26,7 +26,7 @@ module.exports.do = (ctx, next) => {
 
   const username = ctx.request.body.user_name;
   return new Promise((resolve) => {
-    dfParse(ctx.request.body.text, (command, args) => {
+    dfParse(cleanPhone(ctx.request.body.text), (command, args) => {
       switch (command) {
         case "Regular Order": {
           if (isLate()) {
@@ -220,8 +220,8 @@ module.exports.do = (ctx, next) => {
 // Returns true if it is past 3:30pm
 const isLate = () => {
   const now = new Date();
-  return false;
-  // return now.getHours() > 15 || (now.getHours() > 14 && now.getMinutes() > 30)
+  // return false;
+  return now.getHours() > 15 || (now.getHours() > 14 && now.getMinutes() > 30)
 };
 
 // Helper to call transform functions
@@ -239,3 +239,7 @@ const fixRestaurantAndOrders = (restaurantInput, orderInput) => {
     items: items.correctedItems,
   };
 };
+
+// Removes Slack formatting for tel
+const telTagRegex = /\<tel:[0-9\-]*\|([0-9\-]*)\>/;
+const cleanPhone = text => text.replace(telTagRegex, "$1");
