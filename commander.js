@@ -242,5 +242,5 @@ const fixRestaurantAndOrders = (restaurantInput, orderInput) => {
 };
 
 // Removes Slack formatting for tel
-const telTagRegex = /\<tel:[0-9\-]*\|([0-9\-]*)\>/;
+const telTagRegex = /\<tel:[\(]?[0-9\-]*[\)]?\|[\(]?([0-9\-]*)[\)]?\>/;
 const cleanPhone = text => text.replace(telTagRegex, "$1");
