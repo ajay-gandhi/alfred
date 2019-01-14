@@ -113,7 +113,7 @@ module.exports.do = (ctx, next) => {
         }
 
         case "Get": {
-          if (!Users.getUser(username)) {
+          if (Users.getUser(username).name) {
             ctx.body = { text: "Please register your info first." };
             break;
           }
@@ -152,7 +152,8 @@ module.exports.do = (ctx, next) => {
 
         case "Set Info": {
           Users.addUser(username, `${args["given-name"]} ${args["last-name"]}`, args["phone-number"], ctx.request.body.user_id);
-          ctx.body = { text: `Added information for ${username}` };
+          const you = Users.getUser(username);
+          ctx.body = { text: `Added information for ${Slack.atUser(username)}:\`\`\`Name:   ${you.name}\nNumber: ${you.phone}\`\`\`` };
           break;
         }
 
