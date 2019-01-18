@@ -113,7 +113,7 @@ module.exports.do = (ctx, next) => {
         }
 
         case "Get": {
-          if (Users.getUser(username).name) {
+          if (!Users.getUser(username).name) {
             ctx.body = { text: "Please register your info first." };
             break;
           }
@@ -192,7 +192,7 @@ module.exports.do = (ctx, next) => {
             "how spicy to make your food",
           ];
           const eg = egs[Math.floor(egs.length * Math.random())];
-          const text = "Hi, I'm Alfred! Order with me is easy:\n" +
+          const text = "Hi, I'm Alfred! Ordering with me is easy:\n" +
             "1. Enter your information by telling Alfred your name and phone number.\n" +
             "2. Order your item by telling Alfred what you want and from which restaurant.\n" +
             `Specify additional options (like ${eg}) by putting them in parentheses.\n` +
