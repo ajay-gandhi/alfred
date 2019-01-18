@@ -18,17 +18,21 @@ const LOG = new Logger("alfred-order");
 
 const private = require("./private");
 
+// Setup
 const URLS = {
   login: "https://www.seamless.com/corporate/login/",
   chooseTime: "https://www.seamless.com/meals.m",
 };
 const INITIAL_RETRIES = 2;
+const DEFAULT_TIME = "6:30 PM";
 
-const DEFAULT_TIME = "5:30 PM";
+const DRY_RUN = !process.argv.reduce((m, a) => m || a === "--actual", false);
+const POST_TO_SLACK = process.argv.reduce((m, a) => m || a === "--post", false);
 
-module.exports.do = async (dryRun) => {
+(async () => {
+  // Initialize data and browser
   const orders = Orders.getOrders();
-  if (Object.keys(orders).length === 0) return;
+  if (Object.keys(orders).length === 0) process.exit(0);
 
   const orderSets = Transform.indexByRestaurantAndUser(orders);
 
@@ -41,13 +45,14 @@ module.exports.do = async (dryRun) => {
   });
   const page = await browser.newPage();
 
+  // Start ordering process
   const results = [];
   try {
     await loginToSeamless(page, private);
     LOG.log("Logged in");
 
     for (const orderSet of orderSets) {
-      const orderResult = await orderFromRestaurant(page, orderSet.restaurant, orderSet.users, dryRun, INITIAL_RETRIES);
+      const orderResult = await orderFromRestaurant(page, orderSet.restaurant, orderSet.users, INITIAL_RETRIES);
 
       if (orderResult.errors) {
         results.push({
@@ -64,7 +69,7 @@ module.exports.do = async (dryRun) => {
         });
 
         // Record stats
-        if (!dryRun) {
+        if (!DRY_RUN) {
           statsHelper(orderSet.restaurant, orders, orderResult.orderAmounts, orderResult.user.username);
         }
       }
@@ -80,13 +85,13 @@ module.exports.do = async (dryRun) => {
     LOG.log("Crashed with error", err);
   }
 
-  if (!dryRun) {
+  if (!DRY_RUN) {
     // Clear orders if we're done
     Orders.clearOrders();
     Stats.save();
   }
   await browser.close();
-};
+})();
 
 /**
  * Given a puppeteer page, logs into Seamless with the given credentials.
@@ -108,7 +113,7 @@ const loginToSeamless = async (page, creds) => {
  * Given a page with a logged-in status, this function will submit an order
  * at the given restaurant with the given items for the given usernames.
  */
-const orderFromRestaurant = async (page, restaurant, userOrders, dryRun, retries) => {
+const orderFromRestaurant = async (page, restaurant, userOrders, retries) => {
   try {
     let result = {};
 
@@ -133,7 +138,7 @@ const orderFromRestaurant = async (page, restaurant, userOrders, dryRun, retries
         if (stepOutput.errors) {
           if (stepOutput.retry && retries > 0) {
             // Don't really care why, just retry
-            return await orderFromRestaurant(page, restaurant, userOrders, dryRun, retries - 1);
+            return await orderFromRestaurant(page, restaurant, userOrders, retries - 1);
           } else {
             return stepOutput;
           }
@@ -145,7 +150,7 @@ const orderFromRestaurant = async (page, restaurant, userOrders, dryRun, retries
 
     // Submit order
     const confirmationPath = `${__dirname}/confirmations/${sanitizeFilename(restaurant)}.pdf`;
-    if (dryRun) {
+    if (DRY_RUN) {
       await page.pdf({ path: confirmationPath });
       LOG.log(`Simulated order from ${restaurant}, confirmation is in ${confirmationPath}`);
     } else {
@@ -312,7 +317,7 @@ const fillNames = async (page, usernames) => {
   for (const username of usernames) {
     const name = Users.getUser(username).name.split(" ");
 
-    page.evaluate(() => toggleAddUser(true, true));
+    await page.evaluate(() => toggleAddUser(true, true));
     await page.waitFor(1000);
     await page.click("input#FirstName");
     await page.keyboard.type(name[0]);
