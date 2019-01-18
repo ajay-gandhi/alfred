@@ -78,8 +78,10 @@ const POST_TO_SLACK = process.argv.reduce((m, a) => m || a === "--post", false);
       await page.waitFor(5000);
     }
 
-    if (!dryRun) {
-      Slack.sendFinishedMessage(results);
+    if (POST_TO_SLACK) {
+      Slack.sendFinishedMessage(results, DRY_RUN);
+    } else {
+      console.log(results);
     }
   } catch (err) {
     LOG.log("Crashed with error", err);

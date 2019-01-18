@@ -50,7 +50,9 @@ module.exports.statsFormatter = (stats) => {
  *   ...
  * ],
  */
-module.exports.sendFinishedMessage = (parts) => {
+const ordered = "Alfred ordered from the following restaurants for delivery at 5:30pm.";
+const willOrder = "Alfred will make these orders at 3:30pm:";
+module.exports.sendFinishedMessage = (parts, dry) => {
   const attachments = parts.map((part) => {
     const attachment = {
       color: part.successful ? "good" : "danger",
@@ -61,7 +63,7 @@ module.exports.sendFinishedMessage = (parts) => {
       attachment.title_link = part.confirmationUrl;
       attachment.text = `${atUser(part.user)} will receive the call.`;
     } else {
-      attachment.title = `${part.restaurant} (failed)`;
+      attachment.title = `${part.restaurant} (${dry ? "no order" : "failed"})`;
       attachment.text = part.errors.join("\n");
     }
     return attachment;
@@ -71,7 +73,7 @@ module.exports.sendFinishedMessage = (parts) => {
 
   sendMessage({
     text: [
-      "Alfred ordered from the following restaurants for delivery at 5:30pm.",
+      dry ? willOrder : ordered,
       `Today's password is \`${dailyPassword}\`.`,
     ].join("\n"),
     attachments,
