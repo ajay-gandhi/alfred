@@ -331,12 +331,13 @@ const fillNames = async (page, usernames) => {
     await page.waitForNavigation();
   }
 
-  const amountRemaining = (await page.$eval("span#RemainingToBeAllocated", e => e.innerText));
-  if (amountRemaining.trim() !== "$0.00") {
+  const amountAllocated = await page.$$eval("input.allocationAmt", i => i.map(e => Number(e.value)));
+  if (Math.max.apply(null, amountAllocated) > 25) {
     // Exceeded budget
+    const excess = amountAllocated.reduce((m, a) => m + a, 0).toFixed(2);
     return {
       retry: false,
-      errors: ["Order exceeded budget."],
+      errors: [`Order exceeded budget by $${excess - usernames.length * 25}.`],
     };
   }
 };
