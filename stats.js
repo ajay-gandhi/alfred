@@ -24,7 +24,7 @@ const getDollarsForRestaurant = (u, r) => stats[u] && stats[u][r] && stats[u][r]
 /**
  * Return the dollar value that the user spent
  */
-const getDollarsForUser = u => Object.keys(stats[u]).reduce((m, r) => m + getDollarsForRestaurant(u, r), 0);
+const getDollarsForUser = u => stats[u] && Object.keys(stats[u]).reduce((m, r) => m + getDollarsForRestaurant(u, r), 0) || 0;
 
 /**
  * Return the dollar value that all users spent
