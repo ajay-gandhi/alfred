@@ -334,10 +334,11 @@ const fillNames = async (page, usernames) => {
   const amountAllocated = await page.$$eval("input.allocationAmt", i => i.map(e => Number(e.value)));
   if (Math.max.apply(null, amountAllocated) > 25) {
     // Exceeded budget
-    const excess = amountAllocated.reduce((m, a) => m + a, 0).toFixed(2);
+    const orderTotal = amountAllocated.reduce((m, a) => m + a, 0);
+    const excess = (orderTotal - usernames.length * 25).toFixed(2);
     return {
       retry: false,
-      errors: [`Order exceeded budget by $${excess - usernames.length * 25}.`],
+      errors: [`Order exceeded budget by $${excess}.`],
     };
   }
 };
