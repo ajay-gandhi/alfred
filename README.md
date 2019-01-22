@@ -10,11 +10,11 @@ and places them on Seamless corporate.
 Things to do, in order of urgency:
 
 * Adding tip to reach minimum
+* Reducing tip to fit within budget
 * Guess restaurant if not provided
 * Allow adding to pre-existing order
 * Use a proper DB LOL
 * Redesign stats schema so calls isn't on same level as restaurants (should happen anyway if move to DB)
-* Send confirmations at 3pm
 * Configurable time of delivery
 
 ## Layout
@@ -35,11 +35,10 @@ triggered by a cronjob on my server at a fixed time each day.
 ### Asynchronous
 
 1. `Cronjob` At 5:30pm each weekday, a cronjob wakes up
-2. `[cli.js]` The cronjob runs the CLI with the command "perform"
-3. `[perform.js]` The data files persisted earlier are read to input the order on Seamless
-4. `[stats.js]` Stats are recorded for the order
-5. `[util/slack.js]` A message is sent to Slack containing links to confirmations of orders
-6. `[koa_confirmation_middleware.js]` If a user visits the confirmation PDFs, they are authenticated with this module
+2. `[perform.js]` The data files persisted earlier are read to input the order on Seamless
+3. `[stats.js]` Stats are recorded for the order
+4. `[util/slack.js]` A message is sent to Slack containing links to confirmations of orders
+5. `[koa_confirmation_middleware.js]` If a user visits the confirmation PDFs, they are authenticated with this module
 
 *Other asynchronous events:*
 * Daily passwords: This is to protect the confirmation PDFs, which can contain sensitive information. A cronjob runs `util/daily_tasks.js` every morning, and basic HTTP auth with the new password is required using `koa_confirmation_middleware.js`. The new password is sent to Slack when the orders are put in.
@@ -114,8 +113,15 @@ The last step is to add crontabs for Alfred to perform asynchronous functions. A
 
 ```
 # This inputs the orders at 3:30pm (15:30) each weekday
-# The argument to cli.js prevents the order input from being a "dry run"
-30 15 * * 1-5 /path/to/node /path/to/alfred/cli.js perform false
+# The arguments tell Alfred to actually order (not a dry run) and to post the
+# results to Slack (rather than logging to console), respectively
+30 15 * * 1-5 /path/to/node /path/to/alfred/perform.js --actual --post
+
+# This attempts to input the orders at 3pm (15:00) each weekday, and posts
+# the results to the Slack channel. This gives people whose orders may not go
+# through a chance to resolve any issues. Note that the --actual flag is
+# omitted; this is a dry run
+0 15 * * 1-5 /path/to/node /path/to/alfred/perform.js --post
 
 # Regenerate a daily password each weekday at midnight
 # This also removes the confirmation PDFs from the previous day
@@ -130,7 +136,7 @@ The last step is to add crontabs for Alfred to perform asynchronous functions. A
 
 ## Koa Confirmation Middleware
 
-This file (`koa_confirmation_middleware.js`) contains a very basic HTTP authentication setup. In order to access confirmation PDFs, you must enter the username `meraki` with the daily password that is sent to Slack.
+This file (`koa_confirmation_middleware.js`) contains a very basic HTTP authentication setup. In order to access confirmation PDFs, you must enter the username configured in `private.json` with the daily password that is sent to Slack.
 
 ## Dialogflow
 
