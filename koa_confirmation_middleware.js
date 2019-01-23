@@ -3,7 +3,6 @@
  * PDFs.
  */
 
-const compose = require("koa-compose");
 const auth = require("basic-auth");
 const send = require("koa-send");
 
