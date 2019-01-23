@@ -58,13 +58,14 @@ const POST_TO_SLACK = process.argv.reduce((m, a) => m || a === "--post", false);
         results.push({
           successful: false,
           restaurant: orderSet.restaurant,
+          users: orderSet.users,
           errors: orderResult.errors,
         });
       } else {
         results.push({
           successful: true,
           restaurant: orderSet.restaurant,
-          user: orderResult.user.username,
+          userCall: orderResult.user.username,
           confirmationUrl: `https://alfred.ajay-gandhi.com/confirmations/${sanitizeFilename(orderSet.restaurant)}.pdf`,
         });
 

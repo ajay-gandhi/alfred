@@ -62,10 +62,11 @@ module.exports.sendFinishedMessage = (parts, dry) => {
     if (part.successful) {
       attachment.title = part.restaurant;
       attachment.title_link = part.confirmationUrl;
-      attachment.text = `${atUser(part.user)} will receive the call.`;
+      attachment.text = `${atUser(part.userCall)} will receive the call.`;
     } else {
       attachment.title = `${part.restaurant} (${dry ? "no order" : "failed"})`;
       attachment.text = part.errors.join("\n");
+      attachment.text += `\nFYI: ${part.users.map(u => atUser(u.username)).join(", ")}`;
     }
     return attachment;
   });
