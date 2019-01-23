@@ -27,7 +27,7 @@ module.exports = (LOG) => async (ctx, next) => {
 };
 
 let lastUpdate = -1;
-updateLocalCredentials = () => {
+const updateLocalCredentials = () => {
   if (lastUpdate !== (new Date()).getDate()) {
     // Last update happened sometime other than today
     lastUpdate = (new Date()).getDate();
