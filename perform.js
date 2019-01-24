@@ -89,8 +89,9 @@ const POST_TO_SLACK = process.argv.reduce((m, a) => m || a === "--post", false);
   }
 
   if (!DRY_RUN) {
+    const allSuccess = results.reduce((m, r) => m && r.successful, true);
     // Clear orders if we're done
-    Orders.clearOrders();
+    if (allSuccess) Orders.clearOrders();
     Stats.save();
   }
   await browser.close();
