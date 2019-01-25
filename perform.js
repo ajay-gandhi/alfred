@@ -24,7 +24,7 @@ const URLS = {
   chooseTime: "https://www.seamless.com/meals.m",
 };
 const INITIAL_RETRIES = 2;
-const DEFAULT_TIME = "6:30 PM";
+const DEFAULT_TIME = "5:30 PM";
 
 const DRY_RUN = !process.argv.reduce((m, a) => m || a === "--actual", false);
 const POST_TO_SLACK = process.argv.reduce((m, a) => m || a === "--post", false);
