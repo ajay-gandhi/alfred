@@ -59,7 +59,7 @@ module.exports.correctRestaurant = (restInput) => {
  * Given a string containing a list of orders and a restaurant, parses out the
  * items and corrects them
  */
-module.exports.parseOrders = (input, r) => {
+module.exports.parseOrders = (input, restaurantName) => {
   const parts = [""];
   let parenCount = 0;
   const delimiters = [", and", ",and", " and ", ", ", ","];
@@ -81,7 +81,7 @@ module.exports.parseOrders = (input, r) => {
     parts[parts.length - 1] += input[i];
   }
 
-  return transformOrders(parts.reduce((m, e) => e ? m.concat(e.trim()) : m, []), r);
+  return transformOrders(parts.reduce((m, e) => e ? m.concat(e.trim()) : m, []), restaurantName);
 };
 
 /**
@@ -100,10 +100,12 @@ module.exports.findCorrectItem = findCorrectItem;
 const friendlizeItem = i => i.replace(/^[\w]{1,3}\. /, "");
 
 // Parse out options
+const ARTICLE_REGEX = /^(?:(the|a|an) +)/;
 const OPTIONS_REGEX = /\((.*)\)/;
 const transformOrders = (items, restaurantName) => {
   const errors = [];
-  const correctedItems = items.map((item) => {
+  const correctedItems = items.map((origItem) => {
+    const item = origItem.replace(ARTICLE_REGEX, "");
     // First parse out options
     const matchedOptions = item.match(OPTIONS_REGEX);
     const formattedItem = [];
