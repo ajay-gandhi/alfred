@@ -33,7 +33,7 @@ module.exports.do = (ctx, next) => {
             ctx.body = { text: "Alfred has already ordered for today." };
             break;
           }
-          if (!Users.getUser(username)) {
+          if (!Users.getUser(username).name) {
             ctx.body = { text: "Please register your info first." };
             break;
           }
@@ -56,7 +56,7 @@ module.exports.do = (ctx, next) => {
         }
 
         case "Forget": {
-          if (!Users.getUser(username)) {
+          if (!Users.getUser(username).name) {
             ctx.body = { text: "Please register your info first." };
             break;
           }
@@ -85,7 +85,7 @@ module.exports.do = (ctx, next) => {
             ctx.body = { text: "Alfred has already ordered for today." };
             break;
           }
-          if (!Users.getUser(username)) {
+          if (!Users.getUser(username).name) {
             ctx.body = { text: "Please register your info first." };
             break;
           }
@@ -102,7 +102,7 @@ module.exports.do = (ctx, next) => {
         }
 
         case "Set Favorite": {
-          if (!Users.getUser(username)) {
+          if (!Users.getUser(username).name) {
             ctx.body = { text: "Please register your info first." };
             break;
           }
@@ -234,6 +234,7 @@ const isLate = () => {
 // Helper to call transform functions
 const fixRestaurantAndOrders = (restaurantInput, orderInput) => {
   // Find correct restaurant
+  if (!restaurantInput) return { error: "No restaurant chosen." };
   const restaurant = Transform.correctRestaurant(restaurantInput);
   if (restaurant.error) return { error: restaurant.error };
 
