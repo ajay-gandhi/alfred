@@ -257,12 +257,16 @@ const fillOrders = async (page, userOrders) => {
 
         // Select options
         const optionLinks = await page.$$("li label");
-        for (const input of optionLinks) {
-          await page.evaluate((elm, opts) => {
-            const text = elm.innerText.toLowerCase();
-            const isSelected = opts.reduce((memo, o) => memo || text.includes(o.toLowerCase()), false);
-            if (isSelected) elm.click();
-          }, input, options);
+        for (const opt of options) {
+          for (const input of optionLinks) {
+            const done = await page.evaluate((elm, opt) => {
+              const isOpt = elm.innerText.toLowerCase().includes(opt.toLowerCase());
+              if (isOpt) elm.click();
+              return isOpt;
+            }, input, opt);
+
+            if (done) break;
+          }
         }
 
         // Click add to order
