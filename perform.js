@@ -24,8 +24,9 @@ const URLS = {
   chooseTime: "https://www.seamless.com/meals.m",
 };
 const INITIAL_RETRIES = 2;
-const DEFAULT_TIME = "5:30 PM";
 
+// Args
+const ORDER_TIME = process.argv.reduce((m, a) => a.includes("--time=") ? a.substring(a.indexOf("=") + 1) : m, "5:30 PM");
 const DRY_RUN = !process.argv.reduce((m, a) => m || a === "--actual", false);
 const POST_TO_SLACK = process.argv.reduce((m, a) => m || a === "--post", false);
 
@@ -178,7 +179,7 @@ const orderFromRestaurant = async (page, restaurant, userOrders, retries) => {
 const chooseTime = async (page) => {
   try {
     await page.goto(URLS.chooseTime);
-    await page.select("#time", DEFAULT_TIME).catch(() => {});
+    await page.select("#time", ORDER_TIME).catch(() => {});
     await page.click("tr.startorder a");
     await page.waitForNavigation();
   } catch (e) {
