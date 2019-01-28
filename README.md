@@ -9,7 +9,7 @@ and places them on Seamless corporate.
 
 Things to do, in order of urgency:
 
-* Volunteer for order pickup
+* Volunteer for order pickup (also requires undoing feature)
 * Per-restaurant favorite
 * Adding tip to reach minimum
 * Reducing tip to fit within budget
