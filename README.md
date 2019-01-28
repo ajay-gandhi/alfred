@@ -9,6 +9,7 @@ and places them on Seamless corporate.
 
 Things to do, in order of urgency:
 
+* Per-restaurant favorite
 * Adding tip to reach minimum
 * Reducing tip to fit within budget
 * Guess restaurant if not provided
