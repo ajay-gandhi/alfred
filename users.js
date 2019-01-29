@@ -2,37 +2,41 @@
  * Module for interacting with persistent users data
  */
 
-const fs = require("fs");
+const MongoClient = require("mongodb").MongoClient;
+const private = require("./private");
 
-const USERS_FILE = `${__dirname}/data/users.json`;
-const users = fs.existsSync(USERS_FILE) ? JSON.parse(fs.readFileSync(USERS_FILE)) : {};
+let users;
+const client = new MongoClient(private.mongoSrv, { useNewUrlParser: true });
+client.connect((err) => {
+  if (err) console.log("Error connecting to MongoDB:", err);
+  users = client.db(private.mongoDbName).collection("users");
+});
 
-module.exports.getUser = username => users[username] || {};
-module.exports.removeUser = (username) => {
-  if (users[username]) delete users[username];
-  write();
+module.exports.getUser = async username => await users.findOne({ username });
+module.exports.removeUser = async username => await users.deleteOne({ username });
+module.exports.addUser = async (username, name, phone, slackId) => {
+  return await users.findOneAndUpdate({ username }, {
+    $set: {
+      username,
+      name,
+      phone,
+      slackId,
+    },
+  }, {
+    upsert: true,
+  });
 };
-module.exports.addUser = (username, name, phone, slackId) => {
-  users[username] = {
-    username,
-    name,
-    phone,
-    slackId,
-  };
-  write();
+module.exports.saveFavorite = async (username, restaurant, items) => {
+  await users.findOneAndUpdate({ username }, {
+    $set: {
+      favorite: {
+        restaurant,
+        items,
+      },
+    },
+  });
 };
-
-module.exports.saveFavorite = (username, restaurant, items) => {
-  users[username].favorite = {
-    restaurant,
-    items,
-  };
-  write();
+module.exports.removeFavorite = async (username) => {
+  await users.findOneAndUpdate({ username }, { $unset: { favorite: "" } });
 };
-module.exports.removeFavorite = (username) => {
-  delete users[username].favorite;
-  write();
-};
-
-const write = () => fs.writeFileSync(USERS_FILE, JSON.stringify(users, null, 2));
 

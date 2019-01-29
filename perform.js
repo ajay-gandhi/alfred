@@ -81,7 +81,7 @@ const POST_TO_SLACK = process.argv.reduce((m, a) => m || a === "--post", false);
     }
 
     if (POST_TO_SLACK) {
-      Slack.sendFinishedMessage(results, DRY_RUN);
+      await Slack.sendFinishedMessage(results, DRY_RUN);
     } else {
       console.log(results);
     }
@@ -96,6 +96,7 @@ const POST_TO_SLACK = process.argv.reduce((m, a) => m || a === "--post", false);
     Stats.save();
   }
   await browser.close();
+  process.exit(0);
 })();
 
 /**
@@ -324,7 +325,7 @@ const fillNames = async (page, usernames) => {
   }
 
   for (const username of usernames) {
-    const name = Users.getUser(username).name.split(" ");
+    const name = (await Users.getUser(username)).name.split(" ");
 
     await page.evaluate(() => toggleAddUser(true, true));
     await page.waitFor(1000);
@@ -356,13 +357,13 @@ const fillNames = async (page, usernames) => {
  */
 const fillPhoneNumber = async (page, usernames) => {
   try {
-    const usersForOrder  = usernames.map(u => Users.getUser(u));
-    const selectedUser = usersForOrder[Math.floor(Math.random() * usersForOrder.length)];
+    const selectedUser = usernames[Math.floor(Math.random() * usernames.length)];
+    const userData = await Users.getUser(selectedUser);
     await page.$eval("input#phoneNumber", e => e.value = "");
     await page.click("input#phoneNumber");
-    await page.keyboard.type(selectedUser.phone);
+    await page.keyboard.type(userData.phone);
     await page.click("#ecoToGoTrue");
-    return { user: selectedUser };
+    return { user: userData };
   } catch (e) {
     // Most likely a timeout
     return {

@@ -10,8 +10,8 @@ module.exports.sendBasicMessage = (message) => {
   sendMessage({ text: message });
 };
 
-const atUser = username => {
-  const u = Users.getUser(username);
+const atUser = async (username) => {
+  const u = await Users.getUser(username);
   return u.slackId ? `<@${u.slackId}>` : `@${username}`;
 }
 module.exports.atUser = atUser;
@@ -53,23 +53,24 @@ module.exports.statsFormatter = (stats) => {
  */
 const ordered = "Alfred ordered from the following restaurants for delivery at 5:30pm.";
 const willOrder = "Alfred will make these orders at 3:30pm:";
-module.exports.sendFinishedMessage = (parts, dry) => {
-  const attachments = parts.map((part) => {
+module.exports.sendFinishedMessage = async (parts, dry) => {
+  const attachments = await Promise.all(parts.map(async (part) => {
     const attachment = {
       color: part.successful ? "good" : "danger",
     };
 
     if (part.successful) {
+      const slackAt = await atUser(part.userCall);
       attachment.title = part.restaurant;
       attachment.title_link = part.confirmationUrl;
-      attachment.text = `${atUser(part.userCall)} will receive the call.`;
+      attachment.text = `${slackAt} will receive the call.`;
     } else {
       attachment.title = `${part.restaurant} (${dry ? "no order" : "failed"})`;
       attachment.text = part.errors.join("\n");
       attachment.text += `\nFYI: ${part.users.map(u => atUser(u.username)).join(", ")}`;
     }
     return attachment;
-  });
+  }));
 
   const { dailyPassword } = require("../private");
 
