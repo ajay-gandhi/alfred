@@ -30,20 +30,25 @@ module.exports = (text, callback) => {
     },
   };
 
-  sessionClient
-    .detectIntent(request)
-    .then((responses) => {
-      const result = responses[0].queryResult;
-      if (result.action === "input.unknown") return callback(false);
+  return new Promise((resolve, reject) => {
+    sessionClient
+      .detectIntent(request)
+      .then((responses) => {
+        const result = responses[0].queryResult;
+        if (result.action === "input.unknown") return callback(false);
 
-      const args = {};
-      Object.keys(result.parameters.fields).forEach((key) => {
-        args[key] = result.parameters.fields[key].stringValue;
+        const args = {};
+        Object.keys(result.parameters.fields).forEach((key) => {
+          args[key] = result.parameters.fields[key].stringValue;
+        });
+        resolve({
+          command: result.intent.displayName,
+          args,
+        });
+      })
+      .catch((err) => {
+        console.error("ERROR:", err);
+        reject(false);
       });
-      callback(result.intent.displayName, args);
-    })
-    .catch((err) => {
-      callback(false);
-      console.error("ERROR:", err);
-    });
+  });
 };
