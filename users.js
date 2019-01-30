@@ -24,6 +24,7 @@ module.exports.addUser = async (username, name, phone, slackId) => {
     },
   }, {
     upsert: true,
+    returnNewDocument: true,
   })).value;
 };
 module.exports.saveFavorite = async (username, restaurant, items) => {
