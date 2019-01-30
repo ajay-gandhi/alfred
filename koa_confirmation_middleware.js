@@ -3,6 +3,7 @@
  * PDFs.
  */
 
+const fs = require("fs");
 const auth = require("basic-auth");
 const send = require("koa-send");
 
@@ -31,7 +32,7 @@ const updateLocalCredentials = () => {
   if (lastUpdate !== (new Date()).getDate()) {
     // Last update happened sometime other than today
     lastUpdate = (new Date()).getDate();
-    const newCreds = require("./private");
+    const newCreds = JSON.parse(fs.readFileSync(`${__dirname}/private.json`, "utf8"));
     dailyPassword = newCreds.dailyPassword;
   }
 };
