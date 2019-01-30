@@ -67,7 +67,8 @@ module.exports.sendFinishedMessage = async (parts, dry) => {
     } else {
       attachment.title = `${part.restaurant} (${dry ? "no order" : "failed"})`;
       attachment.text = part.errors.join("\n");
-      attachment.text += `\nFYI: ${part.users.map(u => atUser(u.username)).join(", ")}`;
+      const userAts = await Promise.all(part.users.map(u => atUser(u.username)));
+      attachment.text += `\nFYI: ${userAts.join(", ")}`;
     }
     return attachment;
   }));
