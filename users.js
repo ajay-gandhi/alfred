@@ -15,7 +15,7 @@ client.connect((err) => {
 module.exports.getUser = async username => await users.findOne({ username });
 module.exports.removeUser = async username => await users.deleteOne({ username });
 module.exports.addUser = async (username, name, phone, slackId) => {
-  return await users.findOneAndUpdate({ username }, {
+  return (await users.findOneAndUpdate({ username }, {
     $set: {
       username,
       name,
@@ -24,7 +24,7 @@ module.exports.addUser = async (username, name, phone, slackId) => {
     },
   }, {
     upsert: true,
-  });
+  })).value;
 };
 module.exports.saveFavorite = async (username, restaurant, items) => {
   await users.findOneAndUpdate({ username }, {
