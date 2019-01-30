@@ -63,7 +63,7 @@ module.exports.sendFinishedMessage = async (parts, dry) => {
       const slackAt = await atUser(part.userCall);
       attachment.title = part.restaurant;
       attachment.title_link = part.confirmationUrl;
-      attachment.text = `${slackAt} will receive the call.`;
+      if (!dry) attachment.text = `${slackAt} will receive the call.`;
     } else {
       attachment.title = `${part.restaurant} (${dry ? "no order" : "failed"})`;
       attachment.text = part.errors.join("\n");
@@ -74,7 +74,7 @@ module.exports.sendFinishedMessage = async (parts, dry) => {
 
   const { dailyPassword } = require("../private");
 
-  sendMessage({
+  await sendMessage({
     text: [
       dry ? willOrder : ordered,
       `Today's password is \`${dailyPassword}\`.`,
@@ -85,16 +85,18 @@ module.exports.sendFinishedMessage = async (parts, dry) => {
 
 
 const sendMessage = (contents) => {
-  contents.channel = "#ot-test-ram",
-  request({
-    url: private.slackOutgoingUrl,
-    method: "POST",
-    json: contents,
-  },
-  (err, response, body) => {
-    if (response.statusCode !== 200) {
-      console.log("Message send failed");
-      console.log(err, body);
-    }
+  contents.channel = "#ot-test-ram";
+  return new Promise((resolve, reject) => {
+    request({
+      url: private.slackOutgoingUrl,
+      method: "POST",
+      json: contents,
+    }, (err, response, body) => {
+      if (response.statusCode !== 200) {
+        reject(err);
+      } else {
+        resolve();
+      }
+    });
   });
 };
