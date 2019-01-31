@@ -9,6 +9,7 @@ and places them on Seamless corporate.
 
 Things to do, in order of urgency:
 
+* Notify order participants when callee says food has arrived
 * Volunteer for order pickup (also requires undoing feature)
 * Per-restaurant favorite
 * Adding tip to reach minimum
