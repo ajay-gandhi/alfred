@@ -12,10 +12,10 @@ const sessionClient = new dialogflow.SessionsClient();
 const SESSION_PATH = sessionClient.sessionPath(PROJECT_ID, SESSION_ID);
 
 /**
- * Given the input text, calls the given callback with the NLP-parsed command
+ * Given the input text, resolves the promise with the NLP-parsed command
  * and arguments
  */
-module.exports = (text, callback) => {
+module.exports = (text) => {
   const input = text.substring(7);
   const request = {
     session: SESSION_PATH,
@@ -35,7 +35,7 @@ module.exports = (text, callback) => {
       .detectIntent(request)
       .then((responses) => {
         const result = responses[0].queryResult;
-        if (result.action === "input.unknown") return callback(false);
+        if (result.action === "input.unknown") return resolve(false);
 
         const args = {};
         Object.keys(result.parameters.fields).forEach((key) => {
