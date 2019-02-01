@@ -100,7 +100,7 @@ module.exports.findCorrectItem = findCorrectItem;
 const friendlizeItem = i => i.replace(/^[\w]{1,3}\. /, "");
 
 // Parse out options
-const ARTICLE_REGEX = /^(?:(the|a|an) +)/;
+const ARTICLE_REGEX = /^(?:(the|a|an|some) +)/;
 const OPTIONS_REGEX = /\((.*)\)/;
 const transformOrders = (items, restaurantName) => {
   const errors = [];
