@@ -73,12 +73,12 @@ module.exports.sendFinishedMessage = async (parts, dry) => {
     return attachment;
   }));
 
-  const { dailyPassword } = require("../private");
+  const { confUsername, dailyPassword } = require("../private");
 
   await sendMessage({
     text: [
       dry ? willOrder : ordered,
-      `Today's password is \`${dailyPassword}\`.`,
+      `Today's credentials are \`${confUsername}:${dailyPassword}\`.`,
     ].join("\n"),
     attachments,
   });
