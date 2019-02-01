@@ -129,7 +129,7 @@ const orderFromRestaurant = async (page, restaurant, userOrders, retries) => {
       chooseTime.bind(null, page),
       chooseRestaurant.bind(null, page, restaurant),
       fillOrders.bind(null, page, userOrders),
-      fillNames.bind(null, page, usernames),
+      fillNames.bind(null, page, usernames, result),
       fillPhoneNumber.bind(null, page, usernames),
     ];
 
@@ -317,7 +317,7 @@ const fillOrders = async (page, userOrders) => {
  * usernames. The names parameter should be an array of tuples, where each
  * tuple contains the first and last names of all those involved in the order.
  */
-const fillNames = async (page, usernames) => {
+const fillNames = async (page, usernames, { orderAmounts }) => {
   // Clear existing names first
   while (await page.$("td.delete a")) {
     await page.click("td.delete a");
@@ -344,9 +344,16 @@ const fillNames = async (page, usernames) => {
     // Exceeded budget
     const orderTotal = amountAllocated.reduce((m, a) => m + a, 0);
     const excess = (orderTotal - usernames.length * 25).toFixed(2);
+
+    // Find person with most expensive order
+    const maxOrder = orderAmounts.reduce((memo, oa) => {
+      return oa.amount > memo.amount ? oa : memo;
+    }, { amount: 0 });
+    const userAt = await Slack.atUser(maxOrder.username);
+
     return {
       retry: false,
-      errors: [`Order exceeded budget by $${excess}.`],
+      errors: [`Order exceeded budget by $${excess}. ${userAt}'s order is the highest at $${maxOrder.amount.toFixed(2)}.`],
     };
   }
 };
