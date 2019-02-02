@@ -79,14 +79,14 @@ const POST_TO_SLACK = process.argv.reduce((m, a) => m || a === "--post", false);
       // Give seamless a break
       await page.waitFor(5000);
     }
-
-    if (POST_TO_SLACK) {
-      await Slack.sendFinishedMessage(results, DRY_RUN);
-    } else {
-      console.log(results);
-    }
   } catch (err) {
     LOG.log("Crashed with error", err);
+  }
+
+  if (POST_TO_SLACK) {
+    await Slack.sendFinishedMessage(results, DRY_RUN);
+  } else {
+    console.log(results);
   }
 
   if (!DRY_RUN) {
@@ -293,9 +293,10 @@ const fillOrders = async (page, userOrders) => {
 
   const continueLinks = await page.$$("a.findfoodbutton");
   if (continueLinks.length === 0) {
+    const userAts = Promise.all(orderAmounts.map(async o => Slack.atUser(o.username)));
     return {
       retry: false,
-      errors: ["Delivery minimum not met."],
+      errors: [`Delivery minimum not met. ${userAts.join(", ")}`],
     };
   }
 

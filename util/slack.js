@@ -51,47 +51,69 @@ module.exports.statsFormatter = (stats) => {
  *   ...
  * ],
  */
-const ordered = "Alfred ordered from the following restaurants for delivery at 5:30pm.";
-const willOrder = "Alfred will make these orders at 3:30pm:";
 module.exports.sendFinishedMessage = async (parts, dry) => {
-  const attachments = await Promise.all(parts.map(async (part) => {
-    const attachment = {
-      color: part.successful ? "good" : "danger",
-    };
+  if (dry) {
+    const attachments = parts.reduce((memo, part) => {
+      return part.successful ? memo : memo.concat({
+        color: "danger",
+        title: part.restaurant,
+        text: part.errors.join("\n"),
+      });
+    }, []);
 
-    if (part.successful) {
-      const slackAt = await atUser(part.userCall);
-      attachment.title = part.restaurant;
-      attachment.title_link = part.confirmationUrl;
-      if (!dry) attachment.text = `${slackAt} will receive the call.`;
-    } else {
-      attachment.title = `${part.restaurant} (${dry ? "no order" : "failed"})`;
-      attachment.text = part.errors.join("\n");
-      const userAts = await Promise.all(part.users.map(u => atUser(u.username)));
-      attachment.text += `\nFYI: ${userAts.join(", ")}`;
-    }
-    return attachment;
-  }));
+    // Don't send anything if all restaurants will be successful
+    if (attachments.length === 0) return;
 
-  const { confUsername, dailyPassword } = require("../private");
+    const succOrders = parts
+      .filter(p => p.successful)
+      .map(p => p.restaurant)
+      .join(", ")
+      .replace(/,(?!.*,)/gmi, " and");
 
-  await sendMessage({
-    text: [
-      dry ? willOrder : ordered,
+    await sendMessage(
+      (succOrders.length === 0 ? "" : `Orders from ${succOrders} are good to go!\n`) +
+      `There are problems with ${attachments.length === 1 ? "this order" : "these orders"}:`,
+      attachments
+    );
+  } else {
+    const attachments = await Promise.all(parts.map(async (part) => {
+      const attachment = {
+        color: part.successful ? "good" : "danger",
+      };
+
+      if (part.successful) {
+        const slackAt = await atUser(part.userCall);
+        attachment.title = part.restaurant;
+        attachment.title_link = part.confirmationUrl;
+        if (!dry) attachment.text = `${slackAt} will receive the call.`;
+      } else {
+        attachment.title = `${part.restaurant} (${dry ? "no order" : "failed"})`;
+        attachment.text = part.errors.join("\n");
+        const userAts = await Promise.all(part.users.map(u => atUser(u.username)));
+        attachment.text += `\nFYI: ${userAts.join(", ")}`;
+      }
+      return attachment;
+    }));
+
+    const { confUsername, dailyPassword } = require("../private");
+    await sendMessage(
+      "Alfred ordered from the following restaurants for delivery at 5:30pm.\n" +
       `Today's credentials are \`${confUsername}:${dailyPassword}\`.`,
-    ].join("\n"),
-    attachments,
-  });
+      attachments
+    );
+  }
 };
 
-
-const sendMessage = (contents) => {
-  contents.channel = "#ot-test-ram";
+const sendMessage = (text, attachments) => {
   return new Promise((resolve, reject) => {
     request({
       url: private.slackOutgoingUrl,
       method: "POST",
-      json: contents,
+      json: {
+        text,
+        attachments,
+        channel: "#ot-test-ram",
+      },
     }, (err, response, body) => {
       if (response.statusCode !== 200) {
         reject(err);
