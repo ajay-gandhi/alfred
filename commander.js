@@ -130,7 +130,7 @@ module.exports.do = async (ctx, next) => {
         const you = await Users.getUser(username);
         const slackAt = await Slack.atUser(username);
         ctx.body = { text: `${slackAt}'s info:\`\`\`Name:   ${you.name}\nNumber: ${you.phone}\`\`\`` };
-      } else if (args["get-what"] === "favorite" || args["get-what"] === "fav") {
+      } else if (args["get-what"].startsWith("fav")) {
         // Show favorite
         const you = await Users.getUser(username);
         if (you.favorite) {
@@ -217,8 +217,8 @@ module.exports.do = async (ctx, next) => {
         "Command not recognized.",
         "Couldn't parse a command.",
       ];
-      const tryHelp = "Try asking Alfred for help.";
-      ctx.body = { text: `${unknown[Math.floor(unknown.length * Math.random())]} ${tryHelp}` };
+      const tryHelp = Math.random() < 0.5 ? "" : " Try asking Alfred for help.";
+      ctx.body = { text: `${unknown[Math.floor(unknown.length * Math.random())]}${tryHelp}` };
     }
   }
   return next();
