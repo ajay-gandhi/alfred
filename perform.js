@@ -72,7 +72,12 @@ const POST_TO_SLACK = process.argv.reduce((m, a) => m || a === "--post", false);
 
         // Record stats
         if (!DRY_RUN) {
-          statsHelper(orderSet.restaurant, orders, orderResult.orderAmounts, orderResult.user.username);
+          await Promise.all(orderSet.users.map(async (userOrder) => {
+            const u = userOrder.username;
+            const isCallee = orderResult.user.username === u;
+            console.log(u, orderSet.restaurant, orderResult.orderAmounts[u], userOrder.items, isCallee);
+            return Stats.recordStats(u, orderSet.restaurant, orderResult.orderAmounts[u], userOrder.items, isCallee);
+          }));
         }
       }
 
@@ -91,9 +96,6 @@ const POST_TO_SLACK = process.argv.reduce((m, a) => m || a === "--post", false);
 
   if (!DRY_RUN) {
     const allSuccess = results.reduce((m, r) => m && r.successful, true);
-    // Clear orders if we're done
-    if (allSuccess) Orders.clearOrders();
-    Stats.save();
   }
   await browser.close();
   process.exit(0);
@@ -241,7 +243,7 @@ const chooseRestaurant = async (page, restaurant) => {
  *   }
  */
 const fillOrders = async (page, userOrders) => {
-  const orderAmounts = [];
+  const orderAmounts = {};
   try {
     for (let i = 0; i < userOrders.length; i++) {
       const totalBefore = await foodBevTotal(page);
@@ -276,10 +278,7 @@ const fillOrders = async (page, userOrders) => {
       }
 
       // Record for stats
-      orderAmounts.push({
-        username: userOrders[i].username,
-        amount: (await foodBevTotal(page)) - totalBefore,
-      });
+      orderAmounts[userOrders[i].username] = (await foodBevTotal(page)) - totalBefore;
     }
   } catch (e) {
     // Most likely a timeout, or we didn't wait long enough
@@ -347,8 +346,15 @@ const fillNames = async (page, usernames, { orderAmounts }) => {
     const excess = (orderTotal - usernames.length * 25).toFixed(2);
 
     // Find person with most expensive order
-    const maxOrder = orderAmounts.reduce((memo, oa) => {
-      return oa.amount > memo.amount ? oa : memo;
+    const maxOrder = Object.keys(orderAmounts).reduce((memo, username) => {
+      if (oa[username] > memo.amount) {
+        return {
+          username,
+          amount: oa[username],
+        };
+      } else {
+        return memo;
+      }
     }, { amount: 0 });
     const userAt = await Slack.atUser(maxOrder.username);
 
@@ -388,20 +394,6 @@ const fillPhoneNumber = async (page, usernames) => {
  */
 const NOT_ALPHAN_REGEX = /[\W_]+/g;
 const sanitizeFilename = n => n.replace(NOT_ALPHAN_REGEX, "_").replace(/^_+|_+$/g, "").toLowerCase();
-
-/**
- * Saves the provided data as stats
- */
-const statsHelper = (restaurant, allOrders, orderAmounts, userCall) => {
-  Object.keys(allOrders).forEach((username) => {
-    if (allOrders[username].restaurant === restaurant) {
-      allOrders[username].items.forEach(i => Stats.recordDish(username, restaurant, i[0]));
-    }
-  });
-
-  orderAmounts.forEach(oa => Stats.recordDollars(oa.username, restaurant, oa.amount));
-  Stats.recordCall(userCall);
-};
 
 /**
  * Given a page at the add items stage, returns the current food/beverages total

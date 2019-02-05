@@ -1,3 +1,6 @@
 
 const Slack = require("./slack");
-Slack.sendBasicMessage("Alfred is open for business!");
+(async () => {
+  await Slack.sendBasicMessage("Alfred is open for business!");
+  process.exit(0);
+})();

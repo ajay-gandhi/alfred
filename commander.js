@@ -172,7 +172,7 @@ module.exports.do = async (ctx, next) => {
         if (args["restaurant"]) {
           errMsg = "Global stats for specific restaurants isn't supported.\n";
         }
-        const stats = Stats.getGlobalStats();
+        const stats = await Stats.getGlobalStats();
         const text = `${errMsg}Global stats:\n${Slack.statsFormatter(stats)}`;
         ctx.body = { text };
       } else {
@@ -180,13 +180,13 @@ module.exports.do = async (ctx, next) => {
           // Stats for user from restaurant
           const slackAt = await Slack.atUser(username);
           const restaurant = Transform.correctRestaurant(args["restaurant"]).name;
-          const stats = Stats.getStatsForUserFromRestaurant(username, restaurant);
+          const stats = await Stats.getStatsForUserFromRestaurant(username, restaurant);
           const text = `Stats for ${slackAt} from ${restaurant}:\n${Slack.statsFormatter(stats)}`;
           ctx.body = { text };
         } else {
           // General stats for user
           const slackAt = await Slack.atUser(username);
-          const stats = Stats.getStatsForUser(username);
+          const stats = await Stats.getStatsForUser(username);
           const text = `General stats for ${slackAt}:\n${Slack.statsFormatter(stats)}`;
           ctx.body = { text };
         }
