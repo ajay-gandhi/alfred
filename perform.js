@@ -170,6 +170,7 @@ const orderFromRestaurant = async (page, restaurant, userOrders, retries) => {
 
     return result;
   } catch (e) {
+    LOG.log(e);
     return {
       errors: ["Order failed for unknown reason."],
     };
@@ -347,10 +348,10 @@ const fillNames = async (page, usernames, { orderAmounts }) => {
 
     // Find person with most expensive order
     const maxOrder = Object.keys(orderAmounts).reduce((memo, username) => {
-      if (oa[username] > memo.amount) {
+      if (orderAmounts[username] > memo.amount) {
         return {
           username,
-          amount: oa[username],
+          amount: orderAmounts[username],
         };
       } else {
         return memo;
