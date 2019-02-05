@@ -128,20 +128,19 @@ module.exports.do = async (ctx, next) => {
       if (args["get-what"] === "info") {
         // Show info
         const you = await Users.getUser(username);
-        const slackAt = await Slack.atUser(username);
-        ctx.body = { text: `${slackAt}'s info:\`\`\`Name:   ${you.name}\nNumber: ${you.phone}\`\`\`` };
-      } else if (args["get-what"].startsWith("fav")) {
-        // Show favorite
-        const you = await Users.getUser(username);
+        const innerText = [
+          `Name:   ${you.name}`,
+          `Number: ${you.phone}`,
+        ];
         if (you.favorite) {
           const items = you.favorite.items.map((i) => {
             return i[1].length > 0 ? `${i[0]} (${i[1].join(", ")})` : i[0];
           }).join(", ");
-          const text = `Your favorite order is ${items} from ${you.favorite.restaurant}`;
-          ctx.body = { text };
-        } else {
-          ctx.body = { text: "No favorite saved!" };
+          innerText.push(`\nFavorite: ${items} from ${you.favorite.restaurant}`);
         }
+
+        const slackAt = await Slack.atUser(username);
+        ctx.body = { text: `${slackAt}'s info:\`\`\`${innerText.join("\n")}\`\`\`` };
       } else {
         // Show current order
         const order = Orders.getOrders()[username];
