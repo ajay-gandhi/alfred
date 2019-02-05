@@ -6,9 +6,27 @@ const request = require("request");
 const Users = require("../users");
 const private = require("../private");
 
-module.exports.sendBasicMessage = (message) => {
-  sendMessage({ text: message });
+const sendMessage = (text, attachments) => {
+  return new Promise((resolve, reject) => {
+    request({
+      url: private.slackOutgoingUrl,
+      method: "POST",
+      json: {
+        text,
+        attachments,
+        channel: "#ot-test-ram",
+      },
+    }, (err, response, body) => {
+      if (response.statusCode !== 200) {
+        reject(err);
+      } else {
+        resolve();
+      }
+    });
+  });
 };
+
+module.exports.sendBasicMessage = sendMessage;
 
 const atUser = async (username) => {
   const u = await Users.getUser(username);
@@ -102,24 +120,4 @@ module.exports.sendFinishedMessage = async (parts, dry) => {
       attachments
     );
   }
-};
-
-const sendMessage = (text, attachments) => {
-  return new Promise((resolve, reject) => {
-    request({
-      url: private.slackOutgoingUrl,
-      method: "POST",
-      json: {
-        text,
-        attachments,
-        channel: "#ot-test-ram",
-      },
-    }, (err, response, body) => {
-      if (response.statusCode !== 200) {
-        reject(err);
-      } else {
-        resolve();
-      }
-    });
-  });
 };
