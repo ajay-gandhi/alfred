@@ -80,19 +80,21 @@ module.exports.sendFinishedMessage = async (parts, dry) => {
     }, []);
 
     // Don't send anything if all restaurants will be successful
-    if (attachments.length === 0) return;
+    if (attachments.length === 0) {
+      await sendMessage("Everything looks good! I'll put in the order at 3:30pm.");
+    } else {
+      const succOrders = parts
+        .filter(p => p.successful)
+        .map(p => p.restaurant)
+        .join(", ")
+        .replace(/,(?!.*,)/gmi, " and");
 
-    const succOrders = parts
-      .filter(p => p.successful)
-      .map(p => p.restaurant)
-      .join(", ")
-      .replace(/,(?!.*,)/gmi, " and");
-
-    await sendMessage(
-      (succOrders.length === 0 ? "" : `Orders from ${succOrders} are good to go!\n`) +
-      `There are problems with ${attachments.length === 1 ? "this order" : "these orders"}:`,
-      attachments
-    );
+      await sendMessage(
+        (succOrders.length === 0 ? "" : `Orders from ${succOrders} are good to go!\n`) +
+        `There are problems with ${attachments.length === 1 ? "this order" : "these orders"}:`,
+        attachments
+      );
+    }
   } else {
     const attachments = await Promise.all(parts.map(async (part) => {
       const attachment = {
