@@ -2,32 +2,29 @@
  * Module for persistent orders data
  */
 
-const fs = require("fs");
+const MongoClient = require("mongodb").MongoClient;
+const private = require("./private");
 
-const ORDERS_FILE = `${__dirname}/data/orders.json`;
-const orders = fs.existsSync(ORDERS_FILE) ? JSON.parse(fs.readFileSync(ORDERS_FILE)) : {};
+let orders;
+const client = new MongoClient(private.mongoSrv, { useNewUrlParser: true });
+client.connect((err) => {
+  if (err) console.log("Error connecting to MongoDB:", err);
+  orders = client.db(private.mongoDbName).collection("orders");
+});
 
-module.exports.getOrders = () => orders;
-module.exports.addOrder = (restaurant, username, items) => {
-  orders[username] = {
-    restaurant,
-    items,
-  };
-  write();
+module.exports.getOrders = async () => await orders.find({}).toArray();
+module.exports.getOrderForUser = async username => await orders.findOne({ username });
+module.exports.addOrder = async (restaurant, username, items) => {
+  await orders.findOneAndUpdate({ username }, {
+    $set: {
+      username,
+      restaurant,
+      items,
+    },
+  }, {
+    upsert: true,
+  });
 };
-module.exports.removeOrder = (username) => {
-  let removedOrder;
-  if (orders[username]) {
-    removedOrder = orders[username];
-    delete orders[username];
-  }
-  write();
-  return removedOrder;
-};
-module.exports.clearOrders = () => {
-  Object.keys(orders).forEach(k => { delete orders[k]; });
-  write();
-};
-
-const write = () => fs.writeFileSync(ORDERS_FILE, JSON.stringify(orders, null, 2));
+module.exports.removeOrder = async username => (await orders.findOneAndDelete({ username })).value;
+module.exports.clearOrders = async () => await orders.deleteMany({});
 
