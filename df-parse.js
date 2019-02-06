@@ -48,7 +48,7 @@ module.exports = (text) => {
       })
       .catch((err) => {
         console.error("ERROR:", err);
-        reject(false);
+        reject({ command: false });
       });
   });
 };
