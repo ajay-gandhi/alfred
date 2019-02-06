@@ -159,7 +159,7 @@ module.exports.do = async (ctx, next) => {
     }
 
     case "Set Info": {
-      if (!args["given-name"] || args["phone-number"]) {
+      if (!args["given-name"] || !args["phone-number"]) {
         ctx.body = { text: "Please enter your name and phone number." };
         break;
       }
