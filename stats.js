@@ -28,7 +28,8 @@ const getCallsForUser = async (username) => {
  * Return the dollar value that the user spent at this restaurant
  */
 const getDollarsForRestaurant = async (username, restaurantName) => {
-  return (await stats.findOne({ username })).restaurants[restaurantName].dollars;
+  const s = await stats.findOne({ username });
+  return s && s.restaurants[restaurantName].dollars;
 };
 
 /**
@@ -36,7 +37,7 @@ const getDollarsForRestaurant = async (username, restaurantName) => {
  */
 const getDollarsForUser = async (username) => {
   const s = await stats.findOne({ username });
-  return Object.keys(s.restaurants).reduce((m, r) => m + s.restaurants[r].dollars, 0);
+  return s && Object.keys(s.restaurants).reduce((m, r) => m + s.restaurants[r].dollars, 0);
 };
 
 /**
@@ -53,7 +54,10 @@ const getTotalDollars = async () => {
  * Return the top dishes for this user at this restaurant
  */
 const getTopDishesForRestaurant = async (username, restaurant) => {
-  const s = fromMongo((await stats.findOne({ username })).restaurants[restaurant].items);
+  const pulled = await stats.findOne({ username });
+  if (!pulled) return;
+
+  const s = fromMongo(pulled.restaurants[restaurant].items);
   return Object.keys(s).reduce((tops, itemName) => {
     if (tops.length < 3) {
       return tops.concat({
@@ -80,8 +84,10 @@ const getTopDishesForRestaurant = async (username, restaurant) => {
  * Return the top dishes for this user
  */
 const getTopDishesForUser = async (username) => {
-  const s = fromMongo((await stats.findOne({ username })).restaurants);
+  const pulled = await stats.findOne({ username });
+  if (!pulled) return;
 
+  const s = fromMongo(pulled.restaurants);
   return Object.keys(s).reduce((userTops, restaurant) => {
     return Object.keys(s[restaurant].items).reduce((restTops, itemName) => {
       if (restTops.length < 3) {

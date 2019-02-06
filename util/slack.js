@@ -36,6 +36,10 @@ module.exports.atUser = atUser;
 
 // Formats the given stats
 module.exports.statsFormatter = (stats) => {
+  if (!stats.dollarStats && !stats.dishes) {
+    return "```No stats```";
+  }
+
   const dollarStats = `Total spent: $${stats.dollars.toFixed(2)}\n\n`;
 
   let callStats = "";
