@@ -42,7 +42,7 @@ module.exports.do = async (ctx, next) => {
       if (fixed.error) {
         ctx.body = { text: `${fixed.error} Please reorder!` };
       } else {
-        Orders.addOrder(fixed.restaurantName, username, fixed.items);
+        await Orders.addOrder(fixed.restaurantName, username, fixed.items);
         const itemList = fixed.items.map(i => i[0]).join(", ");
         const subtotal = computeSubtotal(fixed.restaurantName, fixed.items);
         ctx.body = {
@@ -76,7 +76,7 @@ module.exports.do = async (ctx, next) => {
           ctx.body = { text: "Alfred has already ordered for today." };
           break;
         }
-        const order = Orders.removeOrder(username);
+        const order = await Orders.removeOrder(username);
         ctx.body = { text: `Removed order from ${order.restaurant}` };
       }
       break;
@@ -96,7 +96,7 @@ module.exports.do = async (ctx, next) => {
       if (!favorite) {
         ctx.body = { text: "No favorite order saved" };
       } else {
-        Orders.addOrder(favorite.restaurant, username, favorite.items);
+        await Orders.addOrder(favorite.restaurant, username, favorite.items);
         const itemList = favorite.items.map(i => i[0]).join(", ");
         ctx.body = { text: `Ordered ${itemList} from ${favorite.restaurant}` };
       }
@@ -149,7 +149,7 @@ module.exports.do = async (ctx, next) => {
           break;
         }
         // Show current order
-        const order = Orders.getOrders()[username];
+        const order = await Orders.getOrderForUser(username);
         if (order) {
           const items = order.items.map((i) => {
             return i[1].length > 0 ? `${i[0]} (${i[1].join(", ")})` : i[0];

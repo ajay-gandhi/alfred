@@ -20,25 +20,20 @@ const MenuData = require("../data/menu_data");
  * username and the items they ordered.
  */
 module.exports.indexByRestaurantAndUser = (data) => {
-  const newData = {};
-
-  const usernames = Object.keys(data);
-  for (const username of usernames) {
-    const restaurant = data[username].restaurant;
-    if (!newData[restaurant]) {
-      newData[restaurant] = {
-        restaurant,
+  return Object.values(data.reduce((memo, order) => {
+    if (!memo[order.restaurant]) {
+      memo[order.restaurant] = {
+        restaurant: order.restaurant,
         users: [],
       };
     }
 
-    newData[restaurant].users.push({
-      username,
-      items: data[username].items,
+    memo[order.restaurant].users.push({
+      username: order.username,
+      items: order.items,
     });
-  }
-
-  return Object.values(newData);
+    return memo;
+  }, {}));
 };
 
 /**

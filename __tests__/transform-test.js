@@ -5,21 +5,20 @@ const Transform = require("../util/transform");
 describe("indexByRestaurantAndUser", () => {
   // Try adding orders
   const testInputs = [
-    {},
-    {
-      "alice": {
-        "restaurant": "american",
-        "items": [["hot dog", []], ["burger", ["lettuce"]]],
-      },
-      "bob": {
-        "restaurant": "italian",
-        "items": [["pizza", ["onions"]], ["pasta", []]],
-      },
-      "cad": {
-        "restaurant": "italian",
-        "items": [["pizza", ["chicken"]]],
-      },
-    }
+    [],
+    [{
+      "username": "alice",
+      "restaurant": "american",
+      "items": [["hot dog", []], ["burger", ["lettuce"]]],
+    }, {
+      "username": "bob",
+      "restaurant": "italian",
+      "items": [["pizza", ["onions"]], ["pasta", []]],
+    }, {
+      "username": "cad",
+      "restaurant": "italian",
+      "items": [["pizza", ["chicken"]]],
+    }]
   ];
 
   const testOutputs = [

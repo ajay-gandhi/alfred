@@ -30,9 +30,9 @@ const ORDER_TIME = process.argv.reduce((m, a) => a.includes("--time=") ? a.subst
 const DRY_RUN = !process.argv.reduce((m, a) => m || a === "--actual", false);
 const POST_TO_SLACK = process.argv.reduce((m, a) => m || a === "--post", false);
 
-(async () => {
+const go = async () => {
   // Initialize data and browser
-  const orders = Orders.getOrders();
+  const orders = await Orders.getOrders();
   if (Object.keys(orders).length === 0) process.exit(0);
 
   const orderSets = Transform.indexByRestaurantAndUser(orders);
@@ -99,7 +99,8 @@ const POST_TO_SLACK = process.argv.reduce((m, a) => m || a === "--post", false);
   }
   await browser.close();
   process.exit(0);
-})();
+};
+setTimeout(go, 5000);
 
 /**
  * Given a puppeteer page, logs into Seamless with the given credentials.
