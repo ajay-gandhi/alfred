@@ -47,15 +47,11 @@ module.exports.statsFormatter = (stats) => {
     callStats = `Total calls received: ${stats.calls}\n\n`;
   }
 
-  let dishStatsPrefix = "Top dishes:\n";
-  let dishStats = "  None";
-  if (stats.dishes.length > 0) {
-    formattedDishes= stats.dishes.map((d) => {
-      const rest = d.restaurant ? ` from ${d.restaurant}` : "";
-      return `  ${d.count} of "${d.itemName}"${rest}`;
-    });
-    dishStats = formattedDishes.join("\n");
-  }
+  const dishStatsPrefix = "Top dishes:\n";
+  const dishStats = stats.dishes.map((d) => {
+    const rest = d.restaurant ? ` from ${d.restaurant}` : "";
+    return `  ${d.count} of "${d.itemName}"${rest}`;
+  }).join("\n");
   const otherMessage = Math.random() > 0.8 ? "\n\nWant other stats? Message Ajay!" : "";
   return `\`\`\`${dollarStats}${callStats}${dishStatsPrefix}${dishStats}${otherMessage}\`\`\``;
 };
