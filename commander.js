@@ -159,6 +159,10 @@ module.exports.do = async (ctx, next) => {
     }
 
     case "Set Info": {
+      if (!args["given-name"] || args["phone-number"]) {
+        ctx.body = { text: "Please enter your name and phone number." };
+        break;
+      }
       const you = await Users.addUser(username, `${args["given-name"]} ${args["last-name"]}`, args["phone-number"], ctx.request.body.user_id);
       const slackAt = await Slack.atUser(username);
       ctx.body = { text: `Added information for ${slackAt}:\`\`\`Name:   ${you.name}\nNumber: ${you.phone}\`\`\`` };
@@ -175,21 +179,19 @@ module.exports.do = async (ctx, next) => {
         const stats = await Stats.getGlobalStats();
         const text = `${errMsg}Global stats:\n${Slack.statsFormatter(stats)}`;
         ctx.body = { text };
-      } else {
-        if (args["restaurant"]) {
+      } else if (args["restaurant"]) {
           // Stats for user from restaurant
           const slackAt = await Slack.atUser(username);
           const restaurant = Transform.correctRestaurant(args["restaurant"]).name;
           const stats = await Stats.getStatsForUserFromRestaurant(username, restaurant);
           const text = `Stats for ${slackAt} from ${restaurant}:\n${Slack.statsFormatter(stats)}`;
           ctx.body = { text };
-        } else {
-          // General stats for user
-          const slackAt = await Slack.atUser(username);
-          const stats = await Stats.getStatsForUser(username);
-          const text = `General stats for ${slackAt}:\n${Slack.statsFormatter(stats)}`;
-          ctx.body = { text };
-        }
+      } else {
+        // General stats for user
+        const slackAt = await Slack.atUser(username);
+        const stats = await Stats.getStatsForUser(username);
+        const text = `General stats for ${slackAt}:\n${Slack.statsFormatter(stats)}`;
+        ctx.body = { text };
       }
       break;
     }
