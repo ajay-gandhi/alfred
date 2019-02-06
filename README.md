@@ -18,8 +18,6 @@ Things to do, in order of urgency:
 * Reducing tip to fit within budget
 * Guess restaurant if not provided
 * Allow adding to pre-existing order
-* Use a proper DB LOL
-* Redesign stats schema so calls isn't on same level as restaurants (should happen anyway if move to DB)
 * Configurable time of delivery
 
 ## Layout
