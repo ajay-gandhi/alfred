@@ -26,6 +26,7 @@ module.exports.do = async (ctx, next) => {
 
   const username = ctx.request.body.user_name;
   const { command, args } = await dfParse(cleanPhone(ctx.request.body.text));
+  LOG.log(command, args);
   switch (command) {
     case "Regular Order": {
       if (isLate()) {
