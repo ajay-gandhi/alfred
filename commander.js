@@ -121,14 +121,15 @@ module.exports.do = async (ctx, next) => {
     }
 
     case "Get": {
-      if (!await Users.getUser(username)) {
-        ctx.body = { text: "Please register your info first." };
-        break;
-      }
 
       if (args["get-what"] === "info") {
         // Show info
         const you = await Users.getUser(username);
+        if (!you) {
+          ctx.body = { text: "No info saved." };
+          break;
+        }
+
         const innerText = [
           `Name:   ${you.name}`,
           `Number: ${you.phone}`,
@@ -143,6 +144,10 @@ module.exports.do = async (ctx, next) => {
         const slackAt = await Slack.atUser(username);
         ctx.body = { text: `${slackAt}'s info:\`\`\`${innerText.join("\n")}\`\`\`` };
       } else {
+        if (!await Users.getUser(username)) {
+          ctx.body = { text: "Please register your info first." };
+          break;
+        }
         // Show current order
         const order = Orders.getOrders()[username];
         if (order) {
