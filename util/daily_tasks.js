@@ -17,4 +17,5 @@ const private = require("../private");
   for (const file of files) {
     if (file.split(".").pop() === "pdf") fs.unlinkSync(`${dir}${file}`);
   }
+  process.exit(0);
 })();
