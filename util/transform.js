@@ -8,6 +8,7 @@
 
 const FuzzAldrin = require("fuzzaldrin");
 const MenuData = require("../data/menu_data");
+const Levenshtein = require("fast-levenshtein");
 
 /**
  * Orders data is stored persistently in a JSON hash keyed by username, with the
@@ -98,7 +99,7 @@ const friendlizeItem = i => i.replace(/^[\w]{1,3}\. /, "");
 const ARTICLE_REGEX = /^(?:(the|a|an|some) +)/;
 const OPTIONS_REGEX = /\((.*)\)/;
 const transformOrders = (items, restaurantName) => {
-  const errors = [];
+  const errorItems = [];
   const correctedItems = items.map((origItem) => {
     const item = origItem.replace(ARTICLE_REGEX, "");
     // First parse out options
@@ -118,15 +119,32 @@ const transformOrders = (items, restaurantName) => {
     if (correctedItem) {
       formattedItem[0] = correctedItem.name;
     } else {
-      errors.push(formattedItem[0]);
+      errorItems.push(formattedItem[0]);
     }
     return formattedItem;
   });
 
-  if (errors.length > 0) {
-    const itemNoun = errors.length === 1 ? "item" : "items";
-    const items = errors.map(i => `"${i}"`).join(", ");
-    return { error: `Couldn't find ${itemNoun} called ${items}.` };
+  if (errorItems.length > 0) {
+    const itemNoun = errorItems.length === 1 ? "item" : "items";
+    const items = errorItems.map(i => `"${i}"`).join(", ");
+
+    // Find closest match to first unknown item
+    const lMatch = MenuData[restaurantName].menu.reduce((memo, item) => {
+      if (Levenshtein.get(item.name, errorItems[0]) < memo.score) {
+        return {
+          name: item.name,
+          score: Levenshtein.get(item.name, errorItems[0]),
+        };
+      } else {
+        return memo;
+      }
+    }, {
+      score: Number.MAX_SAFE_INTEGER,
+    });
+    const didYouMean = lMatch.score < 20 ? ` Did you mean "${lMatch.name}"?` : "";
+
+    return { error: `Couldn't find ${itemNoun} called ${items}.${didYouMean}` };
   }
   return { correctedItems };
 };
+
