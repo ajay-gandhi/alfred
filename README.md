@@ -9,6 +9,7 @@ and places them on Seamless corporate.
 
 Things to do, in order of urgency:
 
+* Write callee name in order comments
 * Notify order participants when callee says food has arrived
 * Add alfred thank you :)
 * Support for comments and quantity
