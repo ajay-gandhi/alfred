@@ -378,7 +378,14 @@ const fillPhoneNumber = async (page, usernames) => {
     await page.$eval("input#phoneNumber", e => e.value = "");
     await page.click("input#phoneNumber");
     await page.keyboard.type(userData.phone);
+
+    // Eco-friendly order!
     await page.click("#ecoToGoTrue");
+
+    // Put callee's name in instructions box
+    await page.click("textarea#DeliveryComment");
+    await page.keyboard.type(`Ask for ${userData.name} upon delivery`);
+
     return { user: userData };
   } catch (e) {
     // Most likely a timeout
