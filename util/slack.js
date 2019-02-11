@@ -72,10 +72,12 @@ module.exports.statsFormatter = (stats) => {
 module.exports.sendFinishedMessage = async (parts, dry) => {
   if (dry) {
     const attachments = parts.reduce((memo, part) => {
+      const userAts = await Promise.all(part.users.map(u => atUser(u.username)));
+      const text = part.errors.concat(`FYI: ${userAts.join(", ")}`).join("\n");
       return part.successful ? memo : memo.concat({
         color: "danger",
         title: part.restaurant,
-        text: part.errors.join("\n"),
+        text,
       });
     }, []);
 
