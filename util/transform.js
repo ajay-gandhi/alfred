@@ -80,6 +80,8 @@ module.exports.parseOrders = (input, restaurantName) => {
   return transformOrders(parts.reduce((m, e) => e ? m.concat(e.trim()) : m, []), restaurantName);
 };
 
+/********************************** Helpers ***********************************/
+
 /**
  * Given a corrected restaurant name and item, finds the closest matching item
  */
@@ -88,9 +90,6 @@ const findCorrectItem = (restaurantName, itemName) => {
   const matches = FuzzAldrin.filter(menu, itemName, { key: "name" });
   return matches.length === 0 ? false : matches[0];
 };
-module.exports.findCorrectItem = findCorrectItem;
-
-/********************************** Helpers ***********************************/
 
 // Remove leading "X. "
 const friendlizeItem = i => i.replace(/^[\w]{1,3}\. /, "");

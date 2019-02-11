@@ -44,13 +44,7 @@ module.exports.do = async (ctx, next) => {
       } else {
         await Orders.addOrder(fixed.restaurantName, username, fixed.items);
         const itemList = fixed.items.map(i => i[0]).join(", ");
-        const subtotal = computeSubtotal(fixed.restaurantName, fixed.items);
-        ctx.body = {
-          text: [
-            `Added ${itemList} from ${fixed.restaurantName}.`,
-            `Subtotal: $${subtotal.toFixed(2)}`,
-          ].join("\n"),
-        };
+        ctx.body = { text: `Added ${itemList} from ${fixed.restaurantName}` };
       }
       break;
     }
@@ -260,10 +254,3 @@ const fixRestaurantAndOrders = (restaurantInput, orderInput) => {
 // Removes Slack formatting for tel
 const telTagRegex = /\<tel:[\(]?[0-9\-]*[\)]?\|[\(]?([0-9\-]*)[\)]?\>/;
 const cleanPhone = text => text.replace(telTagRegex, "$1");
-
-// Compute subtotal for order
-const computeSubtotal = (restaurantName, items) => {
-  return items.reduce((sub, item) => {
-    return sub + Transform.findCorrectItem(restaurantName, item[0]).price;
-  }, 0);
-};
