@@ -25,6 +25,7 @@ module.exports.do = async (ctx, next) => {
   if (ctx.request.body.user_name === "slackbot") return {};
 
   const username = ctx.request.body.user_name;
+  const you = await Users.getUser(username);
   const { command, args } = await dfParse(cleanPhone(ctx.request.body.text));
   LOG.log(command, args);
   switch (command) {
@@ -33,7 +34,7 @@ module.exports.do = async (ctx, next) => {
         ctx.body = { text: "Alfred has already ordered for today." };
         break;
       }
-      if (!await Users.getUser(username)) {
+      if (!you) {
         ctx.body = { text: "Please register your info first." };
         break;
       }
@@ -50,7 +51,7 @@ module.exports.do = async (ctx, next) => {
     }
 
     case "Forget": {
-      if (!await Users.getUser(username)) {
+      if (!you) {
         ctx.body = { text: "Please register your info first." };
         break;
       }
@@ -81,24 +82,23 @@ module.exports.do = async (ctx, next) => {
         ctx.body = { text: "Alfred has already ordered for today." };
         break;
       }
-      if (!await Users.getUser(username)) {
+      if (!you) {
         ctx.body = { text: "Please register your info first." };
         break;
       }
 
-      const favorite = (await Users.getUser(username)).favorite;
-      if (!favorite) {
+      if (!you.favorite) {
         ctx.body = { text: "No favorite order saved" };
       } else {
-        await Orders.addOrder(favorite.restaurant, username, favorite.items);
-        const itemList = favorite.items.map(i => i[0]).join(", ");
-        ctx.body = { text: `Ordered ${itemList} from ${favorite.restaurant}` };
+        await Orders.addOrder(you.favorite.restaurant, username, you.favorite.items);
+        const itemList = you.favorite.items.map(i => i[0]).join(", ");
+        ctx.body = { text: `Ordered ${itemList} from ${you.favorite.restaurant}` };
       }
       break;
     }
 
     case "Set Favorite": {
-      if (!await Users.getUser(username)) {
+      if (!you) {
         ctx.body = { text: "Please register your info first." };
         break;
       }
@@ -115,10 +115,8 @@ module.exports.do = async (ctx, next) => {
     }
 
     case "Get": {
-
       if (args["get-what"] === "info") {
         // Show info
-        const you = await Users.getUser(username);
         if (!you) {
           ctx.body = { text: "No info saved." };
           break;
@@ -138,7 +136,7 @@ module.exports.do = async (ctx, next) => {
         const slackAt = await Slack.atUser(username);
         ctx.body = { text: `${slackAt}'s info:\`\`\`${innerText.join("\n")}\`\`\`` };
       } else {
-        if (!await Users.getUser(username)) {
+        if (!you) {
           ctx.body = { text: "Please register your info first." };
           break;
         }
