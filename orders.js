@@ -20,6 +20,7 @@ module.exports.addOrder = async (restaurant, username, items) => {
       username,
       restaurant,
       items,
+      isCallee: false,
     },
   }, {
     upsert: true,
@@ -27,4 +28,13 @@ module.exports.addOrder = async (restaurant, username, items) => {
 };
 module.exports.removeOrder = async username => (await orders.findOneAndDelete({ username })).value;
 module.exports.clearOrders = async () => await orders.deleteMany({});
+module.exports.setCallee = async (username) => {
+  await orders.findOneAndUpdate({ username }, {
+    $set: {
+      isCallee: true,
+    },
+  }, {
+    upsert: true,
+  });
+};
 

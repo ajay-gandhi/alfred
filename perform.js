@@ -70,14 +70,16 @@ const go = async () => {
           confirmationUrl: `https://alfred.ajay-gandhi.com/confirmations/${sanitizeFilename(orderSet.restaurant)}.pdf`,
         });
 
-        // Record stats
         if (!DRY_RUN) {
+          // Record stats
           await Promise.all(orderSet.users.map(async (userOrder) => {
             const u = userOrder.username;
             const isCallee = orderResult.user.username === u;
-            console.log(u, orderSet.restaurant, orderResult.orderAmounts[u], userOrder.items, isCallee);
             return Stats.recordStats(u, orderSet.restaurant, orderResult.orderAmounts[u], userOrder.items, isCallee);
           }));
+
+          // Write callee to orders
+          await orders.setCallee(orderResult.user.username);
         }
       }
 
@@ -91,7 +93,7 @@ const go = async () => {
   if (POST_TO_SLACK) {
     await Slack.sendFinishedMessage(results, DRY_RUN);
   } else {
-    console.log(results);
+    LOG.log(results);
   }
 
   if (!DRY_RUN) {
