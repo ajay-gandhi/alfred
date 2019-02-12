@@ -71,15 +71,17 @@ module.exports.statsFormatter = (stats) => {
  */
 module.exports.sendFinishedMessage = async (parts, dry) => {
   if (dry) {
-    const attachments = parts.reduce((memo, part) => {
-      return part.successful ? memo : memo.concat({
+    const attachments = await Promise.all(parts.filter(p => !p.successful).map(async (part) => {
+      const userAts = await Promise.all(part.users.map(u => atUser(u.username)));
+      const text = part.errors.concat(`FYI: ${userAts.join(", ")}`).join("\n");
+      return {
         color: "danger",
         title: part.restaurant,
-        text: part.errors.join("\n"),
-      });
-    }, []);
+        text,
+      };
+    }));
 
-    // Don't send anything if all restaurants will be successful
+    // Don't send attachments if all restaurants will be successful
     if (attachments.length === 0) {
       await sendMessage("Everything looks good! I'll put in the order at 3:30pm.");
     } else {
