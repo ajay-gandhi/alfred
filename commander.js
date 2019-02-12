@@ -97,6 +97,27 @@ module.exports.do = async (ctx, next) => {
       break;
     }
 
+    case "Announce": {
+      if (!you) {
+        ctx.body = { text: "Please register your info first." };
+        break;
+      }
+      const yourOrder = await Orders.getOrderForUser(username);
+      if (!yourOrder) {
+        ctx.body = { text: "You don't have an order today." };
+        break;
+      }
+      if (!yourOrder.isCallee) {
+        ctx.body = { text: "You weren't the designated callee." };
+        break;
+      }
+
+      const fellows = (await Orders.getOrders()).filter(o => o.restaurant === yourOrder.restaurant);
+      const fellowsText = (await Promise.all(fellows.map(async f => Slack.atUser(f.username)))).join(" ");
+      ctx.body = { text: `Food from ${yourOrder.restaurant} is here! ${fellowsText}` };
+      break;
+    }
+
     case "Set Favorite": {
       if (!you) {
         ctx.body = { text: "Please register your info first." };
