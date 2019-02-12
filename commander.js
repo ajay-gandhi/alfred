@@ -181,9 +181,9 @@ module.exports.do = async (ctx, next) => {
         ctx.body = { text: "Please enter your name and phone number." };
         break;
       }
-      const you = await Users.addUser(username, `${args["given-name"]} ${args["last-name"]}`, args["phone-number"], ctx.request.body.user_id);
+      const added = await Users.addUser(username, `${args["given-name"]} ${args["last-name"]}`, args["phone-number"], ctx.request.body.user_id);
       const slackAt = await Slack.atUser(username);
-      ctx.body = { text: `Added information for ${slackAt}:\`\`\`Name:   ${you.name}\nNumber: ${you.phone}\`\`\`` };
+      ctx.body = { text: `Added information for ${slackAt}:\`\`\`Name:   ${added.name}\nNumber: ${added.phone}\`\`\`` };
       break;
     }
 
