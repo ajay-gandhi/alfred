@@ -6,8 +6,15 @@
  */
 
 const puppeteer = require("puppeteer");
-const fs = require("fs");
+const MongoClient = require("mongodb").MongoClient;
 const private = require("../private");
+
+let menu;
+const client = new MongoClient(private.mongoSrv, { useNewUrlParser: true });
+client.connect((err) => {
+  if (err) console.log("Error connecting to MongoDB:", err);
+  menu = client.db(private.mongoDbName).collection("menu");
+});
 
 const URLS = {
   login: "https://www.seamless.com/corporate/login/",
@@ -34,14 +41,14 @@ const FLOAT_REGEX = /[+-]?\d+(\.\d+)?/g;
     await page.waitForNavigation();
 
     // See how many restaurants are there
-    const menuData = {};
+    const menuData = [];
     const numRestaurants = await page.$eval("div#options a.OtherLink", e => parseInt(e.innerText));
     console.log(`${numRestaurants} restaurants open`);
 
     for (let i = 0; i < numRestaurants; i++) {
       const data = await scrapeMenu(page, i);
       if (data) {
-        menuData[data.name] = data;
+        menuData.push(data);
         console.log("done");
       }
 
@@ -53,12 +60,14 @@ const FLOAT_REGEX = /[+-]?\d+(\.\d+)?/g;
       }
     }
 
-    console.log(`Writing to ${OUTPUT_FILE}`);
-    fs.writeFileSync(OUTPUT_FILE, JSON.stringify(menuData), "utf8");
+    console.log(`Writing to Mongo`);
+    await menu.deleteMany({});
+    await menu.insertMany(menuData);
   } catch (err) {
     console.log("Crashed with error", err);
   }
   await browser.close();
+  process.exit(0);
 })();
 
 /**
