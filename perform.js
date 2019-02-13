@@ -79,7 +79,7 @@ const go = async () => {
           }));
 
           // Write callee to orders
-          await orders.setCallee(orderResult.user.username);
+          await Orders.setCallee(orderResult.user.username);
         }
       }
 
