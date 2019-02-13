@@ -2,6 +2,8 @@
 
 const Transform = require("../util/transform");
 
+jest.setTimeout(10000);
+
 describe("indexByRestaurantAndUser", () => {
   // Try adding orders
   const testInputs = [
@@ -59,46 +61,64 @@ describe("indexByRestaurantAndUser", () => {
 });
 
 describe("correctRestaurant", () => {
-  test("corrects a valid restaurant", () => {
-    expect(Transform.correctRestaurant("newa").name).toEqual("Newa (Ellis St)");
+  test("corrects a valid restaurant", (done) => {
+    setTimeout(async () => {
+      expect((await Transform.correctRestaurant("newa")).name).toEqual("Newa (Ellis St)");
+      done();
+    }, 5000);
   });
 
-  test("returns false for an invalid restaurant", () => {
-    const invalidRest = "nwea";
-    expect(Transform.correctRestaurant(invalidRest).error).toEqual(`Couldn't find restaurant called "${invalidRest}".`);
+  test("returns false for an invalid restaurant", (done) => {
+    setTimeout(async () => {
+      const invalidRest = "nwea";
+      expect((await Transform.correctRestaurant(invalidRest)).error).toEqual(`Couldn't find restaurant called "${invalidRest}".`);
+      done();
+    }, 5000);
   });
 });
 
 describe("parseOrders", () => {
-  test("basic order parse", () => {
-    expect(Transform.parseOrders("chicken momo and lassi", "Newa (Ellis St)")).toEqual({
-      "correctedItems": [
-        ["Chicken Momo", []],
-        ["Mango Lassi", []],
-      ],
-    });
+  test("basic order parse", (done) => {
+    setTimeout(async () => {
+      expect(await Transform.parseOrders("chicken momo and lassi", "Newa (Ellis St)")).toEqual({
+        "correctedItems": [
+          ["Chicken Momo Jhol", []],
+          ["Mango Lassi", []],
+        ],
+      });
+      done();
+    }, 5000);
   });
 
-  test("order with options", () => {
-    expect(Transform.parseOrders("chicken momo (large)", "Newa (Ellis St)")).toEqual({
-      "correctedItems": [
-        ["Chicken Momo", ["large"]],
-      ],
-    });
+  test("order with options", (done) => {
+    setTimeout(async () => {
+      expect(await Transform.parseOrders("chicken momo (large)", "Newa (Ellis St)")).toEqual({
+        "correctedItems": [
+          ["Chicken Momo Jhol", ["large"]],
+        ],
+      });
+      done();
+    }, 5000);
   });
 
-  test("multiple items with options", () => {
-    expect(Transform.parseOrders("cheese pizza indee (mushrooms, chicken), boneless wings (5 lb)", "Extreme Pizza (Folsom)")).toEqual({
-      "correctedItems": [
-        ["Classic Cheese Pizza (Indee)", ["mushrooms", "chicken"]],
-        ["Boneless Wings", ["5 lb"]],
-      ],
-    });
+  test("multiple items with options", (done) => {
+    setTimeout(async () => {
+      expect(await Transform.parseOrders("cheese pizza indee (mushrooms, chicken), boneless wings (5 lb)", "Extreme Pizza (Folsom)")).toEqual({
+        "correctedItems": [
+          ["Classic Cheese Pizza (Indee)", ["mushrooms", "chicken"]],
+          ["Boneless Wings", ["5 lb"]],
+        ],
+      });
+      done();
+    }, 5000);
   });
 
-  test("item not found", () => {
-    expect(Transform.parseOrders("chicken choila", "Extreme Pizza (Folsom)")).toEqual({
-      "error": "Couldn't find item called \"chicken choila\".",
-    });
+  test("item not found", (done) => {
+    setTimeout(async () => {
+      expect(await Transform.parseOrders("chicken choila", "Extreme Pizza (Folsom)")).toEqual({
+        "error": "Couldn't find item called \"chicken choila\". Did you mean \"Chicken Pesto Sub\"?",
+      });
+      done();
+    }, 5000);
   });
 });

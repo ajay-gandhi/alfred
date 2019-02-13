@@ -7,8 +7,9 @@
  */
 
 const FuzzAldrin = require("fuzzaldrin");
-const MenuData = require("../data/menu_data");
+const MongoClient = require("mongodb").MongoClient;
 const Levenshtein = require("fast-levenshtein");
+const Menu = require("../models/menu");
 
 /**
  * Orders data is stored persistently in a JSON hash keyed by username, with the
@@ -40,14 +41,16 @@ module.exports.indexByRestaurantAndUser = (data) => {
 /**
  * Uses menu data to convert an inputted restaurant to the correct name
  */
-const restaurantNames = Object.keys(MenuData);
-module.exports.correctRestaurant = (restInput) => {
+let restaurantNames;
+module.exports.correctRestaurant = async (restInput) => {
+  if (!restaurantNames) restaurantNames = (await Menu.getAllMenus()).map(r => r.name);
+
   // Convert restaurant to official name
   const matches = FuzzAldrin.filter(restaurantNames, restInput);
   if (matches.length === 0) {
     return { error: `Couldn't find restaurant called "${restInput}".` };
   } else {
-    return MenuData[matches[0]];
+    return await Menu.getMenu(matches[0]);
   }
 };
 
@@ -55,7 +58,7 @@ module.exports.correctRestaurant = (restInput) => {
  * Given a string containing a list of orders and a restaurant, parses out the
  * items and corrects them
  */
-module.exports.parseOrders = (input, restaurantName) => {
+module.exports.parseOrders = async (input, restaurantName) => {
   const parts = [""];
   let parenCount = 0;
   const delimiters = [", and", ",and", " and ", ", ", ","];
@@ -77,7 +80,7 @@ module.exports.parseOrders = (input, restaurantName) => {
     parts[parts.length - 1] += input[i];
   }
 
-  return transformOrders(parts.reduce((m, e) => e ? m.concat(e.trim()) : m, []), restaurantName);
+  return await transformOrders(parts.reduce((m, e) => e ? m.concat(e.trim()) : m, []), restaurantName);
 };
 
 /********************************** Helpers ***********************************/
@@ -85,9 +88,9 @@ module.exports.parseOrders = (input, restaurantName) => {
 /**
  * Given a corrected restaurant name and item, finds the closest matching item
  */
-const findCorrectItem = (restaurantName, itemName) => {
-  const menu = MenuData[restaurantName].menu;
-  const matches = FuzzAldrin.filter(menu, itemName, { key: "name" });
+const findCorrectItem = async (restaurantName, itemName) => {
+  const items = (await Menu.getMenu(restaurantName)).menu;
+  const matches = FuzzAldrin.filter(items, itemName, { key: "name" });
   return matches.length === 0 ? false : matches[0];
 };
 
@@ -97,9 +100,9 @@ const friendlizeItem = i => i.replace(/^[\w]{1,3}\. /, "");
 // Parse out options
 const ARTICLE_REGEX = /^(?:(the|a|an|some) +)/;
 const OPTIONS_REGEX = /\((.*)\)/;
-const transformOrders = (items, restaurantName) => {
+const transformOrders = async (items, restaurantName) => {
   const errorItems = [];
-  const correctedItems = items.map((origItem) => {
+  const correctedItems = await Promise.all(items.map(async (origItem) => {
     const item = origItem.replace(ARTICLE_REGEX, "");
     // First parse out options
     const matchedOptions = item.match(OPTIONS_REGEX);
@@ -114,21 +117,21 @@ const transformOrders = (items, restaurantName) => {
     }
 
     // Correct item name
-    const correctedItem = findCorrectItem(restaurantName, formattedItem[0]);
+    const correctedItem = await findCorrectItem(restaurantName, formattedItem[0]);
     if (correctedItem) {
       formattedItem[0] = correctedItem.name;
     } else {
       errorItems.push(formattedItem[0]);
     }
     return formattedItem;
-  });
+  }));
 
   if (errorItems.length > 0) {
     const itemNoun = errorItems.length === 1 ? "item" : "items";
     const items = errorItems.map(i => `"${i}"`).join(", ");
 
     // Find closest match to first unknown item
-    const lMatch = MenuData[restaurantName].menu.reduce((memo, item) => {
+    const lMatch = (await Menu.getMenu(restaurantName)).menu.reduce((memo, item) => {
       if (Levenshtein.get(item.name, errorItems[0]) < memo.score) {
         return {
           name: item.name,
@@ -138,9 +141,11 @@ const transformOrders = (items, restaurantName) => {
         return memo;
       }
     }, {
+      name: "",
       score: Number.MAX_SAFE_INTEGER,
     });
-    const didYouMean = lMatch.score < 20 ? ` Did you mean "${lMatch.name}"?` : "";
+    const autocorrectName = lMatch.name.replace(/[()]/g, '');
+    const didYouMean = lMatch.score < 20 ? ` Did you mean "${autocorrectName}"?` : "";
 
     return { error: `Couldn't find ${itemNoun} called ${items}.${didYouMean}` };
   }

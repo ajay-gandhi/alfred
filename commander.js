@@ -39,7 +39,7 @@ module.exports.do = async (ctx, next) => {
         break;
       }
 
-      const fixed = fixRestaurantAndOrders(args["restaurant"], args["order"]);
+      const fixed = await fixRestaurantAndOrders(args["restaurant"], args["order"]);
       if (fixed.error) {
         ctx.body = { text: `${fixed.error} Please reorder!` };
       } else {
@@ -124,7 +124,7 @@ module.exports.do = async (ctx, next) => {
         break;
       }
 
-      const fixed = fixRestaurantAndOrders(args["restaurant"], args["order"]);
+      const fixed = await fixRestaurantAndOrders(args["restaurant"], args["order"]);
       if (fixed.error) {
         ctx.body = { text: `${fixed.error} Please re-enter!` };
       } else {
@@ -200,7 +200,7 @@ module.exports.do = async (ctx, next) => {
       } else if (args["restaurant"]) {
           // Stats for user from restaurant
           const slackAt = await Slack.atUser(username);
-          const restaurant = Transform.correctRestaurant(args["restaurant"]).name;
+          const restaurant = await Transform.correctRestaurant(args["restaurant"]).name;
           const stats = await Stats.getStatsForUserFromRestaurant(username, restaurant);
           const text = `Stats for ${slackAt} from ${restaurant}:\n${Slack.statsFormatter(stats)}`;
           ctx.body = { text };
@@ -254,14 +254,14 @@ const isLate = () => {
 };
 
 // Helper to call transform functions
-const fixRestaurantAndOrders = (restaurantInput, orderInput) => {
+const fixRestaurantAndOrders = async (restaurantInput, orderInput) => {
   // Find correct restaurant
   if (!restaurantInput) return { error: "No restaurant chosen." };
-  const restaurant = Transform.correctRestaurant(restaurantInput);
+  const restaurant = await Transform.correctRestaurant(restaurantInput);
   if (restaurant.error) return { error: restaurant.error };
 
   // Fix items
-  const items = Transform.parseOrders(orderInput, restaurant.name);
+  const items = await Transform.parseOrders(orderInput, restaurant.name);
   if (items.error) return { error: items.error };
 
   return {
