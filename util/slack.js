@@ -5,6 +5,7 @@
 const request = require("request");
 const Users = require("../users");
 const priv = require("../private");
+const fs = require("fs");
 
 const sendMessage = (text, attachments) => {
   return new Promise((resolve, reject) => {
@@ -117,10 +118,10 @@ module.exports.sendFinishedMessage = async (parts, dry) => {
       return attachment;
     }));
 
-    const { confUsername, dailyPassword } = require("../private");
+    const n = JSON.parse(fs.readFileSync(`${__dirname}/../private.json`, "utf8"));
     await sendMessage(
       "Alfred ordered from the following restaurants for delivery at 5:30pm.\n" +
-      `Today's credentials are \`${confUsername}:${dailyPassword}\`.`,
+      `Today's credentials are \`${n.confUsername}:${n.dailyPassword}\`.`,
       attachments
     );
   }
