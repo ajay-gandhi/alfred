@@ -3,7 +3,7 @@
  */
 
 const MongoClient = require("mongodb").MongoClient;
-const priv = require("./private");
+const priv = require("../private");
 
 let users;
 const client = new MongoClient(priv.mongoSrv, { useNewUrlParser: true });

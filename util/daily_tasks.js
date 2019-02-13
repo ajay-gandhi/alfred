@@ -1,5 +1,5 @@
 const fs = require("fs");
-const Orders = require("../orders");
+const Orders = require("../models/orders");
 const priv = require("../private");
 
 (async () => {

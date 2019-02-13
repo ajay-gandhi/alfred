@@ -7,9 +7,9 @@
  */
 
 const puppeteer = require("puppeteer");
-const Orders = require("./orders");
-const Users = require("./users");
-const Stats = require("./stats");
+const Orders = require("./models/orders");
+const Users = require("./models/users");
+const Stats = require("./models/stats");
 const Transform = require("./util/transform");
 const Slack = require("./util/slack");
 

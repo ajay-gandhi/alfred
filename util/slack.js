@@ -3,7 +3,7 @@
  */
 
 const request = require("request");
-const Users = require("../users");
+const Users = require("../models/users");
 const priv = require("../private");
 const fs = require("fs");
 

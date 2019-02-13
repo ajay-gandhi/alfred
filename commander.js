@@ -6,11 +6,11 @@ const Logger = require("../util/logger");
 const LOG = new Logger("alfred");
 
 const dfParse = require("./df-parse");
-const Users = require("./users");
-const Stats = require("./stats");
+const Users = require("./models/users");
+const Stats = require("./models/stats");
 const Slack = require("./util/slack");
 const Transform = require("./util/transform");
-const Orders = require("./orders");
+const Orders = require("./models/orders");
 const priv = require("./private");
 
 module.exports.do = async (ctx, next) => {

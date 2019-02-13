@@ -5,7 +5,7 @@
  */
 
 const Commander = require("./commander");
-const Users = require("./users");
+const Users = require("./models/users");
 const priv = require("./private");
 
 const ctx = {
