@@ -4,12 +4,12 @@
 
 const request = require("request");
 const Users = require("../users");
-const private = require("../private");
+const priv = require("../private");
 
 const sendMessage = (text, attachments) => {
   return new Promise((resolve, reject) => {
     request({
-      url: private.slackOutgoingUrl,
+      url: priv.slackOutgoingUrl,
       method: "POST",
       json: {
         text,

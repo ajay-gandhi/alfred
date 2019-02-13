@@ -3,13 +3,13 @@
  */
 
 const MongoClient = require("mongodb").MongoClient;
-const private = require("./private");
+const priv = require("./private");
 
 let stats;
-const client = new MongoClient(private.mongoSrv, { useNewUrlParser: true });
+const client = new MongoClient(priv.mongoSrv, { useNewUrlParser: true });
 client.connect((err) => {
   if (err) console.log("Error connecting to MongoDB:", err);
-  stats = client.db(private.mongoDbName).collection("stats");
+  stats = client.db(priv.mongoDbName).collection("stats");
 });
 
 const N_TOP_DISHES = 3;

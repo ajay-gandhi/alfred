@@ -3,13 +3,13 @@
  */
 
 const MongoClient = require("mongodb").MongoClient;
-const private = require("./private");
+const priv = require("./private");
 
 let orders;
-const client = new MongoClient(private.mongoSrv, { useNewUrlParser: true });
+const client = new MongoClient(priv.mongoSrv, { useNewUrlParser: true });
 client.connect((err) => {
   if (err) console.log("Error connecting to MongoDB:", err);
-  orders = client.db(private.mongoDbName).collection("orders");
+  orders = client.db(priv.mongoDbName).collection("orders");
 });
 
 module.exports.getOrders = async () => await orders.find({}).toArray();

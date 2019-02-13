@@ -1,11 +1,11 @@
 const fs = require("fs");
 const Orders = require("../orders");
-const private = require("../private");
+const priv = require("../private");
 
 (async () => {
   // Generate a random password and put it in private
-  private.dailyPassword = Math.random().toString(36).slice(-10);
-  fs.writeFileSync(`${__dirname}/../private.json`, JSON.stringify(private, null, 2), "utf8");
+  priv.dailyPassword = Math.random().toString(36).slice(-10);
+  fs.writeFileSync(`${__dirname}/../private.json`, JSON.stringify(priv, null, 2), "utf8");
 
   // Remove all confirmation PDFs
   const dir = `${__dirname}/../confirmations/`;

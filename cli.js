@@ -6,12 +6,12 @@
 
 const Commander = require("./commander");
 const Users = require("./users");
-const private = require("./private");
+const priv = require("./private");
 
 const ctx = {
   request: {
     body: {
-      token: private.slackIncomingToken,
+      token: priv.slackIncomingToken,
     },
   },
 };

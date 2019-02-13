@@ -3,13 +3,13 @@
  */
 
 const MongoClient = require("mongodb").MongoClient;
-const private = require("./private");
+const priv = require("./private");
 
 let users;
-const client = new MongoClient(private.mongoSrv, { useNewUrlParser: true });
+const client = new MongoClient(priv.mongoSrv, { useNewUrlParser: true });
 client.connect((err) => {
   if (err) console.log("Error connecting to MongoDB:", err);
-  users = client.db(private.mongoDbName).collection("users");
+  users = client.db(priv.mongoDbName).collection("users");
 });
 
 module.exports.getUser = async username => await users.findOne({ username });

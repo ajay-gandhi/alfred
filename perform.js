@@ -16,7 +16,7 @@ const Slack = require("./util/slack");
 const Logger = require("../util/logger");
 const LOG = new Logger("alfred-order");
 
-const private = require("./private");
+const priv = require("./private");
 
 // Setup
 const URLS = {
@@ -49,7 +49,7 @@ const go = async () => {
   // Start ordering process
   const results = [];
   try {
-    await loginToSeamless(page, private);
+    await loginToSeamless(page, priv);
     LOG.log("Logged in");
 
     for (const orderSet of orderSets) {

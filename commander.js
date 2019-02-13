@@ -11,10 +11,10 @@ const Stats = require("./stats");
 const Slack = require("./util/slack");
 const Transform = require("./util/transform");
 const Orders = require("./orders");
-const private = require("./private");
+const priv = require("./private");
 
 module.exports.do = async (ctx, next) => {
-  if (ctx.request.body.token !== private.slackIncomingToken) {
+  if (ctx.request.body.token !== priv.slackIncomingToken) {
     LOG.log("Request does not have proper secret");
     return;
   }
