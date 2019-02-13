@@ -97,6 +97,26 @@ module.exports.do = async (ctx, next) => {
       break;
     }
 
+    case "List Orders": {
+      if (isLate()) {
+        ctx.body = { text: "Alfred has already ordered for today." };
+        break;
+      }
+
+      const restaurants = (await Orders.getOrders())
+        .reduce((memo, order) => {
+          return memo.indexOf(order.restaurant) < 0 ? memo.concat(order.restaurant) : memo;
+        }, [])
+        .map(r => `\n* ${r}`);
+
+      if (restaurants.length === 0) {
+        ctx.body = { text: "There are no orders today!" };
+      } else {
+        ctx.body = { text: `There are currently orders for:${restaurants.join("")}` };
+      }
+      break;
+    }
+
     /*
     case "Get Menu": {
       if (!args["restaurant"]) {
