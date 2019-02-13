@@ -9,7 +9,6 @@ and places them on Seamless corporate.
 
 Things to do, in order of urgency:
 
-* View menu in thread
 * List currently ordered restaurants
 * Add alfred thank you :)
 * Support for comments and quantity

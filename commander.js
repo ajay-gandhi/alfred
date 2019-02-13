@@ -97,6 +97,39 @@ module.exports.do = async (ctx, next) => {
       break;
     }
 
+    /*
+    case "Get Menu": {
+      if (!args["restaurant"]) {
+        ctx.body = { text: "Please specify a restaurant." };
+        break;
+      }
+
+      const restaurant = await Transform.correctRestaurant(args["restaurant"]);
+      if (restaurant.error) {
+        ctx.body = { text: restaurant.error };
+      } else {
+        const width = 8;
+        const itemText = restaurant.menu.map((item) => {
+          let priceText = item.price ? `$${item.price.toFixed(2)}` : "Unknown";
+          while (priceText.length < width) priceText += " ";
+          return `${priceText} ${item.name}`;
+        }).join("\n");
+
+        ctx.body = {
+          text: [
+            `Here's the menu for ${restaurant.name}:`,
+            "```",
+            `Delivery minimum: $${restaurant.deliveryMin.toFixed(2)}`,
+            "",
+            itemText,
+            "```",
+          ].join("\n")
+        };
+      }
+      break;
+    }
+    */
+
     case "Announce": {
       if (!you) {
         ctx.body = { text: "Please register your info first." };
