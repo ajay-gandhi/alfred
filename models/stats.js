@@ -59,20 +59,13 @@ const getTopDishesForRestaurant = async (username, restaurant) => {
 
   const s = fromMongo(pulled.restaurants[restaurant].items);
   return Object.keys(s).reduce((tops, itemName) => {
-    if (tops.length < 3) {
-      return tops.concat({
-        itemName,
-        count: s[itemName],
-      });
-    }
-
     for (let i = 0; i < N_TOP_DISHES; i++) {
-      if (s[itemName] > tops[i].count) {
+      if (!tops[i] || s[itemName] > tops[i].count) {
         tops.splice(i, 0, {
           itemName,
           count: s[itemName],
         });
-        tops.pop();
+        if (tops.length > N_TOP_DISHES) tops.pop();
         break;
       }
     }
@@ -90,22 +83,14 @@ const getTopDishesForUser = async (username) => {
   const s = fromMongo(pulled.restaurants);
   return Object.keys(s).reduce((userTops, restaurant) => {
     return Object.keys(s[restaurant].items).reduce((restTops, itemName) => {
-      if (restTops.length < 3) {
-        return restTops.concat({
-          itemName,
-          count: s[restaurant].items[itemName],
-          restaurant,
-        });
-      }
-
       for (let i = 0; i < N_TOP_DISHES; i++) {
-        if (s[restaurant].items[itemName] > restTops[i].count) {
+        if (!restTops[i] || s[restaurant].items[itemName] > restTops[i].count) {
           restTops.splice(i, 0, {
             itemName,
             count: s[restaurant].items[itemName],
             restaurant,
           });
-          restTops.pop();
+          if (restTops.length > N_TOP_DISHES) restTops.pop();
           break;
         }
       }
@@ -146,22 +131,14 @@ const getTopDishes = async () => {
   // Basically same logic as getTopDishesForUser
   return Object.keys(crd).reduce((allTops, restaurant) => {
     return Object.keys(crd[restaurant]).reduce((restTops, itemName) => {
-      if (restTops.length < 3) {
-        return restTops.concat({
-          itemName,
-          count: crd[restaurant][itemName],
-          restaurant,
-        });
-      }
-
       for (let i = 0; i < N_TOP_DISHES; i++) {
-        if (crd[restaurant][itemName] > restTops[i].count) {
+        if (!restTops[i] || crd[restaurant][itemName] > restTops[i].count) {
           restTops.splice(i, 0, {
             itemName,
             count: crd[restaurant][itemName],
             restaurant,
           });
-          restTops.pop();
+          if (restTops.length > N_TOP_DISHES) restTops.pop();
           break;
         }
       }
