@@ -11,6 +11,7 @@ Things to do, in order of urgency:
 
 * Add alfred thank you :)
 * Support for comments and quantity
+* Show person with most calls in global stats
 * Volunteer for order pickup (also requires undoing feature)
 * Per-restaurant favorite
 * Adding tip to reach minimum
