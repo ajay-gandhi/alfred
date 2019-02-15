@@ -121,7 +121,7 @@ module.exports.sendFinishedMessage = async (parts, dry) => {
     const n = JSON.parse(fs.readFileSync(`${__dirname}/../private.json`, "utf8"));
     await sendMessage(
       "Alfred ordered from the following restaurants for delivery at 5:30pm.\n" +
-      `Today's credentials are \`${n.confUsername}:${n.dailyPassword}\`.`,
+      `Today's credentials are \`${n.confUsername}:${n.dailyPassword}\``,
       attachments
     );
   }
