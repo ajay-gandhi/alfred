@@ -296,10 +296,9 @@ const fillOrders = async (page, userOrders) => {
 
   const continueLinks = await page.$$("a.findfoodbutton");
   if (continueLinks.length === 0) {
-    const userAts = await Promise.all(Object.keys(orderAmounts).map(async o => Slack.atUser(o.username)));
     return {
       retry: false,
-      errors: [`Delivery minimum not met. ${userAts.join(", ")}`],
+      errors: ["Delivery minimum not met."],
     };
   }
 
