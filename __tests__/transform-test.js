@@ -60,23 +60,6 @@ describe("indexByRestaurantAndUser", () => {
   });
 });
 
-describe("correctRestaurant", () => {
-  test("corrects a valid restaurant", (done) => {
-    setTimeout(async () => {
-      expect((await Transform.correctRestaurant("newa")).name).toEqual("Newa (Ellis St)");
-      done();
-    }, 5000);
-  });
-
-  test("returns false for an invalid restaurant", (done) => {
-    setTimeout(async () => {
-      const invalidRest = "nwea";
-      expect((await Transform.correctRestaurant(invalidRest)).error).toEqual(`Couldn't find restaurant called "${invalidRest}".`);
-      done();
-    }, 5000);
-  });
-});
-
 describe("parseOrders", () => {
   test("basic order parse", (done) => {
     setTimeout(async () => {

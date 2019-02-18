@@ -39,22 +39,6 @@ module.exports.indexByRestaurantAndUser = (data) => {
 };
 
 /**
- * Uses menu data to convert an inputted restaurant to the correct name
- */
-let restaurantNames;
-module.exports.correctRestaurant = async (restInput) => {
-  if (!restaurantNames) restaurantNames = (await Menu.getAllMenus()).map(r => r.name);
-
-  // Convert restaurant to official name
-  const matches = FuzzAldrin.filter(restaurantNames, restInput);
-  if (matches.length === 0) {
-    return { error: `Couldn't find restaurant called "${restInput}".` };
-  } else {
-    return await Menu.getMenu(matches[0]);
-  }
-};
-
-/**
  * Given a string containing a list of orders and a restaurant, parses out the
  * items and corrects them
  */

@@ -38,14 +38,18 @@ module.exports.do = async (ctx, next) => {
         ctx.body = { text: "Please register your info first." };
         break;
       }
+      if (!args["restaurant"]) {
+        ctx.body = { text: "No restaurant chosen. Please reorder!" };
+        break;
+      }
 
-      const fixed = await fixRestaurantAndOrders(args["restaurant"], args["order"]);
+      const fixed = await Transform.parseOrders(args["order"], args["restaurant"]);
       if (fixed.error) {
         ctx.body = { text: `${fixed.error} Please reorder!` };
       } else {
-        await Orders.addOrder(fixed.restaurantName, username, fixed.items);
-        const itemList = fixed.items.map(i => i[0]).join(", ");
-        ctx.body = { text: `Added ${itemList} from ${fixed.restaurantName}` };
+        await Orders.addOrder(args["restaurant"], username, fixed.correctedItems);
+        const itemList = fixed.correctedItems.map(i => i[0]).join(", ");
+        ctx.body = { text: `Added ${itemList} from ${args["restaurant"]}` };
       }
       break;
     }
@@ -124,7 +128,6 @@ module.exports.do = async (ctx, next) => {
         break;
       }
 
-      const restaurant = await Transform.correctRestaurant(args["restaurant"]);
       if (restaurant.error) {
         ctx.body = { text: restaurant.error };
       } else {
@@ -176,14 +179,18 @@ module.exports.do = async (ctx, next) => {
         ctx.body = { text: "Please register your info first." };
         break;
       }
+      if (!args["restaurant"]) {
+        ctx.body = { text: "No restaurant chosen. Please reorder!" };
+        break;
+      }
 
-      const fixed = await fixRestaurantAndOrders(args["restaurant"], args["order"]);
+      const fixed = await Transform.parseOrders(args["order"], args["restaurant"]);
       if (fixed.error) {
-        ctx.body = { text: `${fixed.error} Please re-enter!` };
+        ctx.body = { text: `${fixed.error} Please reorder!` };
       } else {
-        await Users.saveFavorite(username, fixed.restaurantName, fixed.items);
-        const itemList = fixed.items.map(i => i[0]).join(", ");
-        ctx.body = { text: `Saved favorite as ${itemList} from ${fixed.restaurantName}` };
+        await Users.saveFavorite(username, args["restaurant"], fixed.correctedItems);
+        const itemList = fixed.correctedItems.map(i => i[0]).join(", ");
+        ctx.body = { text: `Saved favorite as ${itemList} from ${args["restaurant"]}` };
       }
       break;
     }
@@ -253,9 +260,8 @@ module.exports.do = async (ctx, next) => {
       } else if (args["restaurant"]) {
           // Stats for user from restaurant
           const slackAt = await Slack.atUser(username);
-          const restaurant = await Transform.correctRestaurant(args["restaurant"]).name;
-          const stats = await Stats.getStatsForUserFromRestaurant(username, restaurant);
-          const text = `Stats for ${slackAt} from ${restaurant}:\n${Slack.statsFormatter(stats)}`;
+          const stats = await Stats.getStatsForUserFromRestaurant(username, args["restaurant"]);
+          const text = `Stats for ${slackAt} from ${args["restaurant"]}:\n${Slack.statsFormatter(stats)}`;
           ctx.body = { text };
       } else {
         // General stats for user
@@ -302,25 +308,8 @@ module.exports.do = async (ctx, next) => {
 // Returns true if it is past 3:30pm
 const isLate = () => {
   const now = new Date();
-  // return false;
-  return now.getHours() > 15 || (now.getHours() > 14 && now.getMinutes() > 30)
-};
-
-// Helper to call transform functions
-const fixRestaurantAndOrders = async (restaurantInput, orderInput) => {
-  // Find correct restaurant
-  if (!restaurantInput) return { error: "No restaurant chosen." };
-  const restaurant = await Transform.correctRestaurant(restaurantInput);
-  if (restaurant.error) return { error: restaurant.error };
-
-  // Fix items
-  const items = await Transform.parseOrders(orderInput, restaurant.name);
-  if (items.error) return { error: items.error };
-
-  return {
-    restaurantName: restaurant.name,
-    items: items.correctedItems,
-  };
+  return false;
+  // return now.getHours() > 15 || (now.getHours() > 14 && now.getMinutes() > 30)
 };
 
 // Removes Slack formatting for tel

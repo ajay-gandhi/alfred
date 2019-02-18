@@ -146,7 +146,7 @@ This file (`koa_confirmation_middleware.js`) contains a very basic HTTP authenti
 
 ## Dialogflow
 
-[Dialogflow](https://dialogflow.com) is used to perform natural language processing. I added one Intent for each possible command, and tried to add as many unique training phrases as I could imagine. I also set the priority of the "Regular Order" and "Stats" intents to High so that they get prioritized over setting favorites, getting info, etc.
+[Dialogflow](https://dialogflow.com) is used to perform natural language processing. I added one Intent for each possible command, and tried to add as many unique training phrases as I could imagine. I also set the priority of the "Regular Order" and "Stats" intents to High so that they get prioritized over setting favorites, getting info, etc. There's a helper script (`util/generate.js`) which will generate entities to be uploaded to Dialogflow from the scraped Menu data.
 
 If you setup a Dialogflow application to work with Alfred, be sure to download the credentials JSON file and pass it as an env variable [as suggested](https://dialogflow.com/docs/reference/v2-auth-setup).
 
