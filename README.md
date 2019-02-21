@@ -9,6 +9,7 @@ and places them on Seamless corporate.
 
 Things to do, in order of urgency:
 
+* Donate money to restaurant
 * Add alfred thank you :)
 * Support for comments and quantity
 * Show person with most calls in global stats
