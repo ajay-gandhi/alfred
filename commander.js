@@ -76,7 +76,11 @@ module.exports.do = async (ctx, next) => {
           break;
         }
         const order = await Orders.removeOrder(username);
-        ctx.body = { text: `Removed order from ${order.restaurant}` };
+        if (order) {
+          ctx.body = { text: `Removed order from ${order.restaurant}` };
+        } else {
+          ctx.body = { text: "You don't have an order today." };
+        }
       }
       break;
     }
