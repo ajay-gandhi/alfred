@@ -64,7 +64,7 @@ const FLOAT_REGEX = /[+-]?\d+(\.\d+)?/g;
     await menu.deleteMany({});
     await menu.insertMany(menuData);
   } catch (err) {
-    console.log("Crashed with error", err);
+    console.trace(err);
   }
   await browser.close();
   process.exit(0);
@@ -90,6 +90,7 @@ const loginToSeamless = async (page, creds) => {
  * Given a page with a logged-in status, this function will scrape the menu
  * items for the restaurant at the given index.
  */
+const OPTION_REGEX = /^([a-z0-9&*./_\-\\()'"`, ]+)( \(\$([0-9.]+)\))?$/i;
 const scrapeMenu = async (page, index) => {
   const data = {};
 
@@ -121,7 +122,26 @@ const scrapeMenu = async (page, index) => {
     const newItem = {};
     newItem.name = await page.evaluate(e => e.querySelector("div.MenuItemName").innerText, tr);
     const floats = (await page.evaluate(e => e.querySelector("td.price").innerText, tr)).match(FLOAT_REGEX);
-    newItem.price = floats ? parseFloat(floats[0]) : false;
+    newItem.price = floats ? parseFloat(floats[0]) : 0;
+
+    // Options
+    await page.evaluate(e => e.querySelector("a[name=\"product\"]").click(), tr);
+    await page.waitForSelector("div#fixedTop");
+    const optionTexts = await page.$$eval("form#orderAttributes li", lis => lis.map(e => e.innerText));
+    if (optionTexts.length > 0) {
+      newItem.options = optionTexts.map((opt) => {
+        const matches = OPTION_REGEX.exec(opt.trim().normalize("NFD").replace(/[\u0300-\u036f]/g, ""));
+        return {
+          name: matches[1],
+          price: parseFloat(matches[3]) || 0,
+        };
+      });
+    } else {
+      newItem.options = [];
+    }
+    await page.click("a#TB_closeWindowButton");
+    await page.waitFor(2000);
+
     data.menu.push(newItem);
   }
   return data;
