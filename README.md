@@ -9,15 +9,14 @@ and places them on Seamless corporate.
 
 Things to do, in order of urgency:
 
-* Donate money to restaurant
-* Add alfred thank you :)
+* Guess restaurant if not provided
+* Compute accurate subtotal
 * Support for comments and quantity
 * Show person with most calls in global stats
 * Volunteer for order pickup (also requires undoing feature)
 * Per-restaurant favorite
 * Adding tip to reach minimum
 * Reducing tip to fit within budget
-* Guess restaurant if not provided
 * Allow adding to pre-existing order
 * Configurable time of delivery
 
