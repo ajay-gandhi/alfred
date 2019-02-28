@@ -14,13 +14,14 @@ client.connect((err) => {
 
 module.exports.getOrders = async () => await orders.find({}).toArray();
 module.exports.getOrderForUser = async username => await orders.findOne({ username });
-module.exports.addOrder = async (restaurant, username, items) => {
+module.exports.addOrder = async (restaurant, username, items, isDonor) => {
   await orders.findOneAndUpdate({ username }, {
     $set: {
       username,
       restaurant,
       items,
       isCallee: false,
+      isDonor: isDonor ? true : false,
     },
   }, {
     upsert: true,
@@ -37,4 +38,3 @@ module.exports.setCallee = async (username) => {
     upsert: true,
   });
 };
-

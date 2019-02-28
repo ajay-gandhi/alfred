@@ -22,7 +22,7 @@ const Menu = require("../models/menu");
  * username and the items they ordered.
  */
 module.exports.indexByRestaurantAndUser = (data) => {
-  return Object.values(data.reduce((memo, order) => {
+  const newData = data.reduce((memo, order) => {
     if (!memo[order.restaurant]) {
       memo[order.restaurant] = {
         restaurant: order.restaurant,
@@ -33,9 +33,18 @@ module.exports.indexByRestaurantAndUser = (data) => {
     memo[order.restaurant].users.push({
       username: order.username,
       items: order.items,
+      isDonor: order.isDonor,
     });
     return memo;
-  }, {}));
+  }, {});
+
+  // Remove donor-only restaurants
+  Object.keys(newData).forEach((restaurant) => {
+    const isDonorOnly = newData[restaurant].users.reduce((m, o) => m && o.isDonor, true);
+    if (isDonorOnly) delete newData[restaurant];
+  });
+
+  return Object.values(newData);
 };
 
 /**

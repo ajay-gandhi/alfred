@@ -125,6 +125,21 @@ module.exports.do = async (ctx, next) => {
       break;
     }
 
+    case "Donate": {
+      if (isLate()) {
+        ctx.body = { text: "Alfred has already ordered for today." };
+        break;
+      }
+      if (!args["restaurant"]) {
+        ctx.body = { text: "Please specify a restaurant." };
+        break;
+      }
+
+      await Orders.addOrder(args["restaurant"], username, [], true);
+      ctx.body = { text: `Your money will be added to the ${args["restaurant"]} order. Thanks!` };
+      break;
+    }
+
     /*
     case "Get Menu": {
       if (!args["restaurant"]) {
@@ -312,8 +327,8 @@ module.exports.do = async (ctx, next) => {
 // Returns true if it is past 3:30pm
 const isLate = () => {
   const now = new Date();
-  return false;
-  // return now.getHours() > 15 || (now.getHours() > 14 && now.getMinutes() > 30)
+  // return false;
+  return now.getHours() > 15 || (now.getHours() > 14 && now.getMinutes() > 30)
 };
 
 // Removes Slack formatting for tel

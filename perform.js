@@ -135,7 +135,7 @@ const orderFromRestaurant = async (page, restaurant, userOrders, retries) => {
       chooseRestaurant.bind(null, page, restaurant),
       fillOrders.bind(null, page, userOrders),
       fillNames.bind(null, page, usernames, result),
-      fillPhoneNumber.bind(null, page, usernames),
+      fillPhoneNumber.bind(null, page, userOrders),
     ];
 
     // Here, we run each step one at a time. If a step fails and returns
@@ -372,8 +372,9 @@ const fillNames = async (page, usernames, { orderAmounts }) => {
  * Given a page at the checkout page, fills out a random phone number.
  * Returns the user that was selected
  */
-const fillPhoneNumber = async (page, usernames) => {
+const fillPhoneNumber = async (page, orders) => {
   try {
+    const usernames = orders.reduce((memo, o) => o.isDonor ? memo : memo.concat(o.username), []);
     const selectedUser = usernames[Math.floor(Math.random() * usernames.length)];
     const userData = await Users.getUser(selectedUser);
     await page.$eval("input#phoneNumber", e => e.value = "");
