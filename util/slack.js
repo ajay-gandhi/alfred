@@ -15,7 +15,7 @@ const sendMessage = (text, attachments) => {
       json: {
         text,
         attachments,
-        channel: "#ot-test-ram",
+        channel: priv.slackChannel,
       },
     }, (err, response, body) => {
       if (response.statusCode !== 200) {
