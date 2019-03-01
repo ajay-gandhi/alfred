@@ -115,7 +115,7 @@ module.exports.do = async (ctx, next) => {
         .reduce((memo, order) => {
           return memo.indexOf(order.restaurant) < 0 ? memo.concat(order.restaurant) : memo;
         }, [])
-        .map(r => `\n* ${r}`);
+        .map(r => `\n - ${r}`);
 
       if (restaurants.length === 0) {
         ctx.body = { text: "There are no orders today!" };
