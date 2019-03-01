@@ -51,10 +51,14 @@ module.exports.indexByRestaurantAndUser = (data) => {
  * Given a string containing a list of orders and a restaurant, parses out the
  * items and corrects them
  */
-module.exports.parseOrders = async (input, restaurantName) => {
+const ARTICLE_REGEX = /^(?:(the|a|an|some) +)/;
+const OPTIONS_REGEX = /\((.*)\)/;
+module.exports.parseOrders = (input) => {
   const parts = [""];
   let parenCount = 0;
   const delimiters = [", and", ",and", " and ", ", ", ","];
+
+  // Separate items
   for (let i = 0; i < input.length; i++) {
     // Don't want to split within parentheses
     if (input[i] === "(") {
@@ -72,32 +76,12 @@ module.exports.parseOrders = async (input, restaurantName) => {
     }
     parts[parts.length - 1] += input[i];
   }
+  const filteredParts = parts.filter(p => p);
 
-  return await transformOrders(parts.reduce((m, e) => e ? m.concat(e.trim()) : m, []), restaurantName);
-};
+  // Parse out options
+  return filteredParts.map((part) => {
+    const item = part.trim().replace(ARTICLE_REGEX, "");
 
-/********************************** Helpers ***********************************/
-
-/**
- * Given a corrected restaurant name and item, finds the closest matching item
- */
-const findCorrectItem = async (restaurantName, itemName) => {
-  const items = (await Menu.getMenu(restaurantName)).menu;
-  const matches = FuzzAldrin.filter(items, itemName, { key: "name" });
-  return matches.length === 0 ? false : matches[0];
-};
-
-// Remove leading "X. "
-const friendlizeItem = i => i.replace(/^[\w]{1,3}\. /, "");
-
-// Parse out options
-const ARTICLE_REGEX = /^(?:(the|a|an|some) +)/;
-const OPTIONS_REGEX = /\((.*)\)/;
-const transformOrders = async (items, restaurantName) => {
-  const errorItems = [];
-  const correctedItems = await Promise.all(items.map(async (origItem) => {
-    const item = origItem.replace(ARTICLE_REGEX, "");
-    // First parse out options
     const matchedOptions = item.match(OPTIONS_REGEX);
     const formattedItem = [];
     if (matchedOptions) {
@@ -108,15 +92,23 @@ const transformOrders = async (items, restaurantName) => {
       formattedItem.push(item);
       formattedItem.push([]);
     }
-
-    // Correct item name
-    const correctedItem = await findCorrectItem(restaurantName, formattedItem[0]);
-    if (correctedItem) {
-      formattedItem[0] = correctedItem.name;
-    } else {
-      errorItems.push(formattedItem[0]);
-    }
     return formattedItem;
+  });
+};
+
+/**
+ * Given a parsed set of orders, correct items or return errors
+ */
+module.exports.correctItems = async (orders, restaurantName) => {
+  const errorItems = [];
+  const correctedItems = await Promise.all(orders.map(async ([name, options]) => {
+    const correctedItem = await findCorrectItem(restaurantName, name);
+    if (correctedItem) {
+      return [correctedItem.name, options];
+    } else {
+      // No need to return anything since we won't use this array anyway
+      errorItems.push(name);
+    }
   }));
 
   if (errorItems.length > 0) {
@@ -137,11 +129,24 @@ const transformOrders = async (items, restaurantName) => {
       name: "",
       score: Number.MAX_SAFE_INTEGER,
     });
-    const autocorrectName = lMatch.name.replace(/[()]/g, '');
+    const autocorrectName = lMatch.name.replace(/[()]/g, "");
+    // Only show did you mean if they're close enough
     const didYouMean = lMatch.score < 20 ? ` Did you mean "${autocorrectName}"?` : "";
 
     return { error: `Couldn't find ${itemNoun} called ${items}.${didYouMean}` };
+  } else {
+    return { correctedItems };
   }
-  return { correctedItems };
+};
+
+/********************************** Helpers ***********************************/
+
+/**
+ * Given a corrected restaurant name and item, finds the closest matching item
+ */
+const findCorrectItem = async (restaurantName, itemName) => {
+  const items = (await Menu.getMenu(restaurantName)).menu;
+  const matches = FuzzAldrin.filter(items, itemName, { key: "name" });
+  return matches.length === 0 ? false : matches[0];
 };
 

@@ -38,18 +38,20 @@ module.exports.do = async (ctx, next) => {
         ctx.body = { text: "Please register your info first." };
         break;
       }
-      if (!args["restaurant"]) {
+
+      const parsed = Transform.parseOrders(args["order"]);
+      if (args["restaurant"]) {
+        const fixed = await Transform.correctItems(parsed, args["restaurant"]);
+        if (fixed.error) {
+          ctx.body = { text: `${fixed.error} Please reorder!` };
+        } else {
+          await Orders.addOrder(args["restaurant"], username, fixed.correctedItems);
+          const itemList = fixed.correctedItems.map(i => i[0]).join(", ");
+          ctx.body = { text: `Added ${itemList} from ${args["restaurant"]}` };
+        }
+      } else {
         ctx.body = { text: "No restaurant chosen. Please reorder!" };
         break;
-      }
-
-      const fixed = await Transform.parseOrders(args["order"], args["restaurant"]);
-      if (fixed.error) {
-        ctx.body = { text: `${fixed.error} Please reorder!` };
-      } else {
-        await Orders.addOrder(args["restaurant"], username, fixed.correctedItems);
-        const itemList = fixed.correctedItems.map(i => i[0]).join(", ");
-        ctx.body = { text: `Added ${itemList} from ${args["restaurant"]}` };
       }
       break;
     }
@@ -198,18 +200,20 @@ module.exports.do = async (ctx, next) => {
         ctx.body = { text: "Please register your info first." };
         break;
       }
-      if (!args["restaurant"]) {
+
+      const parsed = Transform.parseOrders(args["order"]);
+      if (args["restaurant"]) {
+        const fixed = await Transform.correctItems(parsed, args["restaurant"]);
+        if (fixed.error) {
+          ctx.body = { text: `${fixed.error} Please reorder!` };
+        } else {
+          await Users.saveFavorite(username, args["restaurant"], fixed.correctedItems);
+          const itemList = fixed.correctedItems.map(i => i[0]).join(", ");
+          ctx.body = { text: `Saved favorite as ${itemList} from ${args["restaurant"]}` };
+        }
+      } else {
         ctx.body = { text: "No restaurant chosen. Please reorder!" };
         break;
-      }
-
-      const fixed = await Transform.parseOrders(args["order"], args["restaurant"]);
-      if (fixed.error) {
-        ctx.body = { text: `${fixed.error} Please reorder!` };
-      } else {
-        await Users.saveFavorite(username, args["restaurant"], fixed.correctedItems);
-        const itemList = fixed.correctedItems.map(i => i[0]).join(", ");
-        ctx.body = { text: `Saved favorite as ${itemList} from ${args["restaurant"]}` };
       }
       break;
     }
