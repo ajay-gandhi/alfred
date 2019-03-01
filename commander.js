@@ -309,6 +309,11 @@ module.exports.do = async (ctx, next) => {
       break;
     }
 
+    case "Small Talk": {
+      ctx.body = args;
+      break;
+    }
+
     default: {
       const unknown = [
         "I didn't get that.",

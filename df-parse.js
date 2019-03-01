@@ -37,14 +37,23 @@ module.exports = (text) => {
         const result = responses[0].queryResult;
         if (result.action === "input.unknown") return resolve(false);
 
-        const args = {};
-        Object.keys(result.parameters.fields).forEach((key) => {
-          args[key] = result.parameters.fields[key].stringValue;
-        });
-        resolve({
-          command: result.intent.displayName,
-          args,
-        });
+        if (result.action.startsWith("smalltalk")) {
+          resolve({
+            command: "Small Talk",
+            args: {
+              text: result.fulfillmentText,
+            },
+          });
+        } else {
+          const args = {};
+          Object.keys(result.parameters.fields).forEach((key) => {
+            args[key] = result.parameters.fields[key].stringValue;
+          });
+          resolve({
+            command: result.intent.displayName,
+            args,
+          });
+        }
       })
       .catch((err) => {
         console.error("ERROR:", err);
