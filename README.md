@@ -10,6 +10,7 @@ and places them on Seamless corporate.
 Things to do, in order of urgency:
 
 * Guess restaurant if not provided
+* Use slack ID as identifier instead of username
 * Compute accurate subtotal
 * Support for comments and quantity
 * Show person with most calls in global stats
