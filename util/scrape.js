@@ -125,22 +125,46 @@ const scrapeMenu = async (page, index) => {
     newItem.name = await page.evaluate(e => e.querySelector("div.MenuItemName").innerText, tr);
     const floats = (await page.evaluate(e => e.querySelector("td.price").innerText, tr)).match(FLOAT_REGEX);
     newItem.price = floats ? parseFloat(floats[0]) : 0;
+    newItem.defaultOptions = [];
 
     // Options
     await page.evaluate(e => e.querySelector("a[name=\"product\"]").click(), tr);
     await page.waitForSelector("div#fixedTop");
-    const optionTexts = await page.$$eval("form#orderAttributes li", lis => lis.map(e => e.innerText));
-    if (optionTexts.length > 0) {
-      newItem.options = optionTexts.map((opt) => {
-        const matches = OPTION_REGEX.exec(opt.trim().normalize("NFD").replace(/[\u0300-\u036f]/g, ""));
+    const optionElements = await page.$$("form#orderAttributes li");
+
+    // Group options by their name attribute
+    const optionSets = {};
+    for (const optionEl of optionElements) {
+      const inputData = await page.evaluate((e) => {
+        const inp = e.querySelector("input");
         return {
-          name: matches[1],
-          price: parseFloat(matches[3]) || 0,
+          selected: inp.checked,
+          name: inp.name,
+          radio: inp.type.trim() === "radio",
         };
-      });
-    } else {
-      newItem.options = [];
+      }, optionEl);
+
+      if (!optionSets[inputData.name]) {
+        optionSets[inputData.name] = {
+          name: inputData.name,
+          radio: inputData.radio,
+          options: [],
+        };
+      }
+
+      const optionText = await page.evaluate(e => e.innerText.trim(), optionEl);
+      const matches = OPTION_REGEX.exec(optionText.normalize("NFD").replace(/[\u0300-\u036f]/g, ""));
+      const option = {
+        name: matches[1],
+        price: parseFloat(matches[3]) || 0,
+        set: inputData.name,
+      };
+
+      optionSets[inputData.name].options.push(option);
+      if (inputData.selected) newItem.defaultOptions.push(option);
     }
+    newItem.optionSets = Object.values(optionSets);
+
     await page.click("a#TB_closeWindowButton");
     await page.waitFor(2000);
 
