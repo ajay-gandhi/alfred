@@ -49,7 +49,7 @@ module.exports.indexByRestaurantAndUser = (data) => {
 
 /**
  * Given a string containing a list of orders and a restaurant, parses out the
- * items and corrects them
+ * items and options
  */
 const ARTICLE_REGEX = /^(?:(the|a|an|some) +)/;
 const OPTIONS_REGEX = /\((.*)\)/;
