@@ -118,6 +118,8 @@ const scrapeMenu = async (page, index) => {
   // Get menu items
   data.menu = [];
   const menuTrs = await page.$$("div#Menu tr");
+  let done = 0;
+  const checkpoints = [20, 40, 60, 80];
   for (const tr of menuTrs) {
     const newItem = {};
     newItem.name = await page.evaluate(e => e.querySelector("div.MenuItemName").innerText, tr);
@@ -143,6 +145,11 @@ const scrapeMenu = async (page, index) => {
     await page.waitFor(2000);
 
     data.menu.push(newItem);
+    done++;
+    if (done / menuTrs.length * 100 > checkpoints[0]) {
+      process.stdout.write(`${checkpoints[0]}%...`);
+      checkpoints.shift();
+    }
   }
   return data;
 };
