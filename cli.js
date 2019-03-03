@@ -29,7 +29,7 @@ setTimeout(async () => {
   ctx.request.body.text = args.filter(a => !a.startsWith("--user=")).join(" ");
 
   Commander.do(ctx, () => {
-    console.log(ctx.body ? ctx.body.text : "No output");
+    console.log(ctx.body || "No output");
     process.exit(0);
   });
 }, 5000);
