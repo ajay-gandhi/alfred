@@ -133,10 +133,10 @@ The last step is to add crontabs for Alfred to perform asynchronous functions. A
 # Regenerate a daily password each weekday at midnight
 # Clear any existing order data
 # Remove the confirmation PDFs from the previous day
-0 0 * * 1-5 /path/to/node /path/to/alfred/util/daily_tasks.js
+0 2 * * 1-5 /path/to/node /path/to/alfred/util/daily_tasks.js
 
 # Scrape menus every week to stay up-to-date
-0 0 * * 1 /path/to/node /path/to/alfred/util/scrape.js
+0 1 * * 1 /path/to/node /path/to/alfred/util/scrape.js
 
 # Send a heads up that Alfred is taking orders
 0 10 * * 1-5 /path/to/node /path/to/alfred/util/open.js
