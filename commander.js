@@ -41,14 +41,15 @@ module.exports.do = async (ctx, next) => {
 
       const parsed = Transform.parseOrders(args["order"]);
       if (args["restaurant"]) {
-        const fixed = await Transform.correctItems(parsed, args["restaurant"]);
-        if (fixed.error) {
-          ctx.body = { text: `${fixed.error} Please reorder!` };
-        } else {
-          await Orders.addOrder(args["restaurant"], username, fixed.correctedItems);
-          const itemList = fixed.correctedItems.map(i => i[0]).join(", ");
-          ctx.body = { text: `Added ${itemList} from ${args["restaurant"]}` };
-        }
+        const fixedItems = await Transform.correctItems(parsed, args["restaurant"]);
+        const successfulItems = fixedItems.filter(i => i.outcome < 2);
+        if (successfulItems.length > 0)
+          await Orders.addOrder(args["restaurant"], username, Transform.orderizeItems(successfulItems));
+
+        ctx.body = {
+          text: `Here is your order from *${args["restaurant"]}*:`,
+          attachments: Slack.formatItems(fixedItems),
+        };
       } else {
         ctx.body = { text: "No restaurant chosen. Please reorder!" };
         break;
@@ -100,9 +101,11 @@ module.exports.do = async (ctx, next) => {
       if (!you.favorite) {
         ctx.body = { text: "No favorite order saved" };
       } else {
-        await Orders.addOrder(you.favorite.restaurant, username, you.favorite.items);
-        const itemList = you.favorite.items.map(i => i[0]).join(", ");
-        ctx.body = { text: `Ordered ${itemList} from ${you.favorite.restaurant}` };
+        await Orders.addOrder(you.favorite.restaurant, username, Transform.orderizeItems(you.favorite.items));
+        ctx.body = {
+          text: `Here is your order from *${you.favorite.restaurant}*:`,
+          attachments: Slack.formatItems(you.favorite.items),
+        };
       }
       break;
     }
@@ -203,14 +206,15 @@ module.exports.do = async (ctx, next) => {
 
       const parsed = Transform.parseOrders(args["order"]);
       if (args["restaurant"]) {
-        const fixed = await Transform.correctItems(parsed, args["restaurant"]);
-        if (fixed.error) {
-          ctx.body = { text: `${fixed.error} Please reorder!` };
-        } else {
-          await Users.saveFavorite(username, args["restaurant"], fixed.correctedItems);
-          const itemList = fixed.correctedItems.map(i => i[0]).join(", ");
-          ctx.body = { text: `Saved favorite as ${itemList} from ${args["restaurant"]}` };
-        }
+        const fixedItems = await Transform.correctItems(parsed, args["restaurant"]);
+        const successfulItems = fixedItems.filter(i => i.outcome < 2);
+        if (successfulItems.length > 0)
+          await Users.saveFavorite(username, args["restaurant"], successfulItems);
+
+        ctx.body = {
+          text: `Saved this order from *${args["restaurant"]}* as your favorite:`,
+          attachments: Slack.formatItems(fixedItems),
+        };
       } else {
         ctx.body = { text: "No restaurant chosen. Please reorder!" };
         break;

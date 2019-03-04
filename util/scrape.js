@@ -153,7 +153,7 @@ const scrapeMenu = async (page, index) => {
       }
 
       const optionText = await page.evaluate(e => e.innerText.trim(), optionEl);
-      const matches = OPTION_REGEX.exec(optionText.normalize("NFD").replace(/[\u0300-\u036f]/g, ""));
+      const matches = OPTION_REGEX.exec(Transform.simplifyOption(optionText));
       const option = {
         name: matches[1],
         price: parseFloat(matches[3]) || 0,
@@ -177,3 +177,11 @@ const scrapeMenu = async (page, index) => {
   }
   return data;
 };
+
+
+/**
+ * Replaces strange characters in options
+ * See https://stackoverflow.com/a/37511463
+ * Keep this function in sync with the operation in perform.js
+ */
+const simplifyOption = s => s.normalize("NFD").replace(/[\u0300-\u036f]/g, "");

@@ -11,7 +11,6 @@ Things to do, in order of urgency:
 
 * Guess restaurant if not provided
 * Use slack ID as identifier instead of username
-* Compute accurate subtotal
 * Support for comments and quantity
 * Show person with most calls in global stats
 * Volunteer for order pickup (also requires undoing feature)

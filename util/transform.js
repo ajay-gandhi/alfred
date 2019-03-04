@@ -101,52 +101,124 @@ module.exports.parseOrders = (input) => {
  */
 module.exports.correctItems = async (orders, restaurantName) => {
   const errorItems = [];
-  const correctedItems = await Promise.all(orders.map(async ([name, options]) => {
-    const correctedItem = await findCorrectItem(restaurantName, name);
+
+  const items = (await Menu.getMenu(restaurantName)).menu;
+  return await Promise.all(orders.map(async ([itemName, options]) => {
+    const result = {};
+
+    // Find correct item
+    const correctedItem = findCorrectObject(items, itemName);
     if (correctedItem) {
-      return [correctedItem.name, options];
-    } else {
-      // No need to return anything since we won't use this array anyway
-      errorItems.push(name);
-    }
-  }));
+      result.outcome = 0;
+      result.item = {
+        name: correctedItem.name,
+      };
 
-  if (errorItems.length > 0) {
-    const itemNoun = errorItems.length === 1 ? "item" : "items";
-    const items = errorItems.map(i => `"${i}"`).join(", ");
+      // Correct options
+      // 1. Iterate through option sets, pulling options which match (removing from options array)
+      //    - For radio-type options, pull the first match and ignore the rest
+      // 2. Compute price and override defaults
+      result.options = [];
+      for (const optionSet of correctedItem.optionSets) {
+        if (optionSet.radio) {
+          for (const optionName of options) {
+            const correctedOption = findCorrectObject(optionSet.options, optionName);
+            if (correctedOption) {
+              options.splice(options.indexOf(optionName), 1);
+              result.options.push({
+                name: correctedOption.name,
+                price: correctedOption.price,
+                successful: true,
+              });
 
-    // Find closest match to first unknown item
-    const lMatch = (await Menu.getMenu(restaurantName)).menu.reduce((memo, item) => {
-      if (Levenshtein.get(item.name, errorItems[0]) < memo.score) {
-        return {
-          name: item.name,
-          score: Levenshtein.get(item.name, errorItems[0]),
-        };
-      } else {
-        return memo;
+              // Remove any defaults for this option set
+              correctedItem.defaultOptions = correctedItem.defaultOptions.filter((o) => {
+                return o.set !== correctedOption.set;
+              });
+
+              // Since this option set is a radio input, only take first selection
+              break;
+            }
+          }
+        } else {
+          result.options = options.reduce((memo, optionName) => {
+            const correctedOption = findCorrectObject(optionSet.options, optionName);
+            if (correctedOption) {
+              options.splice(options.indexOf(optionName), 1);
+              return memo.concat({
+                name: correctedOption.name,
+                price: correctedOption.price,
+                successful: true,
+              });
+            } else {
+              return memo;
+            }
+          }, result.options);
+        }
       }
-    }, {
-      name: "",
-      score: Number.MAX_SAFE_INTEGER,
-    });
-    const autocorrectName = lMatch.name.replace(/[()]/g, "");
-    // Only show did you mean if they're close enough
-    const didYouMean = lMatch.score < 20 ? ` Did you mean "${autocorrectName}"?` : "";
 
-    return { error: `Couldn't find ${itemNoun} called ${items}.${didYouMean}` };
-  } else {
-    return { correctedItems };
-  }
+      // Compute subtotal
+      result.subtotal = correctedItem.price
+        + result.options.reduce((m, o) => m + o.price, 0)
+        + correctedItem.defaultOptions.reduce((m, o) => m + o.price, 0);
+
+      // Any remaining inputted options are invalid options
+      result.options = result.options.concat(options.map((o) => ({
+        name: o,
+        price: 0,
+        successful: false,
+      })));
+      result.outcome = options.length > 0 ? 1 : 0;
+    } else {
+      // Failed to find item
+      result.outcome = 2;
+      result.item = {
+        name: itemName,
+        price: 0,
+        suggestion: findSuggestedItem(items, itemName),
+      };
+    }
+    return result;
+  }));
+};
+
+/**
+ * Given a list of corrected items, converts to the 2D array format that is
+ * useful for performing the orders
+ */
+module.exports.orderizeItems = (items) => {
+  return items.map(({ item, options }) => {
+    return [item.name, options.filter(o => o.successful).map(o => o.name)];
+  });
 };
 
 /********************************** Helpers ***********************************/
 
 /**
- * Given a corrected restaurant name and item, finds the closest matching item
+ * Chooses the closest matching object from the given list of choices
  */
-const findCorrectItem = async (restaurantName, itemName) => {
-  const items = (await Menu.getMenu(restaurantName)).menu;
-  const matches = FuzzAldrin.filter(items, itemName, { key: "name" });
+const findCorrectObject = (choices, name) => {
+  const matches = FuzzAldrin.filter(choices, name, { key: "name" });
   return matches.length === 0 ? false : matches[0];
+};
+
+/**
+ * Suggests an item using Levenshtein
+ */
+const findSuggestedItem = (choices, name) => {
+  const lMatch = choices.reduce((memo, item) => {
+    const thisScore = Levenshtein.get(item.name, name);
+    return thisScore < memo.score ? { name: item.name, score: thisScore } : memo;
+  }, {
+    name: "",
+    score: Number.MAX_SAFE_INTEGER,
+  });
+
+  // Only want to suggest something if they're sufficiently close
+  if (lMatch.score < 20) {
+    return lMatch.name.replace(/[()]/g, "");
+  } else {
+    return false;
+  }
 };
 

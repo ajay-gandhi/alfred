@@ -267,7 +267,13 @@ const fillOrders = async (page, userOrders) => {
         for (const opt of options) {
           for (const input of optionLinks) {
             const done = await page.evaluate((elm, opt) => {
-              const isOpt = elm.innerText.toLowerCase().includes(opt.toLowerCase());
+              const elmText = elm.innerText
+                // Keep this normalize & replace logic in sync with the scraper
+                .normalize("NFD").replace(/[\u0300-\u036f]/g, "")
+                // Remove trailing cost
+                .replace(/(\([$.\d+]+\))$/, "").trim();
+
+              const isOpt = elmText === opt;
               if (isOpt) elm.click();
               return isOpt;
             }, input, opt);

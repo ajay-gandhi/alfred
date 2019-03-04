@@ -126,3 +126,35 @@ module.exports.sendFinishedMessage = async (parts, dry) => {
     );
   }
 };
+
+/**
+ * Formats the given items into an array of "attachments" ready to send to
+ * Slack
+ */
+const OUTCOME_MAP = ["good", "warning", "danger"];
+module.exports.formatItems = (items) => {
+  const itemAtts = items.map(({ item, options, outcome, subtotal }) => {
+    const optionText = options.map(o => `${o.successful ? "+" : "-"} ${o.name.replace(/[*\\]/g, "")}`).join("\n");
+    return {
+      fallback: item.name,
+      color: OUTCOME_MAP[outcome],
+      title: item.name,
+      text: optionText,
+      footer: `$${subtotal.toFixed(2)}`,
+    };
+  });
+
+  const orderSubtotal = items.reduce((m, i) => m + i.subtotal, 0).toFixed(2);
+  const orderSubtotalAtt = {
+    fallback: `Subtotal: $${orderSubtotal}`,
+    color: "#aaa",
+    title: "Subtotal",
+    text: `$${orderSubtotal}`,
+  };
+  if (orderSubtotal > 25) {
+    orderSubtotalAtt.color = "warning";
+    orderSubtotalAtt.footer = "This order exceeds your personal budget";
+  }
+
+  return itemAtts.concat(orderSubtotalAtt);
+};
