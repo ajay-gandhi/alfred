@@ -111,11 +111,6 @@ module.exports.do = async (ctx, next) => {
     }
 
     case "List Orders": {
-      if (isLate()) {
-        ctx.body = { text: "Alfred has already ordered for today." };
-        break;
-      }
-
       const restaurants = (await Orders.getOrders())
         .reduce((memo, order) => {
           return memo.indexOf(order.restaurant) < 0 ? memo.concat(order.restaurant) : memo;
