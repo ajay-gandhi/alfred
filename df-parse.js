@@ -16,7 +16,7 @@ const SESSION_PATH = sessionClient.sessionPath(PROJECT_ID, SESSION_ID);
  * and arguments
  */
 module.exports = (text) => {
-  const input = text.substring(7);
+  const input = text.replace(/^(alfred |alfie )/, "");
   const request = {
     session: SESSION_PATH,
     queryParams: {
