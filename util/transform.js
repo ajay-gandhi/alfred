@@ -20,6 +20,8 @@ const Menu = require("../models/menu");
  * restaurant. This function transforms the hash defined above to an array of
  * objects, containing the restaurant and an array of objects containing the
  * username and the items they ordered.
+ *
+ * It also maps the items into a 2D array that is more easily iterated over.
  */
 module.exports.indexByRestaurantAndUser = (data) => {
   const newData = data.reduce((memo, order) => {
@@ -30,9 +32,12 @@ module.exports.indexByRestaurantAndUser = (data) => {
       };
     }
 
+    const simplifiedItems = order.items.map(({ item, options }) => {
+      return [item.name, options.filter(o => o.successful).map(o => o.name)];
+    });
     memo[order.restaurant].users.push({
       username: order.username,
-      items: order.items,
+      items: simplifiedItems,
       isDonor: order.isDonor,
     });
     return memo;
@@ -180,16 +185,6 @@ module.exports.correctItems = async (orders, restaurantName) => {
     }
     return result;
   }));
-};
-
-/**
- * Given a list of corrected items, converts to the 2D array format that is
- * useful for performing the orders
- */
-module.exports.orderizeItems = (items) => {
-  return items.map(({ item, options }) => {
-    return [item.name, options.filter(o => o.successful).map(o => o.name)];
-  });
 };
 
 /********************************** Helpers ***********************************/

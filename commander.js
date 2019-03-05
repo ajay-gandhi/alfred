@@ -44,7 +44,7 @@ module.exports.do = async (ctx, next) => {
         const fixedItems = await Transform.correctItems(parsed, args["restaurant"]);
         const successfulItems = fixedItems.filter(i => i.outcome < 2);
         if (successfulItems.length > 0)
-          await Orders.addOrder(args["restaurant"], username, Transform.orderizeItems(successfulItems));
+          await Orders.addOrder(args["restaurant"], username, successfulItems);
 
         ctx.body = {
           text: `Here is your order from *${args["restaurant"]}*:`,
@@ -101,7 +101,7 @@ module.exports.do = async (ctx, next) => {
       if (!you.favorite) {
         ctx.body = { text: "No favorite order saved" };
       } else {
-        await Orders.addOrder(you.favorite.restaurant, username, Transform.orderizeItems(you.favorite.items));
+        await Orders.addOrder(you.favorite.restaurant, username, you.favorite.items);
         ctx.body = {
           text: `Here is your order from *${you.favorite.restaurant}*:`,
           attachments: Slack.formatItems(you.favorite.items),
