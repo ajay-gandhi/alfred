@@ -111,16 +111,33 @@ module.exports.do = async (ctx, next) => {
     }
 
     case "List Orders": {
-      const restaurants = (await Orders.getOrders())
-        .reduce((memo, order) => {
-          return memo.indexOf(order.restaurant) < 0 ? memo.concat(order.restaurant) : memo;
-        }, [])
-        .map(r => `\n - ${r}`);
+      const restaurants = Object.values((await Orders.getOrders()).reduce((memo, order) => {
+        if (!memo[order.restaurant]) {
+          memo[order.restaurant] = {
+            restaurant: order.restaurant,
+            total: 0,
+            participants: 0,
+          };
+        }
+
+        memo[order.restaurant].participants++;
+        memo[order.restaurant].total += order.items.reduce((m, i) => m + i.subtotal, 0);
+        return memo;
+      }, {}));
 
       if (restaurants.length === 0) {
         ctx.body = { text: "There are no orders today!" };
       } else {
-        ctx.body = { text: `There are currently orders for:${restaurants.join("")}` };
+        const attachments = restaurants.map((data) => ({
+          title: data.restaurant,
+          text: `Total: $${data.total.toFixed(2)}`,
+          footer: `${data.participants} participant${data.participants === 1 ? "" : "s"}`,
+        }));
+
+        ctx.body = {
+          text: `Here are today's orders:`,
+          attachments,
+        };
       }
       break;
     }
