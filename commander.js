@@ -41,19 +41,19 @@ module.exports.do = async (ctx, next) => {
       }
 
       const parsed = Transform.parseOrders(args["order"]);
-      if (args["restaurant"]) {
-        const fixedItems = await Transform.correctItems(parsed, args["restaurant"]);
+      const restaurant = args["restaurant"] || (await Transform.guessRestaurant(parsed));
+      if (restaurant) {
+        const fixedItems = await Transform.correctItems(parsed, restaurant);
         const successfulItems = fixedItems.filter(i => i.outcome < 2);
         if (successfulItems.length > 0)
-          await Orders.addOrder(args["restaurant"], slackId, username, successfulItems);
+          await Orders.addOrder(restaurant, slackId, username, successfulItems);
 
         ctx.body = {
-          text: `Here is your order from *${args["restaurant"]}*:`,
+          text: `Here is your order from *${restaurant}*:`,
           attachments: Slack.formatItems(fixedItems),
         };
       } else {
         ctx.body = { text: "No restaurant chosen. Please reorder!" };
-        break;
       }
       break;
     }
@@ -217,19 +217,19 @@ module.exports.do = async (ctx, next) => {
       }
 
       const parsed = Transform.parseOrders(args["order"]);
-      if (args["restaurant"]) {
-        const fixedItems = await Transform.correctItems(parsed, args["restaurant"]);
+      const restaurant = args["restaurant"] || (await Transform.guessRestaurant(parsed));
+      if (restaurant) {
+        const fixedItems = await Transform.correctItems(parsed, restaurant);
         const successfulItems = fixedItems.filter(i => i.outcome < 2);
         if (successfulItems.length > 0)
-          await Users.saveFavorite(slackId, args["restaurant"], successfulItems);
+          await Users.saveFavorite(slackId, restaurant, successfulItems);
 
         ctx.body = {
-          text: `Saved this order from *${args["restaurant"]}* as your favorite:`,
+          text: `Saved this order from *${restaurant}* as your favorite:`,
           attachments: Slack.formatItems(fixedItems),
         };
       } else {
         ctx.body = { text: "No restaurant chosen. Please reorder!" };
-        break;
       }
       break;
     }

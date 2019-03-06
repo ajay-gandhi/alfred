@@ -188,6 +188,27 @@ module.exports.correctItems = async (orders, restaurantName) => {
   }));
 };
 
+/**
+ * Given a parsed set of orders, attempt to guess which restaurant they're from
+ */
+module.exports.guessRestaurant = async (orders, restaurantName) => {
+  const menus = await Menu.getAllMenus();
+
+  // See which menu matches the most items
+  const mostMatch = menus.reduce((memo, { name, menu }) => {
+    const matchingItems = orders.reduce((total, [itemName, options]) => {
+      return findCorrectObject(menu, itemName) ? total + 1 : total;
+    }, 0);
+
+    return matchingItems > memo.matchingItems ? { matchingItems, name } : memo;
+  }, {
+    matchingItems: 0,
+    name: false,
+  });
+
+  return mostMatch.name;
+};
+
 /********************************** Helpers ***********************************/
 
 /**
