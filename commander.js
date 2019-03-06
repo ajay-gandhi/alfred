@@ -67,13 +67,11 @@ module.exports.do = async (ctx, next) => {
       if (args["forget-what"] === "info") {
         // Remove user
         await Users.removeUser(slackId);
-        const slackAt = await Slack.atUser(slackId);
-        ctx.body = { text: `Information for ${slackAt} has been removed` };
+        ctx.body = { text: `Information for ${Slack.atUser(slackId)} has been removed` };
       } else if (args["forget-what"] === "favorite" || args["forget-what"] === "fav") {
         // Remove favorite
         await Users.removeFavorite(slackId);
-        const slackAt = await Slack.atUser(slackId);
-        ctx.body = { text: `Removed favorite for ${slackAt}` };
+        ctx.body = { text: `Removed favorite for ${Slack.atUser(slackId)}` };
       } else {
         // Default forget order
         if (isLate()) {
@@ -207,7 +205,7 @@ module.exports.do = async (ctx, next) => {
       }
 
       const fellows = (await Orders.getOrders()).filter(o => o.restaurant === yourOrder.restaurant);
-      const fellowsText = (await Promise.all(fellows.map(async f => Slack.atUser(f.slackId)))).join(" ");
+      const fellowsAts = fellows.map(f => Slack.atUser(f.slackId)).join(" ");
       ctx.body = { text: `Food from ${yourOrder.restaurant} is here! ${fellowsText}` };
       break;
     }
@@ -255,8 +253,7 @@ module.exports.do = async (ctx, next) => {
           innerText.push(`\nFavorite: ${items} from ${you.favorite.restaurant}`);
         }
 
-        const slackAt = await Slack.atUser(slackId);
-        ctx.body = { text: `${slackAt}'s info:\`\`\`${innerText.join("\n")}\`\`\`` };
+        ctx.body = { text: `${Slack.atUser(slackId)}'s info:\`\`\`${innerText.join("\n")}\`\`\`` };
       } else {
         if (!you) {
           ctx.body = { text: "Please register your info first." };
@@ -283,8 +280,7 @@ module.exports.do = async (ctx, next) => {
         break;
       }
       const added = await Users.addUser(slackId, `${args["given-name"]} ${args["last-name"]}`, args["phone-number"], username);
-      const slackAt = await Slack.atUser(slackId);
-      ctx.body = { text: `Added information for ${slackAt}:\`\`\`Name:   ${added.name}\nNumber: ${added.phone}\`\`\`` };
+      ctx.body = { text: `Added information for ${Slack.atUser(slackId)}:\`\`\`Name:   ${added.name}\nNumber: ${added.phone}\`\`\`` };
       break;
     }
 
@@ -300,15 +296,13 @@ module.exports.do = async (ctx, next) => {
         ctx.body = { text };
       } else if (args["restaurant"]) {
           // Stats for user from restaurant
-          const slackAt = await Slack.atUser(slackId);
           const stats = await Stats.getStatsForUserFromRestaurant(slackId, args["restaurant"]);
-          const text = `Stats for ${slackAt} from ${args["restaurant"]}:\n${Slack.statsFormatter(stats)}`;
+          const text = `Stats for ${Slack.atUser(slackId)} from ${args["restaurant"]}:\n${Slack.statsFormatter(stats)}`;
           ctx.body = { text };
       } else {
         // General stats for user
-        const slackAt = await Slack.atUser(slackId);
         const stats = await Stats.getStatsForUser(slackId);
-        const text = `General stats for ${slackAt}:\n${Slack.statsFormatter(stats)}`;
+        const text = `General stats for ${Slack.atUser(slackId)}:\n${Slack.statsFormatter(stats)}`;
         ctx.body = { text };
       }
       break;

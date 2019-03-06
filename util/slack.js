@@ -29,7 +29,7 @@ const sendMessage = (text, attachments) => {
 
 module.exports.sendBasicMessage = sendMessage;
 
-const atUser = async slackId => `<@${(await Users.getUser(slackId)).slackId}>`;
+const atUser = slackId => `<@${slackId}>`;
 module.exports.atUser = atUser;
 
 // Formats the given stats
@@ -69,15 +69,16 @@ module.exports.statsFormatter = (stats) => {
  */
 module.exports.sendFinishedMessage = async (parts, dry) => {
   if (dry) {
-    const attachments = await Promise.all(parts.filter(p => !p.successful).map(async (part) => {
-      const userAts = await Promise.all(part.users.map(u => atUser(u.slackId)));
-      const text = part.errors.concat(`FYI: ${userAts.join(", ")}`).join("\n");
-      return {
+    const attachments = parts.reduce((memo, part) => {
+      if (part.successful) return memo;
+
+      const userAts = part.users.map(u => atUser(u.slackId));
+      return memo.concat({
         color: "danger",
         title: part.restaurant,
-        text,
-      };
-    }));
+        text: part.errors.concat(`FYI: ${userAts.join(", ")}`).join("\n"),
+      });
+    }, []);
 
     // Don't send attachments if all restaurants will be successful
     if (attachments.length === 0) {
@@ -96,24 +97,23 @@ module.exports.sendFinishedMessage = async (parts, dry) => {
       );
     }
   } else {
-    const attachments = await Promise.all(parts.map(async (part) => {
+    const attachments = parts.map((part) => {
       const attachment = {
         color: part.successful ? "good" : "danger",
       };
 
       if (part.successful) {
-        const slackAt = await atUser(part.userCall);
         attachment.title = part.restaurant;
         attachment.title_link = part.confirmationUrl;
-        if (!dry) attachment.text = `${slackAt} will receive the call.`;
+        if (!dry) attachment.text = `${atUser(part.userCall)} will receive the call.`;
       } else {
         attachment.title = `${part.restaurant} (${dry ? "no order" : "failed"})`;
         attachment.text = part.errors.join("\n");
-        const userAts = await Promise.all(part.users.map(u => atUser(u.slackId)));
+        const userAts = part.users.map(u => atUser(u.slackId));
         attachment.text += `\nFYI: ${userAts.join(", ")}`;
       }
       return attachment;
-    }));
+    });
 
     const n = JSON.parse(fs.readFileSync(`${__dirname}/../private.json`, "utf8"));
     await sendMessage(

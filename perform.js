@@ -366,11 +366,10 @@ const fillNames = async (page, slackIds, { orderAmounts }) => {
         return memo;
       }
     }, { amount: 0 });
-    const userAt = await Slack.atUser(maxOrder.slackId);
 
     return {
       retry: false,
-      errors: [`Order exceeded budget by $${excess}. ${userAt}'s order is the highest at $${maxOrder.amount.toFixed(2)}.`],
+      errors: [`Order exceeded budget by $${excess}. ${Slack.atUser(maxOrder.slackId)}'s order is the highest at $${maxOrder.amount.toFixed(2)}.`],
     };
   }
 };
