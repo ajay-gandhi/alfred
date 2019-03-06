@@ -18,14 +18,15 @@ module.exports.do = async (ctx, next) => {
     LOG.log("Request does not have proper secret");
     return;
   }
-  if (!ctx.request.body.text || !ctx.request.body.user_name) {
-    LOG.log("Request is missing username or text");
+  if (!ctx.request.body.text || !ctx.request.body.user_id) {
+    LOG.log("Request is missing slack ID or text");
     return;
   }
   if (ctx.request.body.user_name === "slackbot") return {};
 
   const username = ctx.request.body.user_name;
-  const you = await Users.getUser(username);
+  const slackId = ctx.request.body.user_id;
+  const you = await Users.getUser(slackId);
   const { command, args } = await dfParse(cleanPhone(ctx.request.body.text));
   LOG.log(command, args);
   switch (command) {
@@ -44,7 +45,7 @@ module.exports.do = async (ctx, next) => {
         const fixedItems = await Transform.correctItems(parsed, args["restaurant"]);
         const successfulItems = fixedItems.filter(i => i.outcome < 2);
         if (successfulItems.length > 0)
-          await Orders.addOrder(args["restaurant"], username, successfulItems);
+          await Orders.addOrder(args["restaurant"], slackId, username, successfulItems);
 
         ctx.body = {
           text: `Here is your order from *${args["restaurant"]}*:`,
@@ -65,12 +66,13 @@ module.exports.do = async (ctx, next) => {
 
       if (args["forget-what"] === "info") {
         // Remove user
-        await Users.removeUser(username);
-        ctx.body = { text: `Removed user ${username}` };
+        await Users.removeUser(slackId);
+        const slackAt = await Slack.atUser(slackId);
+        ctx.body = { text: `Information for ${slackAt} has been removed` };
       } else if (args["forget-what"] === "favorite" || args["forget-what"] === "fav") {
         // Remove favorite
-        await Users.removeFavorite(username);
-        const slackAt = await Slack.atUser(username);
+        await Users.removeFavorite(slackId);
+        const slackAt = await Slack.atUser(slackId);
         ctx.body = { text: `Removed favorite for ${slackAt}` };
       } else {
         // Default forget order
@@ -78,7 +80,7 @@ module.exports.do = async (ctx, next) => {
           ctx.body = { text: "Alfred has already ordered for today." };
           break;
         }
-        const order = await Orders.removeOrder(username);
+        const order = await Orders.removeOrder(slackId);
         if (order) {
           ctx.body = { text: `Removed order from ${order.restaurant}` };
         } else {
@@ -101,7 +103,7 @@ module.exports.do = async (ctx, next) => {
       if (!you.favorite) {
         ctx.body = { text: "No favorite order saved" };
       } else {
-        await Orders.addOrder(you.favorite.restaurant, username, you.favorite.items);
+        await Orders.addOrder(you.favorite.restaurant, slackId, username, you.favorite.items);
         ctx.body = {
           text: `Here is your order from *${you.favorite.restaurant}*:`,
           attachments: Slack.formatItems(you.favorite.items),
@@ -152,7 +154,7 @@ module.exports.do = async (ctx, next) => {
         break;
       }
 
-      await Orders.addOrder(args["restaurant"], username, [], true);
+      await Orders.addOrder(args["restaurant"], slackId, username, [], true);
       ctx.body = { text: `Your money will be added to the ${args["restaurant"]} order. Thanks!` };
       break;
     }
@@ -194,7 +196,7 @@ module.exports.do = async (ctx, next) => {
         ctx.body = { text: "Please register your info first." };
         break;
       }
-      const yourOrder = await Orders.getOrderForUser(username);
+      const yourOrder = await Orders.getOrderForUser(slackId);
       if (!yourOrder) {
         ctx.body = { text: "You don't have an order today." };
         break;
@@ -205,7 +207,7 @@ module.exports.do = async (ctx, next) => {
       }
 
       const fellows = (await Orders.getOrders()).filter(o => o.restaurant === yourOrder.restaurant);
-      const fellowsText = (await Promise.all(fellows.map(async f => Slack.atUser(f.username)))).join(" ");
+      const fellowsText = (await Promise.all(fellows.map(async f => Slack.atUser(f.slackId)))).join(" ");
       ctx.body = { text: `Food from ${yourOrder.restaurant} is here! ${fellowsText}` };
       break;
     }
@@ -221,7 +223,7 @@ module.exports.do = async (ctx, next) => {
         const fixedItems = await Transform.correctItems(parsed, args["restaurant"]);
         const successfulItems = fixedItems.filter(i => i.outcome < 2);
         if (successfulItems.length > 0)
-          await Users.saveFavorite(username, args["restaurant"], successfulItems);
+          await Users.saveFavorite(slackId, args["restaurant"], successfulItems);
 
         ctx.body = {
           text: `Saved this order from *${args["restaurant"]}* as your favorite:`,
@@ -247,13 +249,13 @@ module.exports.do = async (ctx, next) => {
           `Number: ${you.phone}`,
         ];
         if (you.favorite) {
-          const items = you.favorite.items.map((i) => {
-            return i[1].length > 0 ? `${i[0]} (${i[1].join(", ")})` : i[0];
+          const items = you.favorite.items.map(({ item, options }) => {
+            return `${item.name}${options.length > 0 ? ` (${options.map(o => o.name).join(", ")})` : ""}`;
           }).join(", ");
           innerText.push(`\nFavorite: ${items} from ${you.favorite.restaurant}`);
         }
 
-        const slackAt = await Slack.atUser(username);
+        const slackAt = await Slack.atUser(slackId);
         ctx.body = { text: `${slackAt}'s info:\`\`\`${innerText.join("\n")}\`\`\`` };
       } else {
         if (!you) {
@@ -261,7 +263,7 @@ module.exports.do = async (ctx, next) => {
           break;
         }
         // Show current order
-        const order = await Orders.getOrderForUser(username);
+        const order = await Orders.getOrderForUser(slackId);
         if (order) {
           const items = order.items.map((i) => {
             return i[1].length > 0 ? `${i[0]} (${i[1].join(", ")})` : i[0];
@@ -280,8 +282,8 @@ module.exports.do = async (ctx, next) => {
         ctx.body = { text: "Please enter your name and phone number." };
         break;
       }
-      const added = await Users.addUser(username, `${args["given-name"]} ${args["last-name"]}`, args["phone-number"], ctx.request.body.user_id);
-      const slackAt = await Slack.atUser(username);
+      const added = await Users.addUser(slackId, `${args["given-name"]} ${args["last-name"]}`, args["phone-number"], username);
+      const slackAt = await Slack.atUser(slackId);
       ctx.body = { text: `Added information for ${slackAt}:\`\`\`Name:   ${added.name}\nNumber: ${added.phone}\`\`\`` };
       break;
     }
@@ -298,14 +300,14 @@ module.exports.do = async (ctx, next) => {
         ctx.body = { text };
       } else if (args["restaurant"]) {
           // Stats for user from restaurant
-          const slackAt = await Slack.atUser(username);
-          const stats = await Stats.getStatsForUserFromRestaurant(username, args["restaurant"]);
+          const slackAt = await Slack.atUser(slackId);
+          const stats = await Stats.getStatsForUserFromRestaurant(slackId, args["restaurant"]);
           const text = `Stats for ${slackAt} from ${args["restaurant"]}:\n${Slack.statsFormatter(stats)}`;
           ctx.body = { text };
       } else {
         // General stats for user
-        const slackAt = await Slack.atUser(username);
-        const stats = await Stats.getStatsForUser(username);
+        const slackAt = await Slack.atUser(slackId);
+        const stats = await Stats.getStatsForUser(slackId);
         const text = `General stats for ${slackAt}:\n${Slack.statsFormatter(stats)}`;
         ctx.body = { text };
       }

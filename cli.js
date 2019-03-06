@@ -5,7 +5,7 @@
  */
 
 const Commander = require("./commander");
-const Users = require("./models/users");
+const MongoClient = require("mongodb").MongoClient;
 const priv = require("./private");
 
 const ctx = {
@@ -24,12 +24,20 @@ const username = args.reduce((u, a) => a.startsWith("--user=") ? a.substring(7) 
 process.stdout.write("Waiting for init...");
 setTimeout(async () => {
   console.log("starting");
-  ctx.request.body.user_name = username;
-  ctx.request.body.user_id = await Users.getUser(username).slackId;
-  ctx.request.body.text = args.filter(a => !a.startsWith("--user=")).join(" ");
+  const client = new MongoClient(priv.mongoSrv, { useNewUrlParser: true });
+  client.connect(async (err) => {
+    if (err) console.log("Error connecting to MongoDB:", err);
 
-  Commander.do(ctx, () => {
-    console.log(ctx.body || "No output");
-    process.exit(0);
+    // Find user by username
+    const user = await client.db(priv.mongoDbName).collection("users").findOne({ username });
+
+    ctx.request.body.user_name = username;
+    ctx.request.body.user_id = user.slackId;
+    ctx.request.body.text = args.filter(a => !a.startsWith("--user=")).join(" ");
+
+    Commander.do(ctx, () => {
+      console.log(ctx.body || "No output");
+      process.exit(0);
+    });
   });
 }, 5000);

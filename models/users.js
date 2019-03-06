@@ -12,23 +12,23 @@ client.connect((err) => {
   users = client.db(priv.mongoDbName).collection("users");
 });
 
-module.exports.getUser = async username => await users.findOne({ username });
-module.exports.removeUser = async username => await users.deleteOne({ username });
-module.exports.addUser = async (username, name, phone, slackId) => {
-  return (await users.findOneAndUpdate({ username }, {
+module.exports.getUser = async slackId => await users.findOne({ slackId });
+module.exports.removeUser = async slackId => await users.deleteOne({ slackId });
+module.exports.addUser = async (slackId, name, phone, username) => {
+  return (await users.findOneAndUpdate({ slackId }, {
     $set: {
-      username,
+      slackId,
       name,
       phone,
-      slackId,
+      username,
     },
   }, {
     upsert: true,
     returnOriginal: false,
   })).value;
 };
-module.exports.saveFavorite = async (username, restaurant, items) => {
-  await users.findOneAndUpdate({ username }, {
+module.exports.saveFavorite = async (slackId, restaurant, items) => {
+  await users.findOneAndUpdate({ slackId }, {
     $set: {
       favorite: {
         restaurant,
@@ -37,7 +37,7 @@ module.exports.saveFavorite = async (username, restaurant, items) => {
     },
   });
 };
-module.exports.removeFavorite = async (username) => {
-  await users.findOneAndUpdate({ username }, { $unset: { favorite: "" } });
+module.exports.removeFavorite = async (slackId) => {
+  await users.findOneAndUpdate({ slackId }, { $unset: { favorite: "" } });
 };
 

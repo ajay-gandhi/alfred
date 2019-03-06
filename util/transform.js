@@ -12,14 +12,14 @@ const Levenshtein = require("fast-levenshtein");
 const Menu = require("../models/menu");
 
 /**
- * Orders data is stored persistently in a JSON hash keyed by username, with the
+ * Orders data is stored persistently in a JSON hash keyed by slack ID, with the
  * value being a hash containing the restaurant and items. This allows for easy
  * overwriting and removing of orders.
  *
  * When inputting the order on Seamless, it's necessary to group orders by
  * restaurant. This function transforms the hash defined above to an array of
  * objects, containing the restaurant and an array of objects containing the
- * username and the items they ordered.
+ * slack ID and the items they ordered.
  *
  * It also maps the items into a 2D array that is more easily iterated over.
  */
@@ -36,6 +36,7 @@ module.exports.indexByRestaurantAndUser = (data) => {
       return [item.name, options.filter(o => o.successful).map(o => o.name)];
     });
     memo[order.restaurant].users.push({
+      slackId: order.slackId,
       username: order.username,
       items: simplifiedItems,
       isDonor: order.isDonor,

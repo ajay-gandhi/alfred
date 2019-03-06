@@ -54,32 +54,33 @@ const go = async () => {
 
     for (const orderSet of orderSets) {
       const orderResult = await orderFromRestaurant(page, orderSet.restaurant, orderSet.users, INITIAL_RETRIES);
+      const orderParticipants = orderSet.users.filter(u => !u.isDonor);
 
       if (orderResult.errors) {
         results.push({
           successful: false,
           restaurant: orderSet.restaurant,
-          users: orderSet.users,
+          users: orderParticipants,
           errors: orderResult.errors,
         });
       } else {
         results.push({
           successful: true,
           restaurant: orderSet.restaurant,
-          userCall: orderResult.user.username,
+          userCall: orderResult.user.slackId,
           confirmationUrl: `https://alfred.ajay-gandhi.com/confirmations/${sanitizeFilename(orderSet.restaurant)}.pdf`,
         });
 
         if (!DRY_RUN) {
           // Record stats
-          await Promise.all(orderSet.users.map(async (userOrder) => {
-            const u = userOrder.username;
-            const isCallee = orderResult.user.username === u;
-            return Stats.recordStats(u, orderSet.restaurant, orderResult.orderAmounts[u], userOrder.items, isCallee);
+          await Promise.all(orderParticipants.map(async (userOrder) => {
+            const slackId = userOrder.slackId;
+            const isCallee = orderResult.user.slackId === slackId;
+            return Stats.recordStats(slackId, orderSet.restaurant, orderResult.orderAmounts[slackId], userOrder.items, isCallee);
           }));
 
           // Write callee to orders
-          await Orders.setCallee(orderResult.user.username);
+          await Orders.setCallee(orderResult.user.slackId);
         }
       }
 
@@ -122,19 +123,19 @@ const loginToSeamless = async (page, creds) => {
 
 /**
  * Given a page with a logged-in status, this function will submit an order
- * at the given restaurant with the given items for the given usernames.
+ * at the given restaurant with the given items for the given slack IDs.
  */
 const orderFromRestaurant = async (page, restaurant, userOrders, retries) => {
   try {
     let result = {};
 
-    const usernames = userOrders.map(o => o.username);
+    const slackIds = userOrders.map(o => o.slackId);
 
     const steps = [
       chooseTime.bind(null, page),
       chooseRestaurant.bind(null, page, restaurant),
       fillOrders.bind(null, page, userOrders),
-      fillNames.bind(null, page, usernames, result),
+      fillNames.bind(null, page, slackIds, result),
       fillPhoneNumber.bind(null, page, userOrders),
     ];
 
@@ -233,7 +234,7 @@ const chooseRestaurant = async (page, restaurant) => {
  *
  * The userOrders parameter should be an array of objects of this form:
  *   {
- *     username: "bobby",
+ *     slackId: "bobby",
  *     items: [
  *       [
  *         "dish1",
@@ -288,7 +289,7 @@ const fillOrders = async (page, userOrders) => {
       }
 
       // Record for stats
-      orderAmounts[userOrders[i].username] = (await foodBevTotal(page)) - totalBefore;
+      orderAmounts[userOrders[i].slackId] = (await foodBevTotal(page)) - totalBefore;
     }
   } catch (e) {
     // Most likely a timeout, or we didn't wait long enough
@@ -323,18 +324,18 @@ const fillOrders = async (page, userOrders) => {
 
 /**
  * Given a page at the checkout stage, this function will enter the given
- * usernames. The names parameter should be an array of tuples, where each
- * tuple contains the first and last names of all those involved in the order.
+ * names. The names parameter should be an array of tuples, where each tuple
+ * contains the first and last names of all those involved in the order.
  */
-const fillNames = async (page, usernames, { orderAmounts }) => {
+const fillNames = async (page, slackIds, { orderAmounts }) => {
   // Clear existing names first
   while (await page.$("td.delete a")) {
     await page.click("td.delete a");
     await page.waitForNavigation();
   }
 
-  for (const username of usernames) {
-    const name = (await Users.getUser(username)).name.split(" ");
+  for (const slackId of slackIds) {
+    const name = (await Users.getUser(slackId)).name.split(" ");
 
     await page.evaluate(() => toggleAddUser(true, true));
     await page.waitFor(1000);
@@ -352,20 +353,20 @@ const fillNames = async (page, usernames, { orderAmounts }) => {
   if (Math.max.apply(null, amountAllocated) > 25) {
     // Exceeded budget
     const orderTotal = amountAllocated.reduce((m, a) => m + a, 0);
-    const excess = (orderTotal - usernames.length * 25).toFixed(2);
+    const excess = (orderTotal - slackIds.length * 25).toFixed(2);
 
     // Find person with most expensive order
-    const maxOrder = Object.keys(orderAmounts).reduce((memo, username) => {
-      if (orderAmounts[username] > memo.amount) {
+    const maxOrder = Object.keys(orderAmounts).reduce((memo, slackId) => {
+      if (orderAmounts[slackId] > memo.amount) {
         return {
-          username,
-          amount: orderAmounts[username],
+          slackId,
+          amount: orderAmounts[slackId],
         };
       } else {
         return memo;
       }
     }, { amount: 0 });
-    const userAt = await Slack.atUser(maxOrder.username);
+    const userAt = await Slack.atUser(maxOrder.slackId);
 
     return {
       retry: false,
@@ -380,8 +381,8 @@ const fillNames = async (page, usernames, { orderAmounts }) => {
  */
 const fillPhoneNumber = async (page, orders) => {
   try {
-    const usernames = orders.reduce((memo, o) => o.isDonor ? memo : memo.concat(o.username), []);
-    const selectedUser = usernames[Math.floor(Math.random() * usernames.length)];
+    const slackIds = orders.reduce((memo, o) => o.isDonor ? memo : memo.concat(o.slackId), []);
+    const selectedUser = slackIds[Math.floor(Math.random() * slackIds.length)];
     const userData = await Users.getUser(selectedUser);
     await page.$eval("input#phoneNumber", e => e.value = "");
     await page.click("input#phoneNumber");

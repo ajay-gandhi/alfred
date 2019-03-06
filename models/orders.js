@@ -13,10 +13,11 @@ client.connect((err) => {
 });
 
 module.exports.getOrders = async () => await orders.find({}).toArray();
-module.exports.getOrderForUser = async username => await orders.findOne({ username });
-module.exports.addOrder = async (restaurant, username, items, isDonor) => {
-  await orders.findOneAndUpdate({ username }, {
+module.exports.getOrderForUser = async slackId => await orders.findOne({ slackId });
+module.exports.addOrder = async (restaurant, slackId, username, items, isDonor) => {
+  await orders.findOneAndUpdate({ slackId }, {
     $set: {
+      slackId,
       username,
       restaurant,
       items,
@@ -27,10 +28,10 @@ module.exports.addOrder = async (restaurant, username, items, isDonor) => {
     upsert: true,
   });
 };
-module.exports.removeOrder = async username => (await orders.findOneAndDelete({ username })).value;
+module.exports.removeOrder = async slackId => (await orders.findOneAndDelete({ slackId })).value;
 module.exports.clearOrders = async () => await orders.deleteMany({});
-module.exports.setCallee = async (username) => {
-  await orders.findOneAndUpdate({ username }, {
+module.exports.setCallee = async (slackId) => {
+  await orders.findOneAndUpdate({ slackId }, {
     $set: {
       isCallee: true,
     },

@@ -19,24 +19,24 @@ const N_TOP_DISHES = 3;
 /**
  * Return how many times the given user has been called
  */
-const getCallsForUser = async (username) => {
-  const s = await stats.findOne({ username });
+const getCallsForUser = async (slackId) => {
+  const s = await stats.findOne({ slackId });
   return s ? s.calls : 0;
 };
 
 /**
  * Return the dollar value that the user spent at this restaurant
  */
-const getDollarsForRestaurant = async (username, restaurantName) => {
-  const s = await stats.findOne({ username });
+const getDollarsForRestaurant = async (slackId, restaurantName) => {
+  const s = await stats.findOne({ slackId });
   return s && s.restaurants[restaurantName].dollars;
 };
 
 /**
  * Return the dollar value that the user spent
  */
-const getDollarsForUser = async (username) => {
-  const s = await stats.findOne({ username });
+const getDollarsForUser = async (slackId) => {
+  const s = await stats.findOne({ slackId });
   return s && Object.keys(s.restaurants).reduce((m, r) => m + s.restaurants[r].dollars, 0);
 };
 
@@ -53,8 +53,8 @@ const getTotalDollars = async () => {
 /**
  * Return the top dishes for this user at this restaurant
  */
-const getTopDishesForRestaurant = async (username, restaurant) => {
-  const pulled = await stats.findOne({ username });
+const getTopDishesForRestaurant = async (slackId, restaurant) => {
+  const pulled = await stats.findOne({ slackId });
   if (!pulled) return;
 
   const s = fromMongo(pulled.restaurants[restaurant].items);
@@ -76,8 +76,8 @@ const getTopDishesForRestaurant = async (username, restaurant) => {
 /**
  * Return the top dishes for this user
  */
-const getTopDishesForUser = async (username) => {
-  const pulled = await stats.findOne({ username });
+const getTopDishesForUser = async (slackId) => {
+  const pulled = await stats.findOne({ slackId });
   if (!pulled) return;
 
   const s = fromMongo(pulled.restaurants);
@@ -167,7 +167,7 @@ const getGlobalStats = async () => ({
 /**
  * Record the given set of stats
  */
-const recordStats = async (username, restaurant, dollars, items, calls) => {
+const recordStats = async (slackId, restaurant, dollars, items, calls) => {
   const changes = items.reduce((memo, [itemName]) => {
     const key = `restaurants.${restaurant}.items.${toMongo(itemName)}`;
     memo[key] = memo[key] ? memo[key] + 1 : 1;
@@ -177,7 +177,7 @@ const recordStats = async (username, restaurant, dollars, items, calls) => {
   changes[`restaurants.${restaurant}.dollars`] = dollars;
   if (calls) changes["calls"] = 1;
 
-  await stats.findOneAndUpdate({ username }, { $inc: changes }, { upsert: true });
+  await stats.findOneAndUpdate({ slackId }, { $inc: changes }, { upsert: true });
 };
 
 module.exports = {

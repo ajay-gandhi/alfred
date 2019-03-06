@@ -26,6 +26,7 @@ day at midnight. The `isCallee` param represents whether the user is receiving
 the call for this order and is used when announcing the arrival of food.
 ```
 {
+  "slackId": "$slackId",
   "username": "$username",
   "restaurant": "$restaurantName",
   "isCallee": false,
@@ -51,6 +52,7 @@ restaurants, in addition to dollar amount per restaurant. Also contains how many
 calls the user has received for pickup.
 ```
 {
+  "slackId": "$slackId",
   "username": "$username",
   "calls": $callNumber,
   "restaurants": {
@@ -70,7 +72,8 @@ calls the user has received for pickup.
 users: Holds information that Alfred needs for each user.
 ```
 {
-  "username": "$slackUsername",
+  "slackId": "$slackId",
+  "username": "$username",
   "name": "$fullName",
   "phone": "$phoneNumber",
   "slackId": "$slackId",

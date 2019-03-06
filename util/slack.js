@@ -29,10 +29,7 @@ const sendMessage = (text, attachments) => {
 
 module.exports.sendBasicMessage = sendMessage;
 
-const atUser = async (username) => {
-  const u = await Users.getUser(username);
-  return u.slackId ? `<@${u.slackId}>` : `@${username}`;
-}
+const atUser = async slackId => `<@${(await Users.getUser(slackId)).slackId}>`;
 module.exports.atUser = atUser;
 
 // Formats the given stats
@@ -73,7 +70,7 @@ module.exports.statsFormatter = (stats) => {
 module.exports.sendFinishedMessage = async (parts, dry) => {
   if (dry) {
     const attachments = await Promise.all(parts.filter(p => !p.successful).map(async (part) => {
-      const userAts = await Promise.all(part.users.map(u => atUser(u.username)));
+      const userAts = await Promise.all(part.users.map(u => atUser(u.slackId)));
       const text = part.errors.concat(`FYI: ${userAts.join(", ")}`).join("\n");
       return {
         color: "danger",
@@ -112,7 +109,7 @@ module.exports.sendFinishedMessage = async (parts, dry) => {
       } else {
         attachment.title = `${part.restaurant} (${dry ? "no order" : "failed"})`;
         attachment.text = part.errors.join("\n");
-        const userAts = await Promise.all(part.users.map(u => atUser(u.username)));
+        const userAts = await Promise.all(part.users.map(u => atUser(u.slackId)));
         attachment.text += `\nFYI: ${userAts.join(", ")}`;
       }
       return attachment;
