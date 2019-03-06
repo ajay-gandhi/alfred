@@ -128,11 +128,17 @@ module.exports.do = async (ctx, next) => {
       if (restaurants.length === 0) {
         ctx.body = { text: "There are no orders today!" };
       } else {
-        const attachments = restaurants.map((data) => ({
-          title: data.restaurant,
-          text: `Total: $${data.total.toFixed(2)}`,
-          footer: `${data.participants} participant${data.participants === 1 ? "" : "s"}`,
-        }));
+        const attachments = restaurants.map((data) => {
+          const isOver = data.total > data.participants * 25;
+          const overText = isOver ? "\nThis order is over-budget." : "";
+
+          return {
+            title: data.restaurant,
+            text: `Total: $${data.total.toFixed(2)}${overText}`,
+            footer: `${data.participants} participant${data.participants === 1 ? "" : "s"}`,
+            color: isOver ? "danger" : "#aaa",
+          };
+        });
 
         ctx.body = {
           text: `Here are today's orders:`,
