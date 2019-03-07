@@ -212,7 +212,7 @@ module.exports.do = async (ctx, next) => {
 
       const fellows = (await Orders.getOrders()).filter(o => o.restaurant === yourOrder.restaurant);
       const fellowsAts = fellows.map(f => Slack.atUser(f.slackId)).join(" ");
-      ctx.body = { text: `Food from ${yourOrder.restaurant} is here! ${fellowsText}` };
+      ctx.body = { text: `Food from ${yourOrder.restaurant} is here! ${fellowsAts}` };
       break;
     }
 
