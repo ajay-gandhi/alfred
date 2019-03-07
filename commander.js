@@ -265,14 +265,14 @@ module.exports.do = async (ctx, next) => {
           ctx.body = { text: "Please register your info first." };
           break;
         }
+
         // Show current order
         const order = await Orders.getOrderForUser(slackId);
         if (order) {
-          const items = order.items.map((i) => {
-            return i[1].length > 0 ? `${i[0]} (${i[1].join(", ")})` : i[0];
-          }).join(", ");
-          const text = `Your current order is ${items} from ${order.restaurant}`;
-          ctx.body = { text };
+          ctx.body = {
+            text: `Here is your order from *${order.restaurant}*:`,
+            attachments: Slack.formatItems(order.items),
+          };
         } else {
           ctx.body = { text: "You haven't submitted an order for today." };
         }
