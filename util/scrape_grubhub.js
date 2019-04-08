@@ -18,6 +18,7 @@ const URLS = {
 const ORDER_TIME = 1900; // 7:00pm
 const NUM_CHECKPOINTS = 5;
 const OPTION_REGEX = /^([a-zA-Z0-9&*.\/_%\-\\()'"`, ]+)( \+[ ]?\$([0-9.]+))?$/;
+const DO_ALL = process.argv.reduce((m, a) => m || a === "--all", false);
 
 (async () => {
   const browser = await puppeteer.launch({
@@ -34,7 +35,7 @@ const OPTION_REGEX = /^([a-zA-Z0-9&*.\/_%\-\\()'"`, ]+)( \+[ ]?\$([0-9.]+))?$/;
     yesterday.setDate(yesterday.getDate() - 1);
     const restaurants = (await Menu.getAllMenus()).reduce((memo, { updated, name }) => {
       // No need to re-scrape restaurants scraped recently
-      return updated > yesterday ? memo : memo.concat(name);
+      return (updated > yesterday && !DO_ALL) ? memo : memo.concat(name);
     }, []);
     console.log(`${restaurants.length} restaurants to scrape`);
 
