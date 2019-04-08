@@ -14,4 +14,15 @@ client.connect((err) => {
 
 module.exports.getAllMenus = async () => await menu.find({}).toArray();
 module.exports.getMenu = async name => await menu.findOne({ name });
+module.exports.updateMenu = async ({ name, url, items }) => {
+  await menu.findOneAndUpdate({ name }, {
+    $set: {
+      name,
+      url,
+      items,
+    },
+  }, {
+    upsert: true,
+  });
+};
 
