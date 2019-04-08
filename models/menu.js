@@ -17,6 +17,7 @@ module.exports.getMenu = async name => await menu.findOne({ name });
 module.exports.updateMenu = async ({ name, url, items }) => {
   await menu.findOneAndUpdate({ name }, {
     $set: {
+      updated: Date.now(),
       name,
       url,
       items,

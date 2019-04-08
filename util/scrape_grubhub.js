@@ -30,7 +30,12 @@ const OPTION_REGEX = /^([a-zA-Z0-9&*.\/_%\-\\()'"`, ]+)( \+[ ]?\$([0-9.]+))?$/;
     await loginToGrubhub(page);
     console.log("Logged in");
 
-    const restaurants = (await Menu.getAllMenus()).map(m => m.name);
+    const yesterday = new Date();
+    yesterday.setDate(yesterday.getDate() - 1);
+    const restaurants = (await Menu.getAllMenus()).reduce((memo, { updated, name }) => {
+      // No need to re-scrape restaurants scraped recently
+      return updated > yesterday ? memo : memo.concat(name);
+    }, []);
     console.log(`${restaurants.length} restaurants to scrape`);
 
     let successful = 0;
