@@ -108,7 +108,7 @@ module.exports.parseOrders = (input) => {
 module.exports.correctItems = async (orders, restaurantName) => {
   const errorItems = [];
 
-  const items = (await Menu.getMenu(restaurantName)).menu;
+  const items = (await Menu.getMenu(restaurantName)).items;
   return await Promise.all(orders.map(async ([itemName, options]) => {
     const result = {};
 
@@ -208,6 +208,16 @@ module.exports.guessRestaurant = async (orders, restaurantName) => {
 
   return mostMatch.name;
 };
+
+/**
+ * Replaces strange characters in options
+ * See https://stackoverflow.com/a/37511463
+ * Also removes not-significant info like copyright symbols
+ */
+module.exports.simplifyOption = s => s
+  .normalize("NFD")
+  .replace(/[\u0300-\u036f]/g, "")
+  .replace(/[^a-zA-Z0-9&*.\/_%\-\\()'"`, ]/g, "");
 
 /********************************** Helpers ***********************************/
 

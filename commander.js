@@ -2,8 +2,9 @@
  * Takes input (from Slack or CLI) and performs the appropriate action
  */
 
-const Logger = require("../util/logger");
-const LOG = new Logger("alfred");
+// const Logger = require("../util/logger");
+// const LOG = new Logger("alfred");
+const LOG = { log: console.log };
 
 const dfParse = require("./df-parse");
 const Users = require("./models/users");
