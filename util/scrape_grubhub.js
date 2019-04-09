@@ -16,7 +16,6 @@ const URLS = {
   chooseRest: "https://www.grubhub.com/lets-eat",
 };
 const ORDER_TIME = 1900; // 7:00pm
-const NUM_CHECKPOINTS = 5;
 const OPTION_REGEX = /^([a-zA-Z0-9&*.\/_%\-\\()'"`, ]+)( \+[ ]?\$([0-9.]+))?$/;
 const DO_ALL = process.argv.reduce((m, a) => m || a === "--all", false);
 
@@ -41,7 +40,6 @@ const DO_ALL = process.argv.reduce((m, a) => m || a === "--all", false);
 
     let successful = 0;
     const failed = [];
-    const checkpoints = (new Array(NUM_CHECKPOINTS)).fill(0).map((e, i) => (i + 1) / NUM_CHECKPOINTS);
     for (let i = 0; i < restaurants.length; i++) {
       await goToRestaurant(page, restaurants[i]);
       const scrapeResult = await scrapeRestaurant(page, restaurants[i]);
@@ -54,9 +52,6 @@ const DO_ALL = process.argv.reduce((m, a) => m || a === "--all", false);
 
       process.stdout.clearLine();
       process.stdout.cursorTo(0);
-      if ((i + 1) / restaurants.length >= checkpoints[0]) {
-        console.log(` => ${checkpoints.shift() * 100}% done`);
-      }
     }
 
     console.log(`Successfully scraped ${successful} of ${restaurants.length} restaurants.`);
@@ -130,7 +125,7 @@ const scrapeRestaurant = async (page, name) => {
     name,
     successful: true,
   };
-  console.log(`Scraping ${name}`);
+  console.log(`  Scraping ${name}`);
 
   try {
     // Get all items, ignoring "Order Again" and "Most Popular" sections
@@ -171,7 +166,6 @@ const scrapeRestaurant = async (page, name) => {
 
         const optionText = await page.evaluate(e => e.innerText.trim(), optionEl);
         const matches = OPTION_REGEX.exec(Transform.simplifyOption(optionText));
-        if (!matches) console.log(optionText);
         const option = {
           name: matches[1],
           price: parseFloat(matches[3]) || 0,
@@ -192,7 +186,6 @@ const scrapeRestaurant = async (page, name) => {
     }
     result.data = data;
   } catch (e) {
-    console.log(e);
     result.successful = false;
     result.error = e;
   }
