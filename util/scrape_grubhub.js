@@ -21,7 +21,7 @@ const DO_ALL = process.argv.reduce((m, a) => m || a === "--all", false);
 
 (async () => {
   const browser = await puppeteer.launch({
-    // executablePath: "/usr/bin/chromium-browser",
+    executablePath: "/usr/bin/chromium-browser",
     // headless: false,
   });
   const page = await browser.newPage();
