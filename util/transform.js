@@ -147,19 +147,18 @@ module.exports.correctItems = async (orders, restaurantName) => {
             }
           }
         } else {
-          result.options = options.reduce((memo, optionName) => {
-            const correctedOption = findCorrectObject(optionSet.options, optionName);
+          for (let i = 0; i < options.length; i++) {
+            const correctedOption = findCorrectObject(optionSet.options, options[i]);
             if (correctedOption) {
-              options.splice(options.indexOf(optionName), 1);
-              return memo.concat({
+              options.splice(options.indexOf(options[i]), 1);
+              i--; // Otherwise we'll skip one
+              result.options.push({
                 name: correctedOption.name,
                 price: correctedOption.price,
                 successful: true,
               });
-            } else {
-              return memo;
             }
-          }, result.options);
+          }
         }
       }
 
