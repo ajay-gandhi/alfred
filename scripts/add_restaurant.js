@@ -8,7 +8,6 @@
 const MongoClient = require("mongodb").MongoClient;
 const priv = require("../private");
 
-let menu;
 const client = new MongoClient(priv.mongoSrv, { useNewUrlParser: true });
 client.connect((err) => {
   if (err) console.log("Error connecting to MongoDB:", err);
