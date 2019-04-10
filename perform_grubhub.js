@@ -13,9 +13,8 @@ const Stats = require("./models/stats");
 const Transform = require("./util/transform");
 const Slack = require("./util/slack");
 
-// const Logger = require("../util/logger");
-// const LOG = new Logger("alfred-order");
-const LOG = { log: console.log };
+const Logger = require("../util/logger");
+const LOG = new Logger("alfred-order");
 
 const priv = require("./private");
 
@@ -39,8 +38,8 @@ const go = async () => {
   const orderSets = Transform.indexByRestaurantAndUser(orders);
 
   const browser = await puppeteer.launch({
-    // executablePath: "/usr/bin/chromium-browser",
-    headless: false,
+    executablePath: "/usr/bin/chromium-browser",
+    // headless: false,
     // defaultViewport: {
       // width: 1200,
       // height: 900,
