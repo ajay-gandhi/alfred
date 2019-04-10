@@ -9,6 +9,7 @@ const LOG = { log: console.log };
 const dfParse = require("./df-parse");
 const Users = require("./models/users");
 const Stats = require("./models/stats");
+const Menu = require("./models/menu");
 const Slack = require("./util/slack");
 const Transform = require("./util/transform");
 const Orders = require("./models/orders");
@@ -108,6 +109,12 @@ module.exports.do = async (ctx, next) => {
           attachments: Slack.formatItems(you.favorite.items),
         };
       }
+      break;
+    }
+
+    case "List Restaurants": {
+      const options = (await Menu.getAllMenus()).map(m => `* ${m.name}`).join("\n");
+      ctx.body = { text: `Here are the restaurants you may order from:${options}` };
       break;
     }
 
