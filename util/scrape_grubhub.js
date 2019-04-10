@@ -165,12 +165,8 @@ const scrapeRestaurant = async (page, name) => {
         }
 
         const optionText = await page.evaluate(e => e.innerText.trim(), optionEl);
-        const matches = OPTION_REGEX.exec(Transform.simplifyOption(optionText));
-        const option = {
-          name: matches[1],
-          price: parseFloat(matches[3]) || 0,
-          set: inputData.name,
-        };
+        const option = Transform.parseOption(optionText);
+        option.set = inputData.name;
 
         optionSets[inputData.name].options.push(option);
         if (inputData.selected) item.defaultOptions.push(option);

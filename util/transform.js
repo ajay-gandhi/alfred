@@ -209,14 +209,24 @@ module.exports.guessRestaurant = async (orders, restaurantName) => {
 };
 
 /**
- * Replaces strange characters in options
+ * This function does 3 things:
+ *   Replaces strange characters in options
+ *   Removes not-significant info like copyright symbols
+ *   Parses the given text into an option name and price (if exists)
  * See https://stackoverflow.com/a/37511463
- * Also removes not-significant info like copyright symbols
  */
-module.exports.simplifyOption = s => s
-  .normalize("NFD")
-  .replace(/[\u0300-\u036f]/g, "")
-  .replace(/[^a-zA-Z0-9&*.+$\/_%\-\\()'"`, ]/g, "");
+const OPTION_REGEX = /^([a-zA-Z0-9&*.\/_%\-\\()'"`, ]+)( \+[ ]?\$([0-9.]+))?$/;
+module.exports.parseOption = (optionText) => {
+  const cleaned = optionText
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/[^a-zA-Z0-9&*.+$\/_%\-\\()'"`, ]/g, "");
+  const matches = OPTION_REGEX.exec(cleaned);
+  return {
+    name: matches[1],
+    price: matches[3] ? parseFloat(matches[3]) : 0,
+  };
+};
 
 /********************************** Helpers ***********************************/
 

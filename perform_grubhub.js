@@ -98,11 +98,7 @@ const go = async () => {
   } else {
     LOG.log(results);
   }
-
-  if (!DRY_RUN) {
-    const allSuccess = results.reduce((m, r) => m && r.successful, true);
-  }
-  // await browser.close();
+  await browser.close();
   process.exit(0);
 };
 setTimeout(go, 6000);
@@ -164,7 +160,7 @@ const orderFromRestaurant = async (page, restaurant, userOrders, retries) => {
       await page.pdf({ path: confirmationPath });
       LOG.log(`Simulated order from ${restaurant}, confirmation is in ${confirmationPath}`);
     } else {
-      await page.click("a.findfoodbutton");
+      await page.click("button#ghs-checkout-review-submit");
       await page.waitForNavigation();
       await page.pdf({ path: confirmationPath });
       LOG.log(`Ordered from ${restaurant}, confirmation is in ${confirmationPath}`);
@@ -206,7 +202,6 @@ const setupRestaurant = async (page, restaurant) => {
     await page.waitFor(() => document.querySelectorAll("div.menuItem").length > 0);
     await page.waitFor(1000);
   } catch (e) {
-    console.log(e);
     if (e instanceof TypeError) {
       // Couldn't find restaurant containing given text
       return {
@@ -245,11 +240,13 @@ const setupRestaurant = async (page, restaurant) => {
 const fillOrders = async (page, userOrders) => {
   const orderAmounts = {};
   try {
+    const itemLinks = await page.$$("div.menuSection:not(.restaurant-order-history):not(.restaurant-favoriteItems) h6.menuItem-name a");
+
     for (let i = 0; i < userOrders.length; i++) {
-      // const totalBefore = await foodBevTotal(page);
+      // Record for stats
+      orderAmounts[userOrders[i].slackId] = 0;
       for (const [item, options] of userOrders[i].items) {
         // Click menu item
-        const itemLinks = await page.$$("h6.menuItem-name a");
         let ourItem;
         for (const anchor of itemLinks) {
           const text = await page.evaluate(e => e.innerText.trim(), anchor);
@@ -266,24 +263,23 @@ const fillOrders = async (page, userOrders) => {
         for (const opt of options) {
           for (const input of optionLinks) {
             const optionText = await page.evaluate(e => e.innerText, input);
-            if (Transform.simplifyOption(optionText) === opt) {
-              await page.evaluate(e => e.click(), input);
+            if (Transform.parseOption(optionText).name === opt) {
+              await input.click();
               break;
             }
           }
         }
 
+        // Record for stats
+        orderAmounts[userOrders[i].slackId] = await page.$eval("h5.menuItemModal-price", e => parseFloat(e.innerText.substring(1)));
+
         // Click add to order
-        await page.click("button.menuItemModal-btnSubmit");
+        await page.click("footer.s-dialog--complex-footer button");
         await page.waitFor(() => !document.querySelector("div.s-dialog-body"));
         await page.waitFor(1000);
       }
-
-      // Record for stats
-      // orderAmounts[userOrders[i].slackId] = (await foodBevTotal(page)) - totalBefore;
     }
   } catch (e) {
-    console.log(e);
     // Most likely a timeout, or we didn't wait long enough
     return {
       retry: true,
@@ -336,13 +332,15 @@ const fillNames = async (page, slackIds, { orderAmounts }) => {
     await page.waitFor(5000);
   }
 
-  // Clear my allocation
-  await page.click("div.allocations-fields-container table tr:last-of-type td.u-text-right button");
-  const myAllocation = await page.$("div.allocations-fields-container table tr:last-of-type td.u-text-secondary input");
-  await myAllocation.click({ clickCount: 3 });
-  await myAllocation.type("0");
-  await page.click("div.allocations-fields-container table tr:last-of-type td.u-text-right button");
-  await page.waitFor(2000);
+  if (!slackIds.includes(priv.mySlackId)) {
+    // Clear my allocation if I'm not in the order
+    await page.click("div.allocations-fields-container table tr:last-of-type td.u-text-right button");
+    const myAllocation = await page.$("div.allocations-fields-container table tr:last-of-type td.u-text-secondary input");
+    await myAllocation.click({ clickCount: 3 });
+    await myAllocation.type("0");
+    await page.click("div.allocations-fields-container table tr:last-of-type td.u-text-right button");
+    await page.waitFor(2000);
+  }
 
   const amountAllocated = await page.$$eval("div.allocation-saved-cell", i => i.map(e => Number(e.innerText.trim().substring(1))));
   if (Math.max.apply(null, amountAllocated) > 25) {
@@ -390,7 +388,6 @@ const fillPhoneNumber = async (page, orders) => {
 
     return { user };
   } catch (e) {
-    console.log(e);
     // Most likely a timeout
     return {
       retry: true,
