@@ -21,7 +21,7 @@ const DO_ALL = process.argv.reduce((m, a) => m || a === "--all", false);
 
 (async () => {
   const browser = await puppeteer.launch({
-    executablePath: "/usr/bin/chromium-browser",
+    // executablePath: "/usr/bin/chromium-browser",
     // headless: false,
   });
   const page = await browser.newPage();
@@ -116,8 +116,10 @@ const goToRestaurant = async (page, name) => {
  * Given a link, scrapes the menu at that link
  */
 const scrapeRestaurant = async (page, name) => {
+  const minSelector = "div.simplifiedAddressForm-cartHeader-instructions span.value";
   const data = {
     url: await page.url(),
+    minimum: await page.$eval(minSelector, e => parseFloat(e.innerText.substring(1)) || 0),
     name,
     items: [],
   };
