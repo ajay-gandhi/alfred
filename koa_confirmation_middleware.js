@@ -6,10 +6,11 @@
 const fs = require("fs");
 const auth = require("basic-auth");
 const send = require("koa-send");
+const logger = require("./logger")("kcm");
 
 let { confUsername, dailyPassword } = require("./private");
 
-module.exports = (LOG) => async (ctx, next) => {
+module.exports = async (ctx, next) => {
   updateLocalCredentials();
   const credentials = auth(ctx.request);
 
@@ -18,7 +19,7 @@ module.exports = (LOG) => async (ctx, next) => {
     ctx.response.set("WWW-Authenticate", "Basic realm=\"alfred.ajay-gandhi.com\"")
     ctx.body = "Access denied";
   } else {
-    LOG.log(`Authenticated for ${ctx.path}`);
+    logger.info(`Authenticated for ${ctx.path}`);
     await send(ctx, ctx.path, {
       root: __dirname + "/confirmations",
       extensions: ["pdf"],

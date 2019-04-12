@@ -3,12 +3,13 @@
  */
 
 const MongoClient = require("mongodb").MongoClient;
+const logger = require("../logger")("model");
 const priv = require("../private");
 
 let orders;
 const client = new MongoClient(priv.mongoSrv, { useNewUrlParser: true });
 client.connect((err) => {
-  if (err) console.log("Error connecting to MongoDB:", err);
+  if (err) logger.error(err);
   orders = client.db(priv.mongoDbName).collection("orders");
 });
 
