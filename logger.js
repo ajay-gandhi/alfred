@@ -10,7 +10,6 @@ const logPrinter = format.printf(({ level, message, stack, file, timestamp }) =>
   const lvl = level === "error" ? "ERROR" : level;
   return `${timestamp} [${file}] ${lvl}: ${msg}`;
 });
-const testing = format(m => { console.log(m); return m });
 
 const logger = createLogger({
   level: "info",
