@@ -192,7 +192,8 @@ const setupRestaurant = async (page, restaurant) => {
     await page.waitFor(300);
     await page.click("div.navbar-menu-search input");
     await page.keyboard.type(restaurant);
-    await page.waitFor("section.search-autocomplete-container div.searchAutocomplete-xsFixed");
+    await page.waitFor("div.ghs-autocompleteResult-container");
+    await page.waitFor(1000);
     await page.click("div.ghs-autocompleteResult-container:first-child");
 
     // Wait for items to appear
