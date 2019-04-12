@@ -109,7 +109,7 @@ module.exports.correctItems = async (orders, restaurantName) => {
   const errorItems = [];
 
   const items = (await Menu.getMenu(restaurantName)).items;
-  return await Promise.all(orders.map(async ([itemName, options]) => {
+  return Promise.all(orders.map(async ([itemName, options]) => {
     const result = {};
 
     // Find correct item

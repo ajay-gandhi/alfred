@@ -10,25 +10,26 @@ const MongoClient = require("mongodb").MongoClient;
 const Menu = require("../models/menu");
 const Transform = require("./transform");
 const priv = require("../private");
+const logger = require("../logger")("scraper");
 
 const URLS = {
   login: "https://www.grubhub.com/login",
   chooseRest: "https://www.grubhub.com/lets-eat",
 };
-const ORDER_TIME = 1900; // 7:00pm
+const ORDER_TIME = 1800; // 7:00pm
 const OPTION_REGEX = /^([a-zA-Z0-9&*.\/_%\-\\()'"`, ]+)( \+[ ]?\$([0-9.]+))?$/;
 const DO_ALL = process.argv.reduce((m, a) => m || a === "--all", false);
 
 (async () => {
   const browser = await puppeteer.launch({
-    executablePath: "/usr/bin/chromium-browser",
+    // executablePath: "/usr/bin/chromium-browser",
     // headless: false,
   });
   const page = await browser.newPage();
 
   try {
     await loginToGrubhub(page);
-    console.log("Logged in");
+    logger.info("Logged in");
 
     const yesterday = new Date();
     yesterday.setDate(yesterday.getDate() - 1);
@@ -36,7 +37,7 @@ const DO_ALL = process.argv.reduce((m, a) => m || a === "--all", false);
       // No need to re-scrape restaurants scraped recently
       return (updated > yesterday && !DO_ALL) ? memo : memo.concat(name);
     }, []);
-    console.log(`${restaurants.length} restaurants to scrape`);
+    logger.info(`${restaurants.length} restaurants to scrape`);
 
     let successful = 0;
     const failed = [];
@@ -54,15 +55,15 @@ const DO_ALL = process.argv.reduce((m, a) => m || a === "--all", false);
       process.stdout.cursorTo(0);
     }
 
-    console.log(`Successfully scraped ${successful} of ${restaurants.length} restaurants.`);
+    logger.info(`Successfully scraped ${successful} of ${restaurants.length} restaurants.`);
     if (failed.length > 0) {
-      console.log("Failed restaurants:");
-      failed.forEach(f => console.log(f.name, f.error));
+      logger.error("Failed restaurants:");
+      failed.forEach(f => { logger.error(f.name); logger.error(f.error); });
     }
     await browser.close();
     process.exit(0);
   } catch (err) {
-    console.trace(err);
+    logger.error(err);
   }
 })();
 
@@ -116,8 +117,10 @@ const goToRestaurant = async (page, name) => {
  * Given a link, scrapes the menu at that link
  */
 const scrapeRestaurant = async (page, name) => {
+  const minSelector = "div.simplifiedAddressForm-cartHeader-instructions span.value";
   const data = {
     url: await page.url(),
+    minimum: await page.$eval(minSelector, e => parseFloat(e.innerText.substring(1)) || 0),
     name,
     items: [],
   };

@@ -1,26 +1,25 @@
 /**
- * Takes input (from Slack or CLI) and performs the appropriate action
+ * Takes input (from server or CLI) and performs the appropriate action
  */
 
-const Logger = require("../util/logger");
-const LOG = new Logger("alfred");
-
-const dfParse = require("./df-parse");
+const dfParse = require("./df_parse");
 const Users = require("./models/users");
 const Stats = require("./models/stats");
 const Menu = require("./models/menu");
 const Slack = require("./util/slack");
 const Transform = require("./util/transform");
 const Orders = require("./models/orders");
+const logger = require("./logger")("commander");
+
 const priv = require("./private");
 
 module.exports.do = async (ctx, next) => {
   if (ctx.request.body.token !== priv.slackIncomingToken) {
-    LOG.log("Request does not have proper secret");
+    logger.info("Request does not have proper secret");
     return;
   }
   if (!ctx.request.body.text || !ctx.request.body.user_id) {
-    LOG.log("Request is missing slack ID or text");
+    logger.info("Request is missing slack ID or text");
     return;
   }
   if (ctx.request.body.user_name === "slackbot") return {};
@@ -29,7 +28,8 @@ module.exports.do = async (ctx, next) => {
   const slackId = ctx.request.body.user_id;
   const you = await Users.getUser(slackId);
   const { command, args } = await dfParse(cleanPhone(ctx.request.body.text));
-  LOG.log(command, args);
+  logger.info(command);
+  logger.info(args);
   switch (command) {
     case "Regular Order": {
       if (isLate()) {

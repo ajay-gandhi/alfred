@@ -12,9 +12,7 @@ const Users = require("./models/users");
 const Stats = require("./models/stats");
 const Transform = require("./util/transform");
 const Slack = require("./util/slack");
-
-const Logger = require("../util/logger");
-const LOG = new Logger("alfred-order");
+const logger = require("./logger")("perform");
 
 const priv = require("./private");
 
@@ -38,8 +36,8 @@ const go = async () => {
   const orderSets = Transform.indexByRestaurantAndUser(orders);
 
   const browser = await puppeteer.launch({
-    executablePath: "/usr/bin/chromium-browser",
-    // headless: false,
+    // executablePath: "/usr/bin/chromium-browser",
+    headless: false,
     // defaultViewport: {
       // width: 1200,
       // height: 900,
@@ -51,7 +49,7 @@ const go = async () => {
   const results = [];
   try {
     await loginToGrubhub(page);
-    LOG.log("Logged in");
+    logger.info("Logged in");
 
     for (const orderSet of orderSets) {
       const orderResult = await orderFromRestaurant(page, orderSet.restaurant, orderSet.users, INITIAL_RETRIES);
@@ -89,13 +87,13 @@ const go = async () => {
       await page.waitFor(5000);
     }
   } catch (err) {
-    LOG.log("Crashed with error", err);
+    logger.error(err);
   }
 
   if (POST_TO_SLACK) {
     await Slack.sendFinishedMessage(results, DRY_RUN);
   } else {
-    LOG.log(results);
+    logger.info(results);
   }
   await browser.close();
   process.exit(0);
@@ -157,17 +155,17 @@ const orderFromRestaurant = async (page, restaurant, userOrders, retries) => {
     const confirmationPath = `${__dirname}/confirmations/${sanitizeFilename(restaurant)}.pdf`;
     if (DRY_RUN) {
       await page.pdf({ path: confirmationPath });
-      LOG.log(`Simulated order from ${restaurant}, confirmation is in ${confirmationPath}`);
+      logger.info(`Simulated order from ${restaurant}, confirmation is in ${confirmationPath}`);
     } else {
       await page.click("button#ghs-checkout-review-submit");
       await page.waitForNavigation();
       await page.pdf({ path: confirmationPath });
-      LOG.log(`Ordered from ${restaurant}, confirmation is in ${confirmationPath}`);
+      logger.info(`Ordered from ${restaurant}, confirmation is in ${confirmationPath}`);
     }
 
     return result;
   } catch (e) {
-    LOG.log(e);
+    logger.error(e);
     return {
       errors: ["Order failed for unknown reason."],
     };
@@ -194,7 +192,8 @@ const setupRestaurant = async (page, restaurant) => {
     await page.waitFor(300);
     await page.click("div.navbar-menu-search input");
     await page.keyboard.type(restaurant);
-    await page.waitFor("section.search-autocomplete-container div.searchAutocomplete-xsFixed");
+    await page.waitFor("div.ghs-autocompleteResult-container");
+    await page.waitFor(1000);
     await page.click("div.ghs-autocompleteResult-container:first-child");
 
     // Wait for items to appear

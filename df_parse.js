@@ -3,6 +3,7 @@
  */
 
 const dialogflow = require("dialogflow");
+const logger = require("./logger")("df-parse");
 
 const PROJECT_ID = "alfred-273e2";
 const SESSION_ID = "main-session-id";
@@ -56,7 +57,7 @@ module.exports = (text) => {
         }
       })
       .catch((err) => {
-        console.error("ERROR:", err);
+        logger.error(err);
         reject({ command: false });
       });
   });
