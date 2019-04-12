@@ -30,7 +30,7 @@ triggered by a cronjob on my server at a fixed time each day.
 
 1. `Slack` User sends a message
 2. `[server.js]` The message is posted to Alfred
-3. `[df-parse.js]` The message is sent to [Dialogflow](#Dialogflow), which returns the intent and any arguments
+3. `[df_parse.js]` The message is sent to [Dialogflow](#Dialogflow), which returns the intent and any arguments
 4. `[commander.js]` The server formats the action and delegates it
 5. `[models/orders.js | models/users.js]` The appropriate file persists the data to MongoDB
 6. `[commander.js]` The server returns confirmation text to Slack depending on the command

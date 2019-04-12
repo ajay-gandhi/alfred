@@ -5,7 +5,7 @@
 const Logger = require("../util/logger");
 const LOG = new Logger("alfred");
 
-const dfParse = require("./df-parse");
+const dfParse = require("./df_parse");
 const Users = require("./models/users");
 const Stats = require("./models/stats");
 const Menu = require("./models/menu");
