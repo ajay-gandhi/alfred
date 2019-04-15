@@ -13,7 +13,7 @@ app.use(require("koa-bodyparser")());
 
 // Logging requests
 app.use(async (ctx, next) => {
-  logger.log(`${ctx.method} ${ctx.url}`);
+  logger.info(`${ctx.method} ${ctx.url}`);
   await next();
 });
 app.use(require("koa-mount")("/confirmations", require("./koa_confirmation_middleware")));
