@@ -236,6 +236,7 @@ const setupRestaurant = async (page, restaurant) => {
  *   }
  */
 const fillOrders = async (page, userOrders) => {
+  await page.waitFor(20000);
   const orderAmounts = {};
   try {
     const itemLinks = await page.$$("div.menuSection:not(.restaurant-order-history):not(.restaurant-favoriteItems) h6.menuItem-name a");
@@ -253,7 +254,13 @@ const fillOrders = async (page, userOrders) => {
             break;
           }
         }
-        await page.waitFor("div.s-dialog-body");
+        try {
+          await page.waitForSelector("div.s-dialog-body", { timeout: 20000 });
+        } catch (e) {
+          await page.waitFor("a.ghs-abandonCart");
+          await page.click("a.ghs-abandonCart");
+          await page.waitFor(300);
+        }
         await page.waitFor(200);
 
         // Select options
