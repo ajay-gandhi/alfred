@@ -113,7 +113,7 @@ module.exports.do = async (ctx, next) => {
 
     case "List Restaurants": {
       const options = (await Menu.getAllMenus()).map(m => `* ${m.name}`).join("\n");
-      ctx.body = { text: `Here are the restaurants you may order from:${options}` };
+      ctx.body = { text: `Here are the restaurants you may order from:\n${options}` };
       break;
     }
 
@@ -330,7 +330,7 @@ module.exports.do = async (ctx, next) => {
       ];
       const eg = egs[Math.floor(egs.length * Math.random())];
       const text = "Hi, I'm Alfred! Ordering with me is easy:\n" +
-        "1. Enter your information by telling Alfred your Seamless name and phone number.\n" +
+        "1. Enter your information by telling Alfred your Grubhub name and phone number.\n" +
         "2. Order your items by telling Alfred what you want and from which restaurant.\n" +
         `Specify additional options (like ${eg}) by putting them in parentheses.\n` +
         "Alfred receives orders until 3:30, and each order is placed for 5:30.";
