@@ -410,6 +410,9 @@ const foodBevTotal = async (page) => {
   return parseFloat(textTotal.substring(1));
 }
 
+/**
+ * Returns the order time as an ISO string
+ */
 const timeToString = () => {
   const now = new Date();
   now.setHours(Math.floor(ORDER_TIME / 100), ORDER_TIME % 100, 0, 0);
