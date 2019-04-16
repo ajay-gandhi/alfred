@@ -236,7 +236,6 @@ const setupRestaurant = async (page, restaurant) => {
  *   }
  */
 const fillOrders = async (page, userOrders) => {
-  await page.waitFor(20000);
   const orderAmounts = {};
   try {
     const itemLinks = await page.$$("div.menuSection:not(.restaurant-order-history):not(.restaurant-favoriteItems) h6.menuItem-name a");
@@ -246,20 +245,13 @@ const fillOrders = async (page, userOrders) => {
       orderAmounts[userOrders[i].slackId] = 0;
       for (const [item, options] of userOrders[i].items) {
         // Click menu item
-        let ourItem;
-        for (const anchor of itemLinks) {
-          const text = await page.evaluate(e => e.innerText.trim(), anchor);
-          if (text === item) {
-            anchor.click();
-            break;
-          }
-        }
         try {
-          await page.waitForSelector("div.s-dialog-body", { timeout: 20000 });
+          await clickItem(page, item, itemLinks);
         } catch (e) {
           await page.waitFor("a.ghs-abandonCart");
           await page.click("a.ghs-abandonCart");
-          await page.waitFor(300);
+          await page.waitFor(500);
+          await clickItem(page, item, itemLinks);
         }
         await page.waitFor(200);
 
@@ -332,7 +324,7 @@ const fillNames = async (page, slackIds, { orderAmounts }) => {
     await page.click("div.allocations-fields-container > div > input");
     await page.keyboard.type(name);
 
-    await page.waitFor(3000);
+    await page.waitFor(4000);
     await page.click("div.allocations-autocomplete-dropdown div.s-row");
     await page.waitFor(5000);
   }
@@ -422,4 +414,18 @@ const timeToString = () => {
   const now = new Date();
   now.setHours(Math.floor(ORDER_TIME / 100), ORDER_TIME % 100, 0, 0);
   return now.toISOString();
+};
+
+/**
+ * Finds the given item in the given array of links and clicks it
+ */
+const clickItem = async (page, item, links) => {
+  for (const anchor of links) {
+    const text = await page.evaluate(e => e.innerText.trim(), anchor);
+    if (text === item) {
+      anchor.click();
+      break;
+    }
+  }
+  await page.waitForSelector("div.s-dialog-body", { timeout: 20000 });
 };
