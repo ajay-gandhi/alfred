@@ -153,7 +153,7 @@ const scrapeRestaurant = async (page, name) => {
       await page.waitFor(() => !!document.querySelector(".menuItemModal-name"));
       await page.waitFor(1000);
 
-      const item = { defaultOptions: [] };
+      const item = {};
       item.name = await page.$eval("h3.menuItemModal-name", e => e.textContent);
       item.price = await page.$eval("h5.menuItemModal-price", e => parseFloat(e.textContent.substring(1)));
 
@@ -164,17 +164,26 @@ const scrapeRestaurant = async (page, name) => {
         const inputData = await page.evaluate((e) => {
           const inp = e.querySelector("input");
           return {
-            selected: inp.checked,
             name: inp.name,
-            radio: inp.type.trim() === "radio",
+            required: inp.type.trim() === "radio",
           };
         }, optionEl);
 
         // Add an option set if DNE
         if (!optionSets[inputData.name]) {
+          const description = await page.evaluate((e) => {
+            // Find parent matching selector
+            for (let par = e.parentNode; par && par !== document; par = par.parentNode ) {
+              if (par.matches("div.menuItemModal-choice-content")) {
+                return par.querySelector("span.menuItemModal-choice-name").innerText;
+              }
+            }
+          }, optionEl);
+
           optionSets[inputData.name] = {
-            name: inputData.name,
-            radio: inputData.radio,
+            formName: inputData.name,
+            description,
+            required: inputData.required,
             options: [],
           };
         }
@@ -184,7 +193,6 @@ const scrapeRestaurant = async (page, name) => {
         option.set = inputData.name;
 
         optionSets[inputData.name].options.push(option);
-        if (inputData.selected) item.defaultOptions.push(option);
       }
 
       item.optionSets = Object.values(optionSets);
