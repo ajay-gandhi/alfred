@@ -112,7 +112,7 @@ module.exports.do = async (ctx, next) => {
     }
 
     case "List Restaurants": {
-      const options = (await Menu.getAllMenus()).map(m => `* ${m.name}`).join("\n");
+      const options = (await Menu.getAllMenus()).map(m => `• ${m.name}`).join("\n");
       ctx.body = { text: `Here are the restaurants you may order from:\n${options}` };
       break;
     }
