@@ -16,7 +16,7 @@ const URLS = {
   login: "https://www.grubhub.com/login",
   chooseRest: "https://www.grubhub.com/lets-eat",
 };
-const ORDER_TIME = 1800; // 7:00pm
+const ORDER_TIME = 1730; // 5:30pm
 const OPTION_REGEX = /^([a-zA-Z0-9&*.\/_%\-\\()'"`, ]+)( \+[ ]?\$([0-9.]+))?$/;
 const DO_ALL = process.argv.reduce((m, a) => m || a === "--all", false);
 
@@ -92,7 +92,19 @@ const goToRestaurant = async (page, name) => {
   await page.waitFor(() => !!document.querySelector("section.s-dialog-body"));
   await page.waitFor(800);
 
-  await page.select("section.s-dialog-body select", timeToString());
+  // Change date
+  await page.click("a.ghs-setDay:last-of-type");
+  await page.waitFor(100);
+  let mondayButton = (await page.$$("div.ghs-datepick-week:last-of-type button"))[1];
+  if (await page.evaluate(e => e.classList.contains("restricted"), mondayButton)) {
+    mondayButton = (await page.$$("div.ghs-datepick-week:nth-child(2) button"))[1];
+  }
+  await mondayButton.click();
+  await page.waitFor(100);
+  await page.waitFor(20000);
+
+  await page.select("section.s-dialog-body select.ghs-whenFor-value", timeToString());
+  await page.waitFor(20000);
   await page.waitFor(500);
   await page.click("section.s-dialog-body button");
   await page.waitFor(() => !document.querySelector("section.s-dialog-body"));
@@ -206,5 +218,7 @@ const spinner = (index) => {
 const timeToString = () => {
   const now = new Date();
   now.setHours(Math.floor(ORDER_TIME / 100), ORDER_TIME % 100, 0, 0);
+  // Set date to the next Monday
+  now.setDate(now.getDate() + (8 - now.getDay()) % 7);
   return now.toISOString();
 };
