@@ -122,11 +122,14 @@ module.exports.correctItems = async (orders, restaurantName) => {
 
       // Correct options
       // 1. Iterate through option sets, pulling options which match (removing from options array)
-      //    - For radio-type options, pull the first match and ignore the rest
-      // 2. Compute price and override defaults
+      //    - For required options, pull the first match and ignore the rest
+      //    - If we have leftover required options that weren't entered, mark the entire item invalid
+      // 2. Compute price
       result.options = [];
+      const unusedRequiredOptions = [];
       for (const optionSet of correctedItem.optionSets) {
-        if (optionSet.radio) {
+        if (optionSet.required) {
+          let used = false;
           for (const optionName of options) {
             const correctedOption = findCorrectObject(optionSet.options, optionName);
             if (correctedOption) {
@@ -137,14 +140,15 @@ module.exports.correctItems = async (orders, restaurantName) => {
                 successful: true,
               });
 
-              // Remove any defaults for this option set
-              correctedItem.defaultOptions = correctedItem.defaultOptions.filter((o) => {
-                return o.set !== correctedOption.set;
-              });
-
               // Since this option set is a radio input, only take first selection
+              used = true;
               break;
             }
+          }
+
+          // This is a required option set but it wasn't entered
+          if (!used) {
+            unusedRequiredOptions.push(optionSet);
           }
         } else {
           for (let i = 0; i < options.length; i++) {
@@ -163,17 +167,20 @@ module.exports.correctItems = async (orders, restaurantName) => {
       }
 
       // Compute subtotal
-      result.subtotal = correctedItem.price
-        + result.options.reduce((m, o) => m + o.price, 0)
-        + correctedItem.defaultOptions.reduce((m, o) => m + o.price, 0);
+      result.subtotal = correctedItem.price + result.options.reduce((m, o) => m + o.price, 0);
 
       // Any remaining inputted options are invalid options
-      result.options = result.options.concat(options.map((o) => ({
-        name: o,
+      result.options = result.options.concat(options.map((optName) => ({
+        name: optName,
         price: 0,
         successful: false,
       })));
-      result.outcome = options.length > 0 ? 1 : 0;
+
+      if (options.length > 0) result.outcome = 1;
+      if (unusedRequiredOptions.length > 0) {
+        result.outcome = 2;
+        result.errors = unusedRequiredOptions.map(set => set.description);
+      }
     } else {
       // Failed to find item
       result.outcome = 2;

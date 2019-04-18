@@ -130,13 +130,15 @@ module.exports.sendFinishedMessage = async (parts, dry) => {
  */
 const OUTCOME_MAP = ["good", "warning", "danger"];
 module.exports.formatItems = (items) => {
-  const itemAtts = items.map(({ item, options, outcome, subtotal }) => {
-    const optionText = options && options.map(o => `${o.successful ? "+" : "-"} ${o.name.replace(/[*\\]/g, "")}`).join("\n");
+  const itemAtts = items.map(({ item, options, outcome, subtotal, errors }) => {
+    const optionList = [];
+    if (errors) optionList.push(...errors.map(e => `_${e}_`));
+    if (options) optionList.push(...options.map(o => `${o.successful ? "+" : "-"} ${o.name.replace(/[*\\]/g, "")}`));
     return {
       fallback: item.name,
       color: OUTCOME_MAP[outcome],
       title: item.name,
-      text: optionText,
+      text: optionList.join("\n"),
       footer: subtotal && `$${subtotal.toFixed(2)}`,
     };
   });
