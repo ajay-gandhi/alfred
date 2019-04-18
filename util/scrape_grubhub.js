@@ -101,10 +101,8 @@ const goToRestaurant = async (page, name) => {
   }
   await mondayButton.click();
   await page.waitFor(100);
-  await page.waitFor(20000);
 
   await page.select("section.s-dialog-body select.ghs-whenFor-value", timeToString());
-  await page.waitFor(20000);
   await page.waitFor(500);
   await page.click("section.s-dialog-body button");
   await page.waitFor(() => !document.querySelector("section.s-dialog-body"));
@@ -192,6 +190,11 @@ const scrapeRestaurant = async (page, name) => {
         const option = Transform.parseOption(optionText);
         option.set = inputData.name;
 
+        // If this is a required option set and the price of this option
+        // matches the price of the item itself, we assume the option is the
+        // default, i.e. selecting the option will not affect the price. So
+        // just set the price of this option to 0
+        if (optionSets[inputData.name].required && option.price === item.price) option.price = 0;
         optionSets[inputData.name].options.push(option);
       }
 
