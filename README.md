@@ -10,6 +10,8 @@ with your company's money!
 
 Things to do, in order of urgency:
 
+* Put unmatched options in comments
+* Ask to label in each menu item
 * Menu search functionality
 * Support for comments and quantity
 * Show person with most calls in global stats
