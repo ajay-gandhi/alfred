@@ -83,7 +83,7 @@ const go = async () => {
         }
       }
 
-      // Give seamless a break
+      // Give Grubhub a break
       await page.waitFor(5000);
     }
   } catch (err) {
