@@ -230,6 +230,6 @@ const timeToString = () => {
   const now = new Date();
   now.setHours(Math.floor(ORDER_TIME / 100), ORDER_TIME % 100, 0, 0);
   // Set date to the next Monday
-  now.setDate(now.getDate() + (8 - now.getDay()) % 7);
+  now.setDate(now.getDate() + (7 - now.getDay()) % 7 + 1);
   return now.toISOString();
 };
