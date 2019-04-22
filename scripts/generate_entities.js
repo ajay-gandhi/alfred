@@ -22,6 +22,7 @@ const perms = (arr) => {
 const fullSet = (arr) => {
   return arr
     .concat(arr.map(s => s.replace("&", "and")))
+    .concat(arr.map(s => s.replace("Little", "Lil")))
     .concat(arr.map(s => s.replace(/[^a-z ]/gi, "")))
     .filter((value, idx, self) => self.indexOf(value) === idx);
 };
