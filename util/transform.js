@@ -115,7 +115,7 @@ module.exports.correctItems = async (orders, restaurantName) => {
     // Find correct item
     const correctedItem = findCorrectObject(items, itemName);
     if (correctedItem) {
-      result.outcome = 0;
+      result.successful = true;
       result.item = {
         name: correctedItem.name,
       };
@@ -169,21 +169,16 @@ module.exports.correctItems = async (orders, restaurantName) => {
       // Compute subtotal
       result.subtotal = correctedItem.price + result.options.reduce((m, o) => m + o.price, 0);
 
-      // Any remaining inputted options are invalid options
-      result.options = result.options.concat(options.map((optName) => ({
-        name: optName,
-        price: 0,
-        successful: false,
-      })));
+      // Any remaining inputted options will be put in comments
+      result.comments = options;
 
-      if (options.length > 0) result.outcome = 1;
       if (unusedRequiredOptions.length > 0) {
-        result.outcome = 2;
+        result.successful = false;
         result.errors = unusedRequiredOptions.map(set => set.description);
       }
     } else {
       // Failed to find item
-      result.outcome = 2;
+      result.successful = false;
       result.item = {
         name: itemName,
         price: 0,

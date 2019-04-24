@@ -45,7 +45,7 @@ module.exports.do = async (ctx, next) => {
       const restaurant = args["restaurant"] || (await Transform.guessRestaurant(parsed));
       if (restaurant) {
         const fixedItems = await Transform.correctItems(parsed, restaurant);
-        const successfulItems = fixedItems.filter(i => i.outcome < 2);
+        const successfulItems = fixedItems.filter(i => i.successful);
         if (successfulItems.length > 0)
           await Orders.addOrder(restaurant, slackId, username, successfulItems);
 
@@ -233,7 +233,7 @@ module.exports.do = async (ctx, next) => {
       const restaurant = args["restaurant"] || (await Transform.guessRestaurant(parsed));
       if (restaurant) {
         const fixedItems = await Transform.correctItems(parsed, restaurant);
-        const successfulItems = fixedItems.filter(i => i.outcome < 2);
+        const successfulItems = fixedItems.filter(i => i.successful);
         if (successfulItems.length > 0)
           await Users.saveFavorite(slackId, restaurant, successfulItems);
 
