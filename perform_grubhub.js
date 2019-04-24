@@ -268,13 +268,15 @@ const fillOrders = async (page, userOrders) => {
         }
 
         // Input comments
-        if (comments.length > 0) {
-          await page.click("textarea.menuItemModal-special-instructions-textarea");
-          await page.keyboard.type(comments.join(", "));
-        }
+        await page.click("textarea.menuItemModal-special-instructions-textarea");
+        const name = (await Users.getUser(userOrders[i].slackId)).name;
+        const commentsText = comments.length > 0 ? `\n${comments.join(", ")}` : "";
+        await page.keyboard.type(`Please label for ${name}!${commentsText}`);
 
         // Record for stats
         orderAmounts[userOrders[i].slackId] = await page.$eval("h5.menuItemModal-price", e => parseFloat(e.innerText.substring(1)));
+
+        await page.waitFor(10000);
 
         // Click add to order
         await page.click("footer.s-dialog--complex-footer button");
