@@ -159,7 +159,7 @@ const orderFromRestaurant = async (page, restaurant, userOrders, retries) => {
       logger.info(`Simulated order from ${restaurant}, confirmation is in ${confirmationPath}`);
     } else {
       await page.click("button#ghs-checkout-review-submit");
-      await page.waitForNavigation();
+      await page.waitForNavigation({ timeout: 60000 });
       await page.pdf({ path: confirmationPath });
       logger.info(`Ordered from ${restaurant}, confirmation is in ${confirmationPath}`);
     }
