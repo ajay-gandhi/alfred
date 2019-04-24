@@ -276,8 +276,6 @@ const fillOrders = async (page, userOrders) => {
         // Record for stats
         orderAmounts[userOrders[i].slackId] = await page.$eval("h5.menuItemModal-price", e => parseFloat(e.innerText.substring(1)));
 
-        await page.waitFor(10000);
-
         // Click add to order
         await page.click("footer.s-dialog--complex-footer button");
         await page.waitFor(() => !document.querySelector("div.s-dialog-body"));

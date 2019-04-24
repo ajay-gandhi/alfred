@@ -94,13 +94,13 @@ const goToRestaurant = async (page, name) => {
 
   // Change date
   await page.click("a.ghs-setDay:last-of-type");
-  await page.waitFor(100);
+  await page.waitFor(200);
   let mondayButton = (await page.$$("div.ghs-datepick-week:last-of-type button"))[1];
   if (await page.evaluate(e => e.classList.contains("restricted"), mondayButton)) {
     mondayButton = (await page.$$("div.ghs-datepick-week:nth-child(2) button"))[1];
   }
   await mondayButton.click();
-  await page.waitFor(100);
+  await page.waitFor(200);
 
   await page.select("section.s-dialog-body select.ghs-whenFor-value", timeToString());
   await page.waitFor(500);
