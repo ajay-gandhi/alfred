@@ -350,8 +350,8 @@ const fillNames = async (page, slackIds, { orderAmounts }) => {
     await page.waitFor(2000);
   }
 
-  const amountAllocated = await page.$$eval("div.allocation-saved-cell", i => i.map(e => Number(e.innerText.trim().substring(1))));
-  if (Math.max.apply(null, amountAllocated) > 25) {
+  const amountDue = await page.$eval("div.amount-due h6.lineItem-amount", e => Number(e.innerText.trim().substring(1)));
+  if (amountDue > 0) {
     // Exceeded budget
     const orderTotal = amountAllocated.reduce((m, a) => m + a, 0);
     const excess = (orderTotal - slackIds.length * 25).toFixed(2);
