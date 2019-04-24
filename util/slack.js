@@ -132,8 +132,9 @@ module.exports.formatItems = (items) => {
   const itemAtts = items.map(({ item, options, comments, successful, subtotal, errors }) => {
     const optionList = [];
     if (errors) optionList.push(...errors.map(e => `_${e}_`));
-    if (options) optionList.push(...options.map(o => `${o.successful ? "+" : "-"} ${o.name.replace(/[*\\]/g, "")}`));
-    if (comments) optionList.push(`_Other comments:_ ${comments.join(", ")}`);
+    optionList.push(...options.map(o => `${o.successful ? "+" : "-"} ${o.name.replace(/[*\\]/g, "")}`));
+    if (comments.length > 0) optionList.push(`_Other comments:_ ${comments.join(", ")}`);
+
     return {
       fallback: item.name,
       color: successful ? "good" : "danger",
