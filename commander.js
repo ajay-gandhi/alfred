@@ -332,8 +332,9 @@ module.exports.do = async (ctx, next) => {
       const text = "Hi, I'm Alfred! Ordering with me is easy:\n" +
         "1. Enter your information by telling Alfred your Grubhub name and phone number.\n" +
         "2. Order your items by telling Alfred what you want and from which restaurant.\n" +
-        `Specify additional options (like ${eg}) by putting them in parentheses.\n` +
-        "Alfred receives orders until 3:30, and each order is placed for 5:30.";
+        `Specify additional options (like ${eg}) by putting them in parentheses.\n\n` +
+        "Alfred receives orders until 3:30, and each order is placed for 5:30.\n" +
+        "For a full list of commands, <https://github.com/ajay-gandhi/alfred/blob/master/COMMANDS.md|click here>.";
       ctx.body = { text };
       break;
     }
