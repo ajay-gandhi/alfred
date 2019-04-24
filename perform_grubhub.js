@@ -243,7 +243,7 @@ const fillOrders = async (page, userOrders) => {
     for (let i = 0; i < userOrders.length; i++) {
       // Record for stats
       orderAmounts[userOrders[i].slackId] = 0;
-      for (const [item, options] of userOrders[i].items) {
+      for (const [item, options, comments] of userOrders[i].items) {
         // Click menu item
         try {
           await clickItem(page, item, itemLinks);
@@ -265,6 +265,12 @@ const fillOrders = async (page, userOrders) => {
               break;
             }
           }
+        }
+
+        // Input comments
+        if (comments.length > 0) {
+          await page.click("textarea.menuItemModal-special-instructions-textarea");
+          await page.keyboard.type(comments.join(", "));
         }
 
         // Record for stats

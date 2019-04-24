@@ -32,8 +32,8 @@ module.exports.indexByRestaurantAndUser = (data) => {
       };
     }
 
-    const simplifiedItems = order.items.map(({ item, options }) => {
-      return [item.name, options.filter(o => o.successful).map(o => o.name)];
+    const simplifiedItems = order.items.map(({ item, options, comments }) => {
+      return [item.name, options.filter(o => o.successful).map(o => o.name), comments];
     });
     memo[order.restaurant].users.push({
       slackId: order.slackId,
