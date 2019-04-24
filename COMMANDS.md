@@ -20,7 +20,7 @@
 
 ## Setup
 
-### Save Info
+### 🔹  Save Info
 
 Tell Alfred your information so he can order for you!
 
@@ -29,7 +29,7 @@ Tell Alfred your information so he can order for you!
 * alfred remember Bobby McFerrin, 555-555-5555
 * alfred set my name to Willie Mays and my number to 666-666-6666
 
-### Forget Info
+### 🔹  Forget Info
 
 Remove your information completely. This removes your phone number and name, but not any existing statistics that are saved (stats are not anonymized). Let me know if you'd like me to remove your stats!
 
@@ -37,7 +37,7 @@ Remove your information completely. This removes your phone number and name, but
 
 * alfred forget my info
 
-### Set Favorite
+### 🔹  Set Favorite
 
 Set a favorite order.
 
@@ -45,7 +45,7 @@ Set a favorite order.
 
 * alfred set my favorite to chicken momo (large) from newa
 
-### Forget Favorite
+### 🔹  Forget Favorite
 
 Remove your favorite setting.
 
@@ -55,7 +55,7 @@ Remove your favorite setting.
 
 ## Ordering
 
-### Order
+### 🔹  Order
 
 Order food from Alfred! Tell Alfred what you'd like and [optionally] from which restaurant. This will overwrite any previous orders you have entered.
 
@@ -65,7 +65,7 @@ Order food from Alfred! Tell Alfred what you'd like and [optionally] from which 
 * alfred get me a hot momma huda from ikes
 * alfred i want some general tsos chicken
 
-### Order Favorite
+### 🔹  Order Favorite
 
 Order your favorite. You must have a favorite order saved for this command to function. This will overwrite any previous orders you have entered.
 
@@ -74,7 +74,7 @@ Order your favorite. You must have a favorite order saved for this command to fu
 * alfred order
 * alfred hit me
 
-### Forget Order
+### 🔹  Forget Order
 
 Remove your order; Alfred will not input your order when the time comes.
 
@@ -84,7 +84,7 @@ Remove your order; Alfred will not input your order when the time comes.
 
 ## Other Order Commands
 
-### Donate
+### 🔹  Donate
 
 Donate your Grubhub allocation to a specific restaurant.
 
@@ -93,7 +93,7 @@ Donate your Grubhub allocation to a specific restaurant.
 * alfred use my money for Newa
 * alfred donate to Little Szechuan
 
-### List Current Orders
+### 🔹  List Current Orders
 
 See which restaurants have orders.
 
@@ -102,7 +102,7 @@ See which restaurants have orders.
 * alfred which restaurants have orders today
 * alfred list orders
 
-### List Available Restaurants
+### 🔹  List Available Restaurants
 
 See which restaurants you can order from.
 
@@ -112,7 +112,7 @@ See which restaurants you can order from.
 
 ## Miscellaneous
 
-### Help
+### 🔹  Help
 
 Ask Alfred for a brief summary of how to order.
 
@@ -120,7 +120,7 @@ Ask Alfred for a brief summary of how to order.
 
 * alfred help
 
-### Stats
+### 🔹  Stats
 
 Get statistics! You can ask for global stats, your own stats, or your own stats from a particular restaurant.
 
@@ -130,7 +130,7 @@ Get statistics! You can ask for global stats, your own stats, or your own stats 
 * alfred what are my stats
 * alfred show me my stats from newa
 
-### Announce
+### 🔹  Announce
 
 Announce the arrival of ordered food. Alfred will @mention the members of the order. You must be the designated callee for this command to function.
 
