@@ -52,6 +52,7 @@ const go = async () => {
     logger.info("Logged in");
 
     for (const orderSet of orderSets) {
+      logger.info(`Beginning order from ${orderSet.restaurant}`);
       const orderResult = await orderFromRestaurant(page, orderSet.restaurant, orderSet.users, INITIAL_RETRIES);
       const orderParticipants = orderSet.users.filter(u => !u.isDonor);
 
@@ -173,6 +174,7 @@ const orderFromRestaurant = async (page, restaurant, userOrders, retries) => {
 };
 
 const setupRestaurant = async (page, restaurant) => {
+  logger.info("Visiting restaurant");
   try {
     await page.goto(URLS.setupRest);
     await page.waitFor(1000);
@@ -236,6 +238,7 @@ const setupRestaurant = async (page, restaurant) => {
  *   }
  */
 const fillOrders = async (page, userOrders) => {
+  logger.info("Inputting items");
   const orderAmounts = {};
   try {
     const itemLinks = await page.$$("div.menuSection:not(.restaurant-order-history):not(.restaurant-favoriteItems) h6.menuItem-name a");
@@ -318,6 +321,8 @@ const fillOrders = async (page, userOrders) => {
  * contains the first and last names of all those involved in the order.
  */
 const fillNames = async (page, slackIds, { orderAmounts }) => {
+  logger.info("Inputting names");
+
   // Enable split with coworkers
   await page.waitFor("label[for=\"showAllocations\"]");
   await page.click("label[for=\"showAllocations\"]");
@@ -375,6 +380,7 @@ const fillNames = async (page, slackIds, { orderAmounts }) => {
  * Returns the user that was selected
  */
 const fillPhoneNumber = async (page, orders) => {
+  logger.info("Inputting phone number");
   try {
     const slackIds = orders.reduce((memo, o) => o.isDonor ? memo : memo.concat(o.slackId), []);
     const selectedUser = slackIds[Math.floor(Math.random() * slackIds.length)];
