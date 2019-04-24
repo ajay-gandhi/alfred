@@ -271,10 +271,10 @@ const fillOrders = async (page, userOrders) => {
         }
 
         // Input comments
-        await page.click("textarea.menuItemModal-special-instructions-textarea");
         const name = (await Users.getUser(userOrders[i].slackId)).name;
         const commentsText = comments.length > 0 ? `\n${comments.join(", ")}` : "";
-        await page.keyboard.type(`Please label for ${name}!${commentsText}`);
+        const txt = `Please label for ${name}!${commentsText}`;
+        await page.$eval("textarea.menuItemModal-special-instructions-textarea", (e, v) => e.value = v, txt);
 
         // Record for stats
         orderAmounts[userOrders[i].slackId] = await page.$eval("h5.menuItemModal-price", e => parseFloat(e.innerText.substring(1)));
