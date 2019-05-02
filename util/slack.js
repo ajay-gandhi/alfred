@@ -133,14 +133,18 @@ module.exports.formatItems = (items) => {
     const optionList = [];
     if (errors) optionList.push(...errors.map(e => `_${e}_`));
     if (options) optionList.push(...options.map(o => `${o.successful ? "+" : "-"} ${o.name.replace(/[*\\]/g, "")}`));
-    if (comments.length > 0) optionList.push(`_Other comments:_ ${comments.join(", ")}`);
+    if (comments && comments.length > 0) optionList.push(`_Other comments:_ ${comments.join(", ")}`);
+
+    let footer;
+    if (subtotal) footer = `$${subtotal.toFixed(2)}`;
+    if (item.suggestion) footer = `Did you mean _${item.suggestion}_?`;
 
     return {
       fallback: item.name,
       color: successful ? "good" : "danger",
       title: item.name,
       text: optionList.join("\n"),
-      footer: subtotal && `$${subtotal.toFixed(2)}`,
+      footer,
     };
   });
 
