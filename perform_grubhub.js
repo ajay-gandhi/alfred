@@ -275,6 +275,7 @@ const fillOrders = async (page, userOrders) => {
         const commentsText = comments.length > 0 ? `\n${comments.join(", ")}` : "";
         const txt = `Please label for ${name}!${commentsText}`;
         await page.$eval("textarea.menuItemModal-special-instructions-textarea", (e, v) => e.value = v, txt);
+        await page.waitFor(500);
 
         // Record for stats
         orderAmounts[userOrders[i].slackId] = await page.$eval("h5.menuItemModal-price", e => parseFloat(e.innerText.substring(1)));
@@ -353,9 +354,6 @@ const fillNames = async (page, slackIds, { orderAmounts }) => {
   const amountDue = await page.$eval("div.amount-due h6.lineItem-amount", e => Number(e.innerText.trim().substring(1)));
   if (amountDue > 0) {
     // Exceeded budget
-    const orderTotal = amountAllocated.reduce((m, a) => m + a, 0);
-    const excess = (orderTotal - slackIds.length * 25).toFixed(2);
-
     // Find person with most expensive order
     const maxOrder = Object.keys(orderAmounts).reduce((memo, slackId) => {
       if (orderAmounts[slackId] > memo.amount) {
@@ -370,7 +368,7 @@ const fillNames = async (page, slackIds, { orderAmounts }) => {
 
     return {
       retry: false,
-      errors: [`Order exceeded budget by $${excess}. ${Slack.atUser(maxOrder.slackId)}'s order is the highest at $${maxOrder.amount.toFixed(2)}.`],
+      errors: [`Order exceeded budget by $${amountDue}. ${Slack.atUser(maxOrder.slackId)}'s order is the highest at $${maxOrder.amount.toFixed(2)}.`],
     };
   }
 };
