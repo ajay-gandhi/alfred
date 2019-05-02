@@ -177,7 +177,7 @@ const setupRestaurant = async (page, restaurant) => {
   logger.info("Visiting restaurant");
   try {
     await page.goto(URLS.setupRest);
-    await page.waitFor(1000);
+    await page.waitFor(3000);
 
     // Time
     await page.click("div.whenForSelector-btn");
@@ -271,11 +271,15 @@ const fillOrders = async (page, userOrders) => {
         }
 
         // Input comments
-        const name = (await Users.getUser(userOrders[i].slackId)).name;
-        const commentsText = comments.length > 0 ? `\n${comments.join(", ")}` : "";
-        const txt = `Please label for ${name}!${commentsText}`;
-        await page.$eval("textarea.menuItemModal-special-instructions-textarea", (e, v) => e.value = v, txt);
-        await page.waitFor(500);
+        const commentSelector = "textarea.menuItemModal-special-instructions-textarea";
+        const hasComments = await page.$(commentSelector);
+        if (hasComments) {
+          const name = (await Users.getUser(userOrders[i].slackId)).name;
+          const commentsText = comments.length > 0 ? `\n${comments.join(", ")}` : "";
+          const txt = `Please label for ${name}!${commentsText}`;
+          await page.$eval(commentSelector, (e, v) => e.value = v, txt);
+          await page.waitFor(500);
+        }
 
         // Record for stats
         orderAmounts[userOrders[i].slackId] = await page.$eval("h5.menuItemModal-price", e => parseFloat(e.innerText.substring(1)));
