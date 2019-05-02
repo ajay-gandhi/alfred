@@ -358,22 +358,33 @@ const fillNames = async (page, slackIds, { orderAmounts }) => {
   const amountDue = await page.$eval("div.amount-due h6.lineItem-amount", e => Number(e.innerText.trim().substring(1)));
   if (amountDue > 0) {
     // Exceeded budget
-    // Find person with most expensive order
-    const maxOrder = Object.keys(orderAmounts).reduce((memo, slackId) => {
-      if (orderAmounts[slackId] > memo.amount) {
-        return {
-          slackId,
-          amount: orderAmounts[slackId],
-        };
-      } else {
-        return memo;
-      }
-    }, { amount: 0 });
+    // If within 0.75, adjust tip
+    const currentTip = await page.$eval("div.lineItems div.tip div.lineItem-amount", e => Number(e.innerText.trim().substring(1)));
+    if (amountDue <= 0.75 && currentTip > 0.75) {
+      // Leave some breathing room
+      const newTip = currentTip - amountDue - 0.01;
+      await page.click("div.tipEntryButton-customTip button");
+      const tipInput = await page.$("input#customTipAmount");
+      await tipInput.click({ clickCount: 3 });
+      await tipInput.type(newTip.toString());
+    } else {
+      // Find person with most expensive order
+      const maxOrder = Object.keys(orderAmounts).reduce((memo, slackId) => {
+        if (orderAmounts[slackId] > memo.amount) {
+          return {
+            slackId,
+            amount: orderAmounts[slackId],
+          };
+        } else {
+          return memo;
+        }
+      }, { amount: 0 });
 
-    return {
-      retry: false,
-      errors: [`Order exceeded budget by $${amountDue}. ${Slack.atUser(maxOrder.slackId)}'s order is the highest at $${maxOrder.amount.toFixed(2)}.`],
-    };
+      return {
+        retry: false,
+        errors: [`Order exceeded budget by $${amountDue}. ${Slack.atUser(maxOrder.slackId)}'s order is the highest at $${maxOrder.amount.toFixed(2)}.`],
+      };
+    }
   }
 };
 
