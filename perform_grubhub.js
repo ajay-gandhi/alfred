@@ -362,7 +362,7 @@ const fillNames = async (page, slackIds, { orderAmounts }) => {
     const currentTip = await page.$eval("div.lineItems div.tip div.lineItem-amount", e => Number(e.innerText.trim().substring(1)));
     if (amountDue <= 0.75 && currentTip > 0.75) {
       // Leave some breathing room
-      const newTip = currentTip - amountDue - 0.01;
+      const newTip = (currentTip - amountDue - 0.01).toFixed(2);
       await page.click("div.tipEntryButton-customTip button");
       const tipInput = await page.$("input#customTipAmount");
       await tipInput.click({ clickCount: 3 });
