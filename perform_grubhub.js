@@ -31,7 +31,7 @@ const POST_TO_SLACK = process.argv.reduce((m, a) => m || a === "--post", false);
 const go = async () => {
   // Initialize data and browser
   const orders = await Orders.getOrders();
-  if (Object.keys(orders).length === 0) process.exit(0);
+  if (orders.filter(o => !o.isDonor).length === 0) process.exit(0);
 
   const orderSets = Transform.indexByRestaurantAndUser(orders);
 
