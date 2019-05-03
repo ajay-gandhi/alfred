@@ -399,11 +399,14 @@ const fillPhoneNumber = async (page, orders) => {
     const selectedUser = slackIds[Math.floor(Math.random() * slackIds.length)];
     const user = await Users.getUser(selectedUser);
 
-    const shouldClick = await page.$eval("div[at-delivery-instructions-toggle=\"true\"] use", e => e.getAttribute("href"));
-    if (shouldClick === "#plus") await page.click("div[at-delivery-instructions-toggle=\"true\"]");
-    const whoYaGonnaCall = await page.$("textarea#specialInstructions");
-    await whoYaGonnaCall.click({ clickCount: 3 });
-    await page.keyboard.type(`Please call ${user.name} at ${user.phone} upon delivery / arrival`);
+    // Click on change info button
+    await page.click("a.ghs-link-edit-info");
+
+    // Input name + phone and continue
+    await page.$eval("input.ghs-firstNameField", (e, v) => e.value = v, user.name.split(" ")[0]);
+    await page.$eval("input.ghs-lastNameField", (e, v) => e.value = v, user.name.split(" ")[1]);
+    await page.$eval("input.ghs-accountPhone", (e, v) => e.value = v, user.phone);
+    await page.click("button#ghs-checkout-gather-submit");
 
     // Eco-friendly order!
     await page.click("label[for=\"ghs-checkout-green\"]");
