@@ -395,6 +395,12 @@ const fillNames = async (page, slackIds, { orderAmounts }) => {
 const fillPhoneNumber = async (page, orders) => {
   logger.info("Inputting phone number");
   try {
+
+    // Eco-friendly order!
+    const shouldClick = await page.$eval("div[at-delivery-instructions-toggle=\"true\"] use", e => e.getAttribute("href"));
+    if (shouldClick === "#plus") await page.click("div[at-delivery-instructions-toggle=\"true\"]");
+    await page.click("label[for=\"ghs-checkout-green\"]");
+
     const slackIds = orders.reduce((memo, o) => o.isDonor ? memo : memo.concat(o.slackId), []);
     const selectedUser = slackIds[Math.floor(Math.random() * slackIds.length)];
     const user = await Users.getUser(selectedUser);
@@ -407,9 +413,6 @@ const fillPhoneNumber = async (page, orders) => {
     await page.$eval("input.ghs-lastNameField", (e, v) => e.value = v, user.name.split(" ")[1]);
     await page.$eval("input.ghs-accountPhone", (e, v) => e.value = v, user.phone);
     await page.click("button#ghs-checkout-gather-submit");
-
-    // Eco-friendly order!
-    await page.click("label[for=\"ghs-checkout-green\"]");
 
     return { user };
   } catch (e) {
