@@ -287,7 +287,8 @@ const fillOrders = async (page, userOrders) => {
           const name = (await Users.getUser(userOrders[i].slackId)).name;
           const commentsText = comments.length > 0 ? `\n${comments.join(", ")}` : "";
           const txt = `Please label for ${name}!${commentsText}`;
-          await page.$eval(commentSelector, (e, v) => e.value = v, txt);
+          await page.click(commentSelector);
+          await page.keyboard.type(txt);
           await page.waitFor(500);
         }
 
