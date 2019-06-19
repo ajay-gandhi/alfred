@@ -241,6 +241,23 @@ const fillOrders = async (page, userOrders) => {
   logger.info("Inputting items");
   const orderAmounts = {};
   try {
+    // Clear existing cart first
+    await page.click("button.ghs-toggleCart");
+    await page.waitFor(500);
+    const isEmpty = await page.$("div.cart-error-emptyCart");
+    const otherCart = await page.$("button.ghs-deleteCart");
+    if (!isEmpty) {
+      await page.click("button.ghs-confirmClearCart");
+      await page.waitFor(500);
+      await page.click("button.ghs-confirmChange");
+      await page.waitFor(500);
+    } else if (otherCart) {
+      await page.click("button.ghs-deleteCart");
+      await page.waitFor(500);
+    }
+    await page.click("button.ghs-toggleCart");
+    await page.waitFor(500);
+
     const itemLinks = await page.$$("div.menuSection:not(.restaurant-order-history):not(.restaurant-favoriteItems) div.menuItemNew-name a");
 
     for (let i = 0; i < userOrders.length; i++) {
@@ -248,14 +265,7 @@ const fillOrders = async (page, userOrders) => {
       orderAmounts[userOrders[i].slackId] = 0;
       for (const [item, options, comments] of userOrders[i].items) {
         // Click menu item
-        try {
-          await clickItem(page, item, itemLinks);
-        } catch (e) {
-          await page.waitFor("a.ghs-abandonCart");
-          await page.click("a.ghs-abandonCart");
-          await page.waitFor(500);
-          await clickItem(page, item, itemLinks);
-        }
+        await clickItem(page, item, itemLinks);
         await page.waitFor(200);
 
         // Select options
