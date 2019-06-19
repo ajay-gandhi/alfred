@@ -36,12 +36,7 @@ const go = async () => {
   const orderSets = Transform.indexByRestaurantAndUser(orders);
 
   const browser = await puppeteer.launch({
-    // executablePath: "/usr/bin/chromium-browser",
-    headless: false,
-    // defaultViewport: {
-      // width: 1200,
-      // height: 900,
-    // },
+    executablePath: "/usr/bin/chromium-browser",
   });
   const page = await browser.newPage();
 
