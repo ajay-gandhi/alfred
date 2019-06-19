@@ -413,6 +413,7 @@ const fillPhoneNumber = async (page, orders) => {
     await page.$eval("input.ghs-lastNameField", (e, v) => e.value = v, user.name.split(" ")[1]);
     await page.$eval("input.ghs-accountPhone", (e, v) => e.value = v, user.phone);
     await page.click("button#ghs-checkout-gather-submit");
+    await page.waitFor(2000);
 
     return { user };
   } catch (e) {
