@@ -241,7 +241,7 @@ const fillOrders = async (page, userOrders) => {
   logger.info("Inputting items");
   const orderAmounts = {};
   try {
-    const itemLinks = await page.$$("div.menuSection:not(.restaurant-order-history):not(.restaurant-favoriteItems) h6.menuItem-name a");
+    const itemLinks = await page.$$("div.menuSection:not(.restaurant-order-history):not(.restaurant-favoriteItems) div.menuItemNew-name a");
 
     for (let i = 0; i < userOrders.length; i++) {
       // Record for stats
