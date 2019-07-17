@@ -377,6 +377,8 @@ const fillNames = async (page, slackIds, { orderAmounts }) => {
       const tipInput = await page.$("input#customTipAmount");
       await tipInput.click({ clickCount: 3 });
       await tipInput.type(newTip.toString());
+      await page.click("h4");
+      await page.waitFor(2000);
     } else {
       // Find person with most expensive order
       const maxOrder = Object.keys(orderAmounts).reduce((memo, slackId) => {
