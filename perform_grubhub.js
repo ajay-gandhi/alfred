@@ -239,8 +239,8 @@ const fillOrders = async (page, userOrders) => {
     // Clear existing cart first
     await page.click("button.ghs-toggleCart");
     await page.waitFor(500);
-    const isEmpty = await page.$("div.cart-error-emptyCart");
-    const otherCart = await page.$("button.ghs-deleteCart");
+    const isEmpty = !!(await page.$("div.cart-error-emptyCart"));
+    const otherCart = !!(await page.$("button.ghs-deleteCart"));
     if (!isEmpty) {
       await page.click("button.ghs-confirmClearCart");
       await page.waitFor(500);
@@ -333,6 +333,10 @@ const fillOrders = async (page, userOrders) => {
  */
 const fillNames = async (page, slackIds, { orderAmounts }) => {
   logger.info("Inputting names");
+
+  // Grubhub added an intermediate "review order" page
+  await page.click("button#ghs-cart-checkout-button");
+  await page.waitForNavigation();
 
   // Enable split with coworkers
   await page.waitFor("label[for=\"showAllocations\"]");
