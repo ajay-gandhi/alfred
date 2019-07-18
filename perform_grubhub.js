@@ -418,6 +418,7 @@ const fillPhoneNumber = async (page, orders) => {
     const user = await Users.getUser(selectedUser);
 
     // Click on change info button
+    await page.waitFor(2000);
     await page.click("a.ghs-link-edit-info");
 
     // Input name + phone and continue
