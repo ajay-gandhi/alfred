@@ -149,6 +149,7 @@ const orderFromRestaurant = async (page, restaurant, userOrders, retries) => {
 
     // Submit order
     const confirmationPath = `${__dirname}/confirmations/${sanitizeFilename(restaurant)}.pdf`;
+    await page.waitFor(2000);
     if (DRY_RUN) {
       await page.pdf({ path: confirmationPath });
       logger.info(`Simulated order from ${restaurant}, confirmation is in ${confirmationPath}`);
