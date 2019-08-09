@@ -470,12 +470,17 @@ const timeToString = () => {
  * Finds the given item in the given array of links and clicks it
  */
 const clickItem = async (page, item, links) => {
+  let clicked = false;
   for (const anchor of links) {
     const text = await page.evaluate(e => e.innerText.trim(), anchor);
     if (text === item) {
-      anchor.click();
+      clicked = anchor.click();
       break;
     }
   }
-  await page.waitForSelector("div.s-dialog-body", { timeout: 20000 });
+  if (clicked) {
+    await page.waitForSelector("div.s-dialog-body", { timeout: 20000 });
+  } else {
+    throw new Error(`Couldn't find ${item}, possibly removed?`);
+  }
 };
