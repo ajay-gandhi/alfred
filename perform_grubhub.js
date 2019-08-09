@@ -151,6 +151,7 @@ const orderFromRestaurant = async (page, restaurant, userOrders, retries) => {
     const confirmationPath = `${__dirname}/confirmations/${sanitizeFilename(restaurant)}.pdf`;
     await page.waitFor(2000);
     if (DRY_RUN) {
+      await page.waitForSelector("button#ghs-checkout-review-submit", { timeout: 1000 });
       await page.pdf({ path: confirmationPath });
       logger.info(`Simulated order from ${restaurant}, confirmation is in ${confirmationPath}`);
     } else {
