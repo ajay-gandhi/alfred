@@ -11,11 +11,10 @@ with your company's money!
 Things to do, in order of urgency:
 
 * Menu search functionality
-* Support for comments and quantity
+* Support for ~comments~ and quantity
 * Show person with most calls in global stats
 * Per-restaurant favorite
 * Adding tip to reach minimum
-* Reducing tip to fit within budget
 * Allow appending to order
 * Volunteer for order pickup (also requires undoing feature)
 * Configurable time of delivery
