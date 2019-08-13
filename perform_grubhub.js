@@ -474,7 +474,8 @@ const clickItem = async (page, item, links) => {
   for (const anchor of links) {
     const text = await page.evaluate(e => e.innerText.trim(), anchor);
     if (text === item) {
-      clicked = anchor.click();
+      await anchor.click();
+      clicked = true;
       break;
     }
   }
