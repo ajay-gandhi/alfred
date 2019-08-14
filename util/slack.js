@@ -148,7 +148,7 @@ module.exports.formatItems = (items) => {
     };
   });
 
-  const orderSubtotal = items.reduce((m, i) => m + (i.subtotal || 0), 0).toFixed(2);
+  const orderSubtotal = items.reduce((m, i) => m + ((i.successful && i.subtotal) || 0), 0).toFixed(2);
   const orderSubtotalAtt = {
     fallback: `Subtotal: $${orderSubtotal}`,
     color: "#aaa",
