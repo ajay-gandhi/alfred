@@ -308,8 +308,8 @@ const fillOrders = async (page, userOrders) => {
     };
   }
 
-  const minimumMet = await page.$eval("button#ghs-cart-checkout-button", e => !e.disabled);
-  if (!minimumMet) {
+  const warningMessages = await page.$$("div.u-text-warning");
+  if (warningMessages.length > 0) {
     return {
       retry: false,
       errors: ["Delivery minimum not met."],
@@ -319,7 +319,7 @@ const fillOrders = async (page, userOrders) => {
   try {
     await page.click("button#ghs-cart-checkout-button");
     await page.waitForNavigation();
-    // await page.waitFor(3000);
+    await page.waitFor(2000);
     return { orderAmounts };
   } catch (e) {
     logger.error(e);
