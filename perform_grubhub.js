@@ -322,7 +322,7 @@ const fillOrders = async (page, userOrders) => {
     // await page.waitFor(3000);
     return { orderAmounts };
   } catch (e) {
-    logger.error(err);
+    logger.error(e);
     // Most likely a timeout
     return {
       retry: true,
@@ -339,69 +339,77 @@ const fillOrders = async (page, userOrders) => {
 const fillNames = async (page, slackIds, { orderAmounts }) => {
   logger.info("Inputting names");
 
-  // Grubhub added an intermediate "review order" page
-  await page.click("button#ghs-cart-checkout-button");
-  await page.waitForNavigation();
+  try {
+    // Grubhub added an intermediate "review order" page
+    await page.click("button#ghs-cart-checkout-button");
+    await page.waitForNavigation();
 
-  // Enable split with coworkers
-  await page.waitFor("label[for=\"showAllocations\"]");
-  await page.click("label[for=\"showAllocations\"]");
-  await page.waitFor(200);
+    // Enable split with coworkers
+    await page.waitFor("label[for=\"showAllocations\"]");
+    await page.click("label[for=\"showAllocations\"]");
+    await page.waitFor(200);
 
-  for (const slackId of slackIds) {
-    const name = (await Users.getUser(slackId)).name;
-    if (name.toLowerCase() === "ajay gandhi") continue;
+    for (const slackId of slackIds) {
+      const name = (await Users.getUser(slackId)).name;
+      if (name.toLowerCase() === "ajay gandhi") continue;
 
-    await page.click("div.allocations-fields-container > div > input");
-    await page.keyboard.type(name);
+      await page.click("div.allocations-fields-container > div > input");
+      await page.keyboard.type(name);
 
-    await page.waitFor(4000);
-    await page.click("div.allocations-autocomplete-dropdown div.s-row");
-    await page.waitFor(5000);
-  }
-
-  if (!slackIds.includes(priv.mySlackId)) {
-    // Clear my allocation if I'm not in the order
-    await page.click("div.allocations-fields-container table tr:last-of-type td.u-text-right button");
-    const myAllocation = await page.$("div.allocations-fields-container table tr:last-of-type td.u-text-secondary input");
-    await myAllocation.click({ clickCount: 3 });
-    await myAllocation.type("0");
-    await page.click("div.allocations-fields-container table tr:last-of-type td.u-text-right button");
-    await page.waitFor(2000);
-  }
-
-  const amountDue = await page.$eval("div.amount-due h6.lineItem-amount", e => Number(e.innerText.trim().substring(1)));
-  if (amountDue > 0) {
-    // Exceeded budget
-    // If within 0.75, adjust tip
-    const currentTip = await page.$eval("div.lineItems div.tip div.lineItem-amount", e => Number(e.innerText.trim().substring(1)));
-    if (amountDue <= 0.75 && currentTip > 0.75) {
-      // Leave some breathing room
-      const newTip = (currentTip - amountDue - 0.01).toFixed(2);
-      await page.click("div.tipEntryButton-customTip button");
-      const tipInput = await page.$("input#customTipAmount");
-      await tipInput.click({ clickCount: 3 });
-      await tipInput.type(newTip.toString());
-      await page.click("h4");
       await page.waitFor(4000);
-    } else {
-      // Find person with most expensive order
-      const maxOrder = Object.keys(orderAmounts).reduce((memo, slackId) => {
-        if (orderAmounts[slackId] > memo.amount) {
-          return {
-            slackId,
-            amount: orderAmounts[slackId],
-          };
-        } else {
-          return memo;
-        }
-      }, { amount: 0 });
-
-      return {
-        retry: false,
-        errors: [`Order exceeded budget by $${amountDue}. ${Slack.atUser(maxOrder.slackId)}'s order is the highest at $${maxOrder.amount.toFixed(2)}.`],
-      };
+      await page.click("div.allocations-autocomplete-dropdown div.s-row");
+      await page.waitFor(5000);
     }
+
+    if (!slackIds.includes(priv.mySlackId)) {
+      // Clear my allocation if I'm not in the order
+      await page.click("div.allocations-fields-container table tr:last-of-type td.u-text-right button");
+      const myAllocation = await page.$("div.allocations-fields-container table tr:last-of-type td.u-text-secondary input");
+      await myAllocation.click({ clickCount: 3 });
+      await myAllocation.type("0");
+      await page.click("div.allocations-fields-container table tr:last-of-type td.u-text-right button");
+      await page.waitFor(2000);
+    }
+
+    const amountDue = await page.$eval("div.amount-due h6.lineItem-amount", e => Number(e.innerText.trim().substring(1)));
+    if (amountDue > 0) {
+      // Exceeded budget
+      // If within 0.75, adjust tip
+      const currentTip = await page.$eval("div.lineItems div.tip div.lineItem-amount", e => Number(e.innerText.trim().substring(1)));
+      if (amountDue <= 0.75 && currentTip > 0.75) {
+        // Leave some breathing room
+        const newTip = (currentTip - amountDue - 0.01).toFixed(2);
+        await page.click("div.tipEntryButton-customTip button");
+        const tipInput = await page.$("input#customTipAmount");
+        await tipInput.click({ clickCount: 3 });
+        await tipInput.type(newTip.toString());
+        await page.click("h4");
+        await page.waitFor(4000);
+      } else {
+        // Find person with most expensive order
+        const maxOrder = Object.keys(orderAmounts).reduce((memo, slackId) => {
+          if (orderAmounts[slackId] > memo.amount) {
+            return {
+              slackId,
+              amount: orderAmounts[slackId],
+            };
+          } else {
+            return memo;
+          }
+        }, { amount: 0 });
+
+        return {
+          retry: false,
+          errors: [`Order exceeded budget by $${amountDue}. ${Slack.atUser(maxOrder.slackId)}'s order is the highest at $${maxOrder.amount.toFixed(2)}.`],
+        };
+      }
+    }
+  } catch (e) {
+    logger.error(e);
+    return {
+      retry: true,
+      errors: [`Order failed for unknown reason.`],
+    };
   }
 };
 
