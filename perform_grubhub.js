@@ -199,7 +199,7 @@ const setupRestaurant = async (page, restaurant) => {
     await page.waitFor(() => document.querySelectorAll("div.menuItem").length > 0);
     await page.waitFor(1000);
   } catch (e) {
-    logger.error(err);
+    logger.error(e);
     if (e instanceof TypeError) {
       // Couldn't find restaurant containing given text
       return {
@@ -300,7 +300,7 @@ const fillOrders = async (page, userOrders) => {
       }
     }
   } catch (e) {
-    logger.error(err);
+    logger.error(e);
     // Most likely a timeout, or we didn't wait long enough
     return {
       retry: true,
@@ -443,7 +443,7 @@ const fillPhoneNumber = async (page, orders) => {
 
     return { user };
   } catch (e) {
-    logger.error(err);
+    logger.error(e);
     // Most likely a timeout
     return {
       retry: true,
