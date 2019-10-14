@@ -240,21 +240,24 @@ const fillOrders = async (page, userOrders) => {
   const orderAmounts = {};
   try {
     // Clear existing cart first
-    await page.click("button.ghs-toggleCart");
-    await page.waitFor(500);
-    const isEmpty = !!(await page.$("div.cart-error-emptyCart"));
-    const otherCart = !!(await page.$("button.ghs-deleteCart"));
-    if (otherCart) {
-      await page.click("button.ghs-deleteCart");
+    const hasCart = await page.$eval("button.ghs-toggleCart", e => e.className.includes("withItems"));
+    if (hasCart) {
+      await page.click("button.ghs-toggleCart");
       await page.waitFor(500);
-    } else if (!isEmpty) {
-      await page.click("button.ghs-confirmClearCart");
-      await page.waitFor(500);
-      await page.click("button.ghs-confirmChange");
-      await page.waitFor(500);
+      const isEmpty = !!(await page.$("div.cart-error-emptyCart"));
+      const otherCart = !!(await page.$("button.ghs-deleteCart"));
+      if (otherCart) {
+        await page.click("button.ghs-deleteCart");
+        await page.waitFor(500);
+      } else if (!isEmpty) {
+        await page.click("button.ghs-confirmClearCart");
+        await page.waitFor(500);
+        await page.click("button.ghs-confirmChange");
+        await page.waitFor(500);
+      }
+      await page.click("button.ghs-toggleCart");
+      await page.waitFor(2500);
     }
-    await page.click("button.ghs-toggleCart");
-    await page.waitFor(2500);
 
     const itemLinks = await page.$$("div.menuSection:not(.restaurant-order-history):not(.restaurant-favoriteItems) div.menuItemNew-name a");
 
