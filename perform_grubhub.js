@@ -286,7 +286,7 @@ const fillOrders = async (page, userOrders) => {
         const hasComments = await page.$(commentSelector);
         if (hasComments) {
           const name = (await Users.getUser(userOrders[i].slackId)).name;
-          const commentsText = comments.length > 0 ? `\n${comments.join(", ")}` : "";
+          const commentsText = (comments && comments.length > 0) ? `\n${comments.join(", ")}` : "";
           const txt = `Please label for ${name}!${commentsText}`;
           await page.click(commentSelector);
           await page.keyboard.type(txt);

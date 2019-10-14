@@ -170,7 +170,7 @@ module.exports.correctItems = async (orders, restaurantName) => {
       result.subtotal = correctedItem.price + result.options.reduce((m, o) => m + o.price, 0);
 
       // Any remaining inputted options will be put in comments
-      result.comments = options;
+      result.comments = options || "";
 
       if (unusedRequiredOptions.length > 0) {
         result.successful = false;
