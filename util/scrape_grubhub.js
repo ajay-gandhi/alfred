@@ -57,10 +57,10 @@ const DO_ALL = process.argv.reduce((m, a) => m || a === "--all", false);
       failed.forEach(f => { logger.error(f.name); logger.error(f.error); });
     }
     await browser.close();
-    process.exit(0);
   } catch (err) {
     logger.error(err);
   }
+  process.exit(0);
 })();
 
 /**
