@@ -49,9 +49,6 @@ const DO_ALL = process.argv.reduce((m, a) => m || a === "--all", false);
       } else {
         failed.push(scrapeResult);
       }
-
-      process.stdout.clearLine();
-      process.stdout.cursorTo(0);
     }
 
     logger.info(`Successfully scraped ${successful} of ${restaurants.length} restaurants.`);
@@ -137,13 +134,12 @@ const scrapeRestaurant = async (page, name) => {
     name,
     successful: true,
   };
-  console.log(`  Scraping ${name}`);
+  logger.info(`Scraping ${name}`);
 
   try {
     // Get all items, ignoring "Order Again" and "Most Popular" sections
     const itemBoxes = await page.$$("div.menuSection:not(.restaurant-order-history):not(.restaurant-favoriteItems) div.menuItem");
     for (let j = 0; j < itemBoxes.length; j++) {
-      spinner(j);
       await itemBoxes[j].click();
 
       // Wait for name heading to appear
@@ -211,15 +207,6 @@ const scrapeRestaurant = async (page, name) => {
     result.error = e;
   }
   return result;
-};
-
-/**
- * Display a loading spinner
- */
-const spinner = (index) => {
-  process.stdout.clearLine();
-  process.stdout.cursorTo(0);
-  process.stdout.write((new Array(index % 3 + 1)).fill(".").join(""));
 };
 
 /**
