@@ -109,9 +109,9 @@ const goToRestaurant = async (page, name) => {
   await page.waitFor(300);
   await page.click("div.navbar-menu-search input");
   await page.keyboard.type(name);
-  await page.waitFor(() => !!document.querySelector("section.search-autocomplete-container div.searchAutocomplete-xsFixed"));
-  await page.waitFor(500);
-  await page.click("div.ghs-autocompleteResult-container:first-child div.s-list-item-primary");
+  await page.waitFor("div.ghs-autocompleteResult-container");
+  await page.waitFor(1000);
+  await page.click("div.ghs-autocompleteResult-container:first-child");
   await page.waitForNavigation();
 
   // Wait for items to appear
