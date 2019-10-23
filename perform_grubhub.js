@@ -21,7 +21,7 @@ const URLS = {
   login: "https://www.grubhub.com/login",
   setupRest: "https://www.grubhub.com/lets-eat",
 };
-const INITIAL_RETRIES = 2;
+const INITIAL_RETRIES = 3;
 
 // Args
 const ORDER_TIME = process.argv.reduce((m, a) => a.includes("--time=") ? parseInt(a.substring(a.indexOf("=") + 1)) : m, 1730);
