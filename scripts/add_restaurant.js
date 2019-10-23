@@ -16,7 +16,8 @@ client.connect((err) => {
     .collection("menu")
     .insertOne({ name: process.argv[2] })
     .then(() => {
-      console.log(`Added ${process.argv[2]} to scraper!`);
+      console.log(`Added ${process.argv[2]} to scraper.`);
+      console.log("Don't forget to generate and upload new entities to Dialogflow!");
       process.exit(0);
     });
 });
