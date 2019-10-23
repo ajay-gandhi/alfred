@@ -19,9 +19,6 @@
     "winston": "^3.2.1"
   },
   "devDependencies": {},
-  "scripts": {
-    "test": "jest"
-  },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/ajay-gandhi/alfred.git"
