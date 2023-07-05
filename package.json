@@ -5,7 +5,7 @@
   "main": "server.js",
   "dependencies": {
     "basic-auth": "^2.0.1",
-    "dialogflow": "^1.2.0",
+    "dialogflow": "^4.0.3",
     "fast-levenshtein": "^2.0.6",
     "fuzzaldrin": "^2.1.0",
     "koa": "^2.5.3",
