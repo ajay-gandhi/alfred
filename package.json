@@ -8,7 +8,7 @@
     "dialogflow": "^4.0.3",
     "fast-levenshtein": "^2.0.6",
     "fuzzaldrin": "^2.1.0",
-    "koa": "^2.5.3",
+    "koa": "^3.0.1",
     "koa-bodyparser": "^4.2.1",
     "koa-mount": "^4.0.0",
     "koa-router": "^7.4.0",
